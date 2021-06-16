@@ -1,0 +1,18 @@
+{
+    "require": {
+        "symfony/console": "^5.3",
+        "symfony/finder": "^5.3",
+        "symfony/serializer": "^5.3",
+        "symfony/yaml": "^5.3",
+        "symfony/property-access": "^5.3",
+        "phpdocumentor/reflection-docblock": "^5.2"
+    },
+    "autoload": {
+        "files": [
+            "helpers/functions.php"
+        ],
+        "psr-4": {
+            "Quiz\\": "src"
+        }
+    }
+}
