@@ -1,12 +1,7 @@
 name: "test"
 version: "0.0.1"
 questions:
-  - content: "Which component is used to iterate over files?"
-    choices: [ "symfony/finder" , "symfony/filesystem" , "symfony/iterate" , "symfony/fs-iterator" ]
-    responses: [ 0 ]
-    explanation: "https://symfony.com/doc/current/components/finder.html"
-
-  - content: "Which component is used to iterate over files 2?"
+  - content: Which component is used to iterate over files?
     choices: [ "symfony/finder" , "symfony/filesystem" , "symfony/iterate" , "symfony/fs-iterator" ]
     responses: [ 0 ]
     explanation: "https://symfony.com/doc/current/components/finder.html"

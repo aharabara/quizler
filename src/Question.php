@@ -51,7 +51,31 @@ class Question
 
     public function answerIsCorrect(): bool
     {
-        return in_array($this->answer, $this->responses);
+        return in_array($this->answer, array_map('intval', $this->responses));
+    }
+
+    public function setContent(string $content): Question
+    {
+        $this->content = $content;
+        return $this;
+    }
+
+    public function setResponses(array $responses): Question
+    {
+        $this->responses = $responses;
+        return $this;
+    }
+
+    public function setChoices(array $choices): Question
+    {
+        $this->choices = $choices;
+        return $this;
+    }
+
+    public function setExplanation(string $explanation): Question
+    {
+        $this->explanation = $explanation;
+        return $this;
     }
 
 }

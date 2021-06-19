@@ -11,7 +11,8 @@ use Symfony\Component\Console\Application;
 
 $application = new Application();
 
-$application->add(new \Quiz\Command\RunCommand());
+$application->add(new \Quiz\Command\RunQuizCommand());
+$application->add(new \Quiz\Command\CreateQuizCommand());
 $application->run();
 
 // choice of quiz

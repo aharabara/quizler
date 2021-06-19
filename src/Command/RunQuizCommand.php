@@ -11,7 +11,7 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Finder\Finder;
 
-class RunCommand extends Command
+class RunQuizCommand extends Command
 {
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'run';
@@ -43,7 +43,7 @@ class RunCommand extends Command
 
                 // show explanation and wait
                 $helper->ask($input, $output, new ConfirmationQuestion("Press [Enter]"));
-                if ($input->hasOption('stop-on-fail')) {
+                if ($input->getOption('stop-on-fail')) {
                     return Command::FAILURE;
                 }
             }

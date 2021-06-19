@@ -25,4 +25,21 @@ class Quiz
     {
         return $this->questions;
     }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function setVersion(string $version): void
+    {
+        $this->version = $version;
+    }
+
+    public function addQuestion(Question $question): Question
+    {
+        $this->questions[] = $question;
+        return $question;
+    }
+
 }
