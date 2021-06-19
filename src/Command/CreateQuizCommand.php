@@ -4,22 +4,23 @@ namespace Quiz\Command;
 
 use Quiz\Question as QuizQuestion;
 use Quiz\Quiz;
+use Quiz\QuizLoader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
-use Symfony\Component\Serializer\Encoder\YamlEncoder;
-use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
-use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
-use Symfony\Component\Serializer\Serializer;
 
 class CreateQuizCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
+    /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'create';
 
+    /**
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $loader = new QuizLoader();
         $helper = $this->getHelper('question');
 
         $quiz = new Quiz();
@@ -31,7 +32,12 @@ class CreateQuizCommand extends Command
             return $helper->ask($input, $output, new Question($text, $default));
         };
 
-        $askMany = function(string $question) use ($ask) {
+        $askMany = /**
+         * @return string[]
+         *
+         * @psalm-return list<string>
+         */
+        function (string $question) use ($ask): array {
             $choices = [];
             $index = 0;
             while ($choice = $ask("{$question}[$index]")) {
@@ -62,16 +68,7 @@ class CreateQuizCommand extends Command
                 ->setExplanation($ask("Explanation"))
             ;
         } while (true);
-
-        $serializer = new Serializer([new ArrayDenormalizer(), new PropertyNormalizer()], [new YamlEncoder()]);
-
-        $fileName = $ask("Quiz file name", strtolower("{$name}.yaml"));
-
-        $serializedQuiz = $serializer->serialize($quiz, 'yaml', [
-            'yaml_inline' => 3
-        ]);
-
-        file_put_contents(__DIR__."/../../storage/$fileName", $serializedQuiz);
+        $loader->save($quiz, $ask("Quiz file name", strtolower("{$name}.yaml")));
 
         $output->writeln("<info>Quiz file was saved</info>");
 

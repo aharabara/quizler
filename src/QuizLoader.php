@@ -2,6 +2,7 @@
 
 namespace Quiz;
 
+use LogicException;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
@@ -14,16 +15,37 @@ class QuizLoader
 
     public function __construct()
     {
-        $this->serializer = new Serializer([new ArrayDenormalizer(), new PropertyNormalizer(null, null, new PhpDocExtractor())], [new YamlEncoder()]);
+        $propertyNormalizer = new PropertyNormalizer(null, null, new PhpDocExtractor());
+
+        $this->serializer = new Serializer(
+            [new ArrayDenormalizer(), $propertyNormalizer],
+            [new YamlEncoder()]
+        );
     }
 
     public function load(string $file): Quiz
     {
         if (!file_exists($file)) {
-            throw new \LogicException("File '$file' does not exist.");
+            throw new LogicException("File '$file' does not exist.");
         }
 
         $content = file_get_contents($file);
         return $this->serializer->deserialize($content, Quiz::class, 'yaml');
+    }
+
+    public function save(Quiz $quiz, string $fileName): void
+    {
+        $serializedQuiz = $this
+            ->serializer
+            ->serialize($quiz, 'yaml', [
+                'yaml_inline' => 3
+            ]);
+
+        $path = getcwd(). "/storage/$fileName";
+//        if (file_exists($path)) {
+//            throw new \LogicException()
+//        }
+
+        file_put_contents($path, $serializedQuiz);
     }
 }

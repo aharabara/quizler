@@ -16,11 +16,11 @@ class Quiz
         return $this->name;
     }
 
-    public function version(): string
-    {
-        return $this->version;
-    }
-
+    /**
+     * @return Question[]
+     *
+     * @psalm-return array<array-key, Question>
+     */
     public function questions(): array
     {
         return $this->questions;
@@ -41,5 +41,4 @@ class Quiz
         $this->questions[] = $question;
         return $question;
     }
-
 }

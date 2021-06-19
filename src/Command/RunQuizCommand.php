@@ -16,11 +16,21 @@ class RunQuizCommand extends Command
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'run';
 
+
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this->addOption('stop-on-fail');
+        $this->setDescription("Run a quiz");
     }
 
+    /**
+     * @return int
+     *
+     * @psalm-return 0|1
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $helper = $this->getHelper('question');
@@ -35,17 +45,18 @@ class RunQuizCommand extends Command
                 }
             );
 
-            if ($question->answerIsCorrect()) {
+            if (!$question->answerIsCorrect()) {
                 $output->writeln("<info>Correct</info>");
-            } else {
-                $output->writeln("<comment>Wrong</comment>");
-                $output->writeln("<info>Explanation:</info> {$question->explanation()}");
+                $output->writeln("");
+                continue;
+            }
+            $output->writeln("<comment>Wrong</comment>");
+            $output->writeln("<info>Explanation:</info> {$question->explanation()}");
 
-                // show explanation and wait
-                $helper->ask($input, $output, new ConfirmationQuestion("Press [Enter]"));
-                if ($input->getOption('stop-on-fail')) {
-                    return Command::FAILURE;
-                }
+            // show explanation and wait
+            $helper->ask($input, $output, new ConfirmationQuestion("Press [Enter]"));
+            if ($input->getOption('stop-on-fail')) {
+                return Command::FAILURE;
             }
             $output->writeln("");
         }
@@ -72,7 +83,7 @@ class RunQuizCommand extends Command
         $loader = new QuizLoader();
         $finder = new Finder();
 
-        $files = $finder->in(__DIR__ . "/../../storage/")
+        $files = $finder->in(getcwd() . "/storage/")
             ->name("*.yaml")
             ->files();
 

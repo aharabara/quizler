@@ -1,0 +1,7 @@
+{
+  "main": "quizler.php",
+  "output" : "out/quizler.phar",
+  "blacklist" : [
+    "out/"
+  ]
+}

@@ -3,7 +3,6 @@
 
 namespace Quiz;
 
-
 class Question
 {
     protected string $content;
@@ -14,27 +13,17 @@ class Question
     /* result that will be saved after answer() method */
     protected int $answer;
 
-    public function content(): string
-    {
-        return $this->content;
-    }
-
-    public function response(): array
-    {
-        return $this->responses;
-    }
-
     public function explanation(): string
     {
         return $this->explanation;
     }
 
-    public function choices(): array
-    {
-        return $this->choices;
-    }
-
-    public function randomize(): array
+    /**
+     * @return array|false
+     *
+     * @psalm-return array<string, mixed>|false
+     */
+    public function randomize()
     {
         $values = shuffle_assoc($this->choices);
         $keys = array_slice(range("a", "z"), 0, count($values));
@@ -54,28 +43,39 @@ class Question
         return in_array($this->answer, array_map('intval', $this->responses));
     }
 
-    public function setContent(string $content): Question
+    /**
+     * @return static
+     */
+    public function setContent(string $content): self
     {
         $this->content = $content;
         return $this;
     }
 
-    public function setResponses(array $responses): Question
+    /**
+     * @return static
+     */
+    public function setResponses(array $responses): self
     {
         $this->responses = $responses;
         return $this;
     }
 
-    public function setChoices(array $choices): Question
+    /**
+     * @return static
+     */
+    public function setChoices(array $choices): self
     {
         $this->choices = $choices;
         return $this;
     }
 
-    public function setExplanation(string $explanation): Question
+    /**
+     * @return static
+     */
+    public function setExplanation(string $explanation): self
     {
         $this->explanation = $explanation;
         return $this;
     }
-
 }
