@@ -15,6 +15,11 @@ class CreateQuizCommand extends Command
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'create';
 
+    protected function configure()
+    {
+        $this->setDescription('Create a quiz');
+    }
+
     /**
      * @return int
      */

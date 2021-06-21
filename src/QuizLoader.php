@@ -18,7 +18,7 @@ class QuizLoader
         $propertyNormalizer = new PropertyNormalizer(null, null, new PhpDocExtractor());
 
         $this->serializer = new Serializer(
-            [new ArrayDenormalizer(), $propertyNormalizer],
+            [new ArrayDenormalizer(),  $propertyNormalizer],
             [new YamlEncoder()]
         );
     }
@@ -31,15 +31,16 @@ class QuizLoader
 
         $content = file_get_contents($file);
         return $this->serializer->deserialize($content, Quiz::class, 'yaml');
+        # string:yaml => php:array
+        # reflection(Quiz::class) => metadata
+            # php:array{quiz:{...:string, questions:Question[]}} => new Quiz()
     }
 
     public function save(Quiz $quiz, string $fileName): void
     {
-        $serializedQuiz = $this
-            ->serializer
-            ->serialize($quiz, 'yaml', [
-                'yaml_inline' => 3
-            ]);
+        $serializedQuiz = $this->serializer->serialize($quiz, 'yaml', [
+            'yaml_inline' => 3
+        ]);
 
         $path = getcwd(). "/storage/$fileName";
 //        if (file_exists($path)) {

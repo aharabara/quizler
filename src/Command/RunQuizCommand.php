@@ -45,7 +45,7 @@ class RunQuizCommand extends Command
                 }
             );
 
-            if (!$question->answerIsCorrect()) {
+            if ($question->answerIsCorrect()) {
                 $output->writeln("<info>Correct</info>");
                 $output->writeln("");
                 continue;
@@ -82,6 +82,8 @@ class RunQuizCommand extends Command
     {
         $loader = new QuizLoader();
         $finder = new Finder();
+
+        // $HOME/.config/quizler/*.yaml
 
         $files = $finder->in(getcwd() . "/storage/")
             ->name("*.yaml")
