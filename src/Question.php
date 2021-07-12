@@ -6,9 +6,9 @@ namespace Quiz;
 class Question
 {
     protected string $content;
-    protected array $responses;
-    protected array $choices;
-    protected string $explanation;
+    protected array $response = [];
+    protected array $choices = [];
+    protected string $explanation = '';
 
     /* result that will be saved after answer() method */
     protected int $answer;
@@ -33,14 +33,21 @@ class Question
 
     public function answer(callable $callback): void
     {
-        $choices = $this->randomize();
-        $selected = $callback($this->content, $choices);
-        $this->answer = array_search($choices[$selected], $this->choices);
+        if ($this->isGuessQuestion()) {
+            $this->answer = $callback($this->content, []);
+        } else {
+            $choices = $this->randomize();
+            $selected = $callback($this->content, $choices);
+            $this->answer = array_search($choices[$selected], $this->choices);
+        }
     }
 
     public function answerIsCorrect(): bool
     {
-        return in_array($this->answer, array_map('intval', $this->responses));
+        if ($this->isGuessQuestion()) {
+            return $this->answer;
+        }
+        return in_array($this->answer, array_map('intval', $this->response));
     }
 
     /**
@@ -55,9 +62,9 @@ class Question
     /**
      * @return static
      */
-    public function setResponses(array $responses): self
+    public function setResponse(array $response): self
     {
-        $this->responses = $responses;
+        $this->response = $response;
         return $this;
     }
 
@@ -77,5 +84,11 @@ class Question
     {
         $this->explanation = $explanation;
         return $this;
+    }
+
+    public function isGuessQuestion(): bool
+    {
+        /** @fixme split into ChoiceQuestion and GuessQuestion */
+        return empty($this->response) && empty($this->choices);
     }
 }
