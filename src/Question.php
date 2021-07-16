@@ -59,6 +59,11 @@ class Question
         return $this;
     }
 
+    public function getContent(): string
+    {
+        return $this->content;
+    }
+
     /**
      * @return static
      */

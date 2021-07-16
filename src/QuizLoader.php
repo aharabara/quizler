@@ -38,6 +38,7 @@ class QuizLoader
 
     public function save(Quiz $quiz, string $fileName): void
     {
+        /** @fixme check if such quiz already exists */
         $serializedQuiz = $this->serializer->serialize($quiz, 'yaml', [
             'yaml_inline' => 3
         ]);
