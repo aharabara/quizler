@@ -2,9 +2,11 @@
 
 namespace Quiz\Command;
 
+use Quiz\Question\GuessQuestion;
+use Quiz\Question\SnippetGuessQuestion;
 use Quiz\Quiz;
 use Quiz\QuizLoader;
-use Symfony\Component\Console\Color;
+use Quiz\ReportExporter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,12 +18,19 @@ class RunQuizCommand extends Command
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'run';
 
+    public function __construct(string $name = null)
+    {
+        parent::__construct($name);
+
+    }
+
     /**
      * @return void
      */
     protected function configure()
     {
-        $this->addOption('stop-on-fail');
+        $this->addOption('stop-on-fail', 'f');
+        $this->addOption('report', 'r');
         $this->setDescription("Run a quiz");
     }
 
@@ -38,35 +47,45 @@ class RunQuizCommand extends Command
         $style = new SymfonyStyle($input, $output);
 
         $quiz = $this->chooseQuiz($style);
-        $style->title($quiz->name());
 
-        foreach ($quiz->questions() as $question) {
+        $questions = $quiz->questions();
+        $total = count($questions);
+        foreach ($questions as $index => $question) {
+            $realIndex = $index + 1;
+            $style->section("{$quiz->name()} [{$realIndex}/{$total}]");
             $question->answer(
                 function (string $content, array $choices) use ($style, $question, $input, $output) {
-                    if ($question->isGuessQuestion()) {
-                        $response = $style->ask($content . " ");
+                    if ($question instanceof GuessQuestion) {
+                        if ($question instanceof SnippetGuessQuestion) {
+                            $style->writeln(sprintf("<info>Snippet given:%s</info>", str_repeat("-", 20)));
+                            $style->writeln("<comment>{$question->snippet()}</comment>");
+                            $response = $style->ask($content . " ");
+                            $style->writeln(sprintf("<info>%s</info>", str_repeat("-", 20)));
+                        } else {
+                            $response = $style->ask($content . " ");
+                        }
 
                         $style->writeln("<info>Correct answer</info> : " . $question->explanation());
                         $style->writeln("<comment>Your answer</comment>    : " . $response);
 
                         $guessed = $style->ask("Guessed? [y/n] :", 'y');
-                        return strtolower($guessed) === 'y';
+                        return [(string)$response, strtolower($guessed) === 'y'];
                     } else {
                         return $style->choice($content, $choices);
                     }
                 }
             );
 
-            if ($question->isGuessQuestion()) {
-                $output->writeln(sprintf("<comment>%s</comment>", str_pad("", getenv('COLUMNS'), "=")));
+            if ($question instanceof GuessQuestion) {
                 continue;
             }
+
             if ($question->answerIsCorrect()) {
-                $output->writeln("<info>Correct</info>");
+                $style->writeln("<info>Correct</info>");
                 continue;
             }
-            $output->writeln("<comment>Wrong</comment>");
-            $output->writeln("<info>Explanation:</info> {$question->explanation()}");
+            $style->writeln("<comment>Wrong</comment>");
+            $style->writeln("<info>Explanation:</info> {$question->explanation()}");
 
             // show explanation and wait
             $style->confirm("Press [Enter]");
@@ -75,18 +94,23 @@ class RunQuizCommand extends Command
             }
         }
 
+        if ($input->hasOption('report')) {
+            (new ReportExporter($this->getStoragePath("reports/{$quiz->name()}")))
+                ->export($quiz);
+        }
+
 
         return Command::SUCCESS;
     }
 
     protected function chooseQuiz(SymfonyStyle $style): Quiz
     {
-        $loader = new QuizLoader();
         $finder = new Finder();
+        $quizLoader = new QuizLoader($this->getStoragePath('quizzes'));
 
         // $HOME/.config/quizler/*.yaml
 
-        $files = $finder->in(getcwd() . "/storage/")
+        $files = $finder->in($this->getStoragePath())
             ->name("*.yaml")
             ->files();
 
@@ -98,6 +122,23 @@ class RunQuizCommand extends Command
         $response = $style->choice("Choose your quiz:", array_keys($choices));
         $filePath = $choices[$response];
 
-        return $loader->load($filePath);
+        return $quizLoader->load($filePath);
+    }
+
+    protected function getStoragePath(?string $subFolders = null): string
+    {
+        $path = "storage";
+        if ($subFolders !== null) {
+            $path .= "/$subFolders";
+        }
+        $path = getcwd() . "/" . trim($path, "/");
+
+        if (!is_dir($path)) {
+            if (is_file($path)) {
+                throw new \LogicException("Cannot create directory '$path'. A file with such name already exists.");
+            }
+            mkdir($path, 0777, true);
+        }
+        return $path;
     }
 }

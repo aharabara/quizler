@@ -2,9 +2,13 @@
 
 namespace Quiz;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use LogicException;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
+use Symfony\Component\Serializer\Mapping\ClassDiscriminatorFromClassMetadata;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -12,10 +16,17 @@ use Symfony\Component\Serializer\Serializer;
 class QuizLoader
 {
     private Serializer $serializer;
+    private string $folder;
 
-    public function __construct()
+    public function __construct(string $folder)
     {
-        $propertyNormalizer = new PropertyNormalizer(null, null, new PhpDocExtractor());
+        $this->folder = $folder;
+
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+
+        $discriminator = new ClassDiscriminatorFromClassMetadata($classMetadataFactory);
+
+        $propertyNormalizer = new PropertyNormalizer($classMetadataFactory, null, new PhpDocExtractor(), $discriminator);
 
         $this->serializer = new Serializer(
             [new ArrayDenormalizer(),  $propertyNormalizer],
@@ -43,7 +54,7 @@ class QuizLoader
             'yaml_inline' => 3
         ]);
 
-        $path = getcwd(). "/storage/$fileName";
+        $path = "{$this->folder}/$fileName";
 //        if (file_exists($path)) {
 //            throw new \LogicException()
 //        }
