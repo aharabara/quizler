@@ -69,7 +69,10 @@ class RunQuizCommand extends Command
                         $style->writeln("<comment>Your answer</comment>    : " . $response);
 
                         $guessed = $style->ask("Guessed? [y/n] :", 'y');
-                        return [(string)$response, strtolower($guessed) === 'y'];
+                        if (strtolower($guessed) === 'y'){
+                            return $response;
+                        }
+                        return null;
                     } else {
                         return $style->choice($content, $choices);
                     }

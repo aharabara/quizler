@@ -16,6 +16,13 @@ class CreateQuizCommand extends Command
 {
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'create';
+    private QuizLoader $quizLoader;
+
+    public function __construct(string $name = null)
+    {
+        parent::__construct($name);
+        $this->quizLoader = new QuizLoader(getcwd().'/storage/quizzes');
+    }
 
     protected function configure()
     {
@@ -30,7 +37,6 @@ class CreateQuizCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $loader = new QuizLoader();
         $symfonyStyle = new SymfonyStyle($input, $output);
 
         /** @todo refactor into a separate style, like SymfonyStyle (QuizStyle)*/
@@ -71,14 +77,16 @@ class CreateQuizCommand extends Command
         }
 
 
+        $questionType = null;
         do {
+            $questionType = $symfonyStyle->choice("Question type?", ['choice', 'guess', 'snippet-guess'], $questionType);
             $content = $ask("Question (empty to exit)");
             if (empty($content)) {
                 $symfonyStyle->writeln("<comment>Break question prompting.</comment>");
                 break;
             }
             $question = $quiz
-                ->addQuestion(new QuizQuestion())
+                ->addQuestion($this->getQuestionObjectByType($questionType))
                 ->setContent($content);
             if (!$input->getOption('short')) {
                 $question
@@ -87,11 +95,11 @@ class CreateQuizCommand extends Command
                     ->setExplanation($ask("Explanation"));
             }
             if ($input->hasOption('instant-commit')) {
-                $loader->save($quiz, $fileName);
+                $this->quizLoader->save($quiz, $fileName);
             }
         } while (true);
 
-        $loader->save($quiz, $fileName);
+        $this->quizLoader->save($quiz, $fileName);
 
         $symfonyStyle->writeln("<info>Quiz file was saved</info>");
 
@@ -100,7 +108,7 @@ class CreateQuizCommand extends Command
 
     protected function chooseQuiz(SymfonyStyle $style): array
     {
-        $loader = new QuizLoader();
+        $loader = $this->quizLoader;
         $finder = new Finder();
 
         // $HOME/.config/quizler/*.yaml
@@ -118,5 +126,13 @@ class CreateQuizCommand extends Command
         $filePath = $choices[$response];
 
         return [$loader->load($filePath), $response];
+    }
+
+    protected function getQuestionObjectByType(string $type): QuizQuestion
+    {
+        if ($type === 'guess') return new QuizQuestion\GuessQuestion();
+        if ($type === 'snippet-guess') return new QuizQuestion\SnippetGuessQuestion();
+        if ($type === 'choice') return new QuizQuestion\ChoiceQuestion();
+        throw new \LogicException("There is no such question type '$type'.");
     }
 }
