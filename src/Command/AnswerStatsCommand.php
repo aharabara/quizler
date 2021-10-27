@@ -42,19 +42,14 @@ class AnswerStatsCommand extends Command
         $style->title("Quizzes statistics");
 
         foreach ($quizzes as $quiz) {
-            $done = 0;
             $total = count($quiz->questions());
-            foreach ($quiz->questions() as $question) {
-                if (!empty($question->explanation())) {
-                    $done++;
-                }
-            }
-            if ($total === $done) {
+            $availableQuestions = $quiz->availableQuestions();
+            if ($total === $availableQuestions) {
                 $color = new Color("green");
             } else {
                 $color = new Color("white");
             }
-            $style->writeln($color->apply("Quiz '{$quiz->name()}' is {$done}/{$total} done"));
+            $style->writeln($color->apply("Quiz '{$quiz->name()}' is {$availableQuestions}/{$total} done"));
         }
         $style->writeln("");
 
@@ -64,12 +59,13 @@ class AnswerStatsCommand extends Command
     /** @return Quiz[] */
     protected function loadQuizzes(): array
     {
-        $loader = new QuizLoader();
+        $storageFolder = getcwd() . "/storage/";
+        $loader = new QuizLoader($storageFolder);
         $finder = new Finder();
 
         // $HOME/.config/quizler/*.yaml
 
-        $files = $finder->in(getcwd() . "/storage/")
+        $files = $finder->in($storageFolder)
             ->name("*.yaml")
             ->files();
 

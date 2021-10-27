@@ -9,7 +9,7 @@ class Quiz
     protected string  $version;
 
     /** @var Question[] */
-    protected array $questions;
+    protected array $questions = [];
 
     public function name(): string
     {
@@ -24,6 +24,18 @@ class Quiz
     public function questions(): array
     {
         return $this->questions;
+    }
+
+    public function availableQuestions(): int
+    {
+        $notEmpty = 0;
+        foreach ($this->questions() as $question) {
+            if (!empty($question->explanation())) {
+                $notEmpty++;
+            }
+        }
+        return $notEmpty;
+
     }
 
     public function setName(string $name): void

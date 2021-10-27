@@ -17,14 +17,14 @@ abstract class Question
     protected string $type;
     protected string $content;
     protected string $explanation = '';
+    /* @todo $question should not be aware of how it should be responded, and also shouldn't keep answer on itself*/
 
+    /* @fixme move to a separated class that will keep answers in Question=>Answer relation*/
     public abstract function answer(callable $callback): void;
 
+    /* @fixme maybe replace with $report->answerToQuestionIsCorrect($question) ?*/
     public abstract function answerIsCorrect(): bool;
 
-    /**
-     * @return static
-     */
     public function setContent(string $content): self
     {
         $this->content = $content;
@@ -36,17 +36,11 @@ abstract class Question
         return $this->content;
     }
 
-    /**
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * @return static
-     */
     public function setExplanation(string $explanation): self
     {
         $this->explanation = $explanation;

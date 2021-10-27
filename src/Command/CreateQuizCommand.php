@@ -21,7 +21,7 @@ class CreateQuizCommand extends Command
     public function __construct(string $name = null)
     {
         parent::__construct($name);
-        $this->quizLoader = new QuizLoader(getcwd().'/storage/quizzes');
+        $this->quizLoader = new QuizLoader(getcwd() . '/storage/quizzes');
     }
 
     protected function configure()
@@ -30,6 +30,7 @@ class CreateQuizCommand extends Command
         $this->addOption('continue', 'c', InputOption::VALUE_NEGATABLE, 'Continue adding existing quiz', false);
         $this->addOption('short', 's', InputOption::VALUE_NEGATABLE, 'Only questions mod', false);
         $this->addOption('instant-commit', 'i', InputOption::VALUE_NEGATABLE, 'Instantly commits changes after a question was added.', false);
+        $this->addOption('question-type', 't', InputOption::VALUE_OPTIONAL, 'Type of questions that are going to be introduced');
     }
 
     /**
@@ -38,8 +39,9 @@ class CreateQuizCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $symfonyStyle = new SymfonyStyle($input, $output);
+        $questionTypes = ['choice', 'guess', 'snippet-guess'];
 
-        /** @todo refactor into a separate style, like SymfonyStyle (QuizStyle)*/
+        /** @todo refactor into a separate style, like SymfonyStyle (QuizStyle) */
         $ask = function (string $text, string $default = "") use ($symfonyStyle, $output, $input): string {
             $text = ($default) ? $text . " <comment>[$default]</comment>:" : $text . ":";
             $text = "<info>$text</info> ";
@@ -63,6 +65,12 @@ class CreateQuizCommand extends Command
             };
 
 
+        $questionType = $input->getOption('question-type');
+        if (!in_array($questionType, array_merge($questionTypes, [null, '']))) {
+            $output->writeln("Question type '$questionType' is not supported.");
+            return Command::FAILURE;
+        }
+
         if ($input->getOption('continue')) {
             [$quiz, $fileName] = $this->chooseQuiz($symfonyStyle);
             $fileName .= ".yaml";
@@ -77,9 +85,8 @@ class CreateQuizCommand extends Command
         }
 
 
-        $questionType = null;
         do {
-            $questionType = $symfonyStyle->choice("Question type?", ['choice', 'guess', 'snippet-guess'], $questionType);
+            $questionType = $questionType ?? $symfonyStyle->choice("Question type?", $questionTypes);
             $content = $ask("Question (empty to exit)");
             if (empty($content)) {
                 $symfonyStyle->writeln("<comment>Break question prompting.</comment>");
@@ -88,7 +95,7 @@ class CreateQuizCommand extends Command
             $question = $quiz
                 ->addQuestion($this->getQuestionObjectByType($questionType))
                 ->setContent($content);
-            if (!$input->getOption('short')) {
+            if (!$input->getOption('short') && $questionType === 'choice') {
                 $question
                     ->setChoices($askMany("Option"))
                     ->setResponse(explode(",", $ask("Answer (comma separated indexes)")))

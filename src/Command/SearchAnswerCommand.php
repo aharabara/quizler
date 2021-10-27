@@ -60,12 +60,13 @@ class SearchAnswerCommand extends Command
     /** @return Quiz[] */
     protected function loadQuizzes(): array
     {
-        $loader = new QuizLoader();
+        $storageFolder = getcwd() . "/storage/";
+        $loader = new QuizLoader($storageFolder);
         $finder = new Finder();
 
         // $HOME/.config/quizler/*.yaml
 
-        $files = $finder->in(getcwd() . "/storage/")
+        $files = $finder->in($storageFolder)
             ->name("*.yaml")
             ->files();
 
