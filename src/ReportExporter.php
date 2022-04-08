@@ -31,11 +31,27 @@ class ReportExporter
             'yaml_inline' => 3
         ]);
 
+        $this->getStoragePath("{$this->folder}/{$quiz->name()}");
         $path = "{$this->folder}/report_".time().'.yaml';
-//        if (file_exists($path)) {
-//            throw new \LogicException()
-//        }
 
         file_put_contents($path, $serializedQuiz);
     }
+
+    protected function getStoragePath(?string $subFolders = null): string
+    {
+        $path = "storage";
+        if ($subFolders !== null) {
+            $path .= "/$subFolders";
+        }
+        $path = getcwd() . "/" . trim($path, "/");
+
+        if (!is_dir($path)) {
+            if (is_file($path)) {
+                throw new \LogicException("Cannot create directory '$path'. A file with such name already exists.");
+            }
+            mkdir($path, 0777, true);
+        }
+        return $path;
+    }
+
 }

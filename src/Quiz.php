@@ -5,8 +5,9 @@ namespace Quiz;
 
 class Quiz
 {
-    protected string  $name;
-    protected string  $version;
+    protected int  $id = 0;
+    protected string  $name = 'not-set';
+    protected string|int  $version = 1;
 
     /** @var Question[] */
     protected array $questions = [];
@@ -30,7 +31,7 @@ class Quiz
     {
         $notEmpty = 0;
         foreach ($this->questions() as $question) {
-            if (!empty($question->explanation())) {
+            if (!empty($question->getAnswer())) {
                 $notEmpty++;
             }
         }
@@ -52,5 +53,24 @@ class Quiz
     {
         $this->questions[] = $question;
         return $question;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function version(): int
+    {
+        $version = $this->version;
+        if (is_string($version)){
+            $version = (int)trim(str_replace('.', '', $version), '0');
+        }
+        return $version;
+    }
+
+    public function setId(int $id)
+    {
+        $this->id = $id;
     }
 }

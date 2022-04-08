@@ -4,7 +4,7 @@ namespace Quiz\Command;
 
 use Quiz\OutputStyle\QuizStyle;
 use Quiz\Quiz;
-use Quiz\QuizLoader;
+use Quiz\StorageDriver\YamlStorageDriver;
 use SplFileInfo;
 use Symfony\Component\Console\Color;
 use Symfony\Component\Console\Command\Command;
@@ -41,10 +41,10 @@ class SearchAnswerCommand extends Command
         while ($request = $style->ask("Your request: ")) {
             foreach ($quizzes as $quiz) {
                 foreach ($quiz->questions() as $index => $question) {
-                    $content = s($question->getContent());
+                    $content = s($question->getQuestion());
                     if ($content->lower()->containsAny(s($request)->lower())) {
                         $style->writeln($content->padStart(3)->prepend('<comment>')->append('</comment>')->toString());
-                        $style->writeln($this->textWithSidebar(">> ", $question->explanation()));
+                        $style->writeln($this->textWithSidebar(">> ", $question->getAnswer()));
                     }
                 }
             }
@@ -60,17 +60,16 @@ class SearchAnswerCommand extends Command
     /** @return Quiz[] */
     protected function loadQuizzes(): array
     {
-        $storageFolder = getcwd() . "/storage/";
-        $loader = new QuizLoader($storageFolder);
+        $loader = new YamlStorageDriver();
         $finder = new Finder();
 
         // $HOME/.config/quizler/*.yaml
 
-        $files = $finder->in($storageFolder)
+        $files = $finder->in(QUIZZES_FOLDER_PATH) /* move to ::getQuizzList*/
             ->name("*.yaml")
             ->files();
 
-        return array_map(fn(SplFileInfo $file) => $loader->load($file->getRealPath()), iterator_to_array($files->getIterator()));
+        return array_map(fn(SplFileInfo $file) => $loader->loadBy('name', $file->getRealPath()), iterator_to_array($files->getIterator()));
     }
 
     /**

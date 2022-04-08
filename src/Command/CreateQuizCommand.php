@@ -2,9 +2,9 @@
 
 namespace Quiz\Command;
 
-use Quiz\Question as QuizQuestion;
+use Quiz\Question;
 use Quiz\Quiz;
-use Quiz\QuizLoader;
+use Quiz\StorageDriver\YamlStorageDriver;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -16,12 +16,12 @@ class CreateQuizCommand extends Command
 {
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'create';
-    private QuizLoader $quizLoader;
+    private YamlStorageDriver $quizLoader;
 
     public function __construct(string $name = null)
     {
         parent::__construct($name);
-        $this->quizLoader = new QuizLoader(getcwd() . '/storage/quizzes');
+        $this->quizLoader = new YamlStorageDriver();
     }
 
     protected function configure()
@@ -93,14 +93,14 @@ class CreateQuizCommand extends Command
                 break;
             }
             $question = $quiz
-                ->addQuestion($this->getQuestionObjectByType($questionType))
-                ->setContent($content);
-            if (!$input->getOption('short') && $questionType === 'choice') {
-                $question
-                    ->setChoices($askMany("Option"))
-                    ->setResponse(explode(",", $ask("Answer (comma separated indexes)")))
-                    ->setExplanation($ask("Explanation"));
-            }
+                ->addQuestion(new Question())
+                ->setQuestion($content);
+//            if (!$input->getOption('short') && $questionType === 'choice') {
+//                $question
+//                    ->setChoices($askMany("Option"))
+//                    ->setResponse(explode(",", $ask("Answer (comma separated indexes)")))
+//                    ->setExplanation($ask("Explanation"));
+//            }
             if ($input->hasOption('instant-commit')) {
                 $this->quizLoader->save($quiz, $fileName);
             }
@@ -132,14 +132,6 @@ class CreateQuizCommand extends Command
         $response = $style->choice("Choose your quiz:", array_keys($choices));
         $filePath = $choices[$response];
 
-        return [$loader->load($filePath), $response];
-    }
-
-    protected function getQuestionObjectByType(string $type): QuizQuestion
-    {
-        if ($type === 'guess') return new QuizQuestion\GuessQuestion();
-        if ($type === 'snippet-guess') return new QuizQuestion\SnippetGuessQuestion();
-        if ($type === 'choice') return new QuizQuestion\ChoiceQuestion();
-        throw new \LogicException("There is no such question type '$type'.");
+        return [$loader->loadBy('name', $filePath), $response];
     }
 }

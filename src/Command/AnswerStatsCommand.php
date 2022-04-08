@@ -4,7 +4,7 @@ namespace Quiz\Command;
 
 use Quiz\OutputStyle\QuizStyle;
 use Quiz\Quiz;
-use Quiz\QuizLoader;
+use Quiz\StorageDriver\YamlStorageDriver;
 use SplFileInfo;
 use Symfony\Component\Console\Color;
 use Symfony\Component\Console\Command\Command;
@@ -44,11 +44,12 @@ class AnswerStatsCommand extends Command
         foreach ($quizzes as $quiz) {
             $total = count($quiz->questions());
             $availableQuestions = $quiz->availableQuestions();
-            if ($total === $availableQuestions) {
-                $color = new Color("green");
-            } else {
-                $color = new Color("white");
-            }
+            $color = match($total){
+                0 => new Color("white"),
+                $availableQuestions => new Color("green"),
+                default => new Color("yellow"),
+            };
+
             $style->writeln($color->apply("Quiz '{$quiz->name()}' is {$availableQuestions}/{$total} done"));
         }
         $style->writeln("");
@@ -59,17 +60,18 @@ class AnswerStatsCommand extends Command
     /** @return Quiz[] */
     protected function loadQuizzes(): array
     {
-        $storageFolder = getcwd() . "/storage/";
-        $loader = new QuizLoader($storageFolder);
+        $loader = new YamlStorageDriver();
         $finder = new Finder();
 
         // $HOME/.config/quizler/*.yaml
 
-        $files = $finder->in($storageFolder)
+        $files = $finder->in(QUIZZES_FOLDER_PATH)
             ->name("*.yaml")
             ->files();
 
-        return array_map(fn(SplFileInfo $file) => $loader->load($file->getRealPath()), iterator_to_array($files->getIterator()));
+        return array_map(function (SplFileInfo $file) use ($loader) {
+            return $loader->loadBy('name', explode('.', $file->getFilename())[0]);
+        }, iterator_to_array($files->getIterator()));
     }
 
     /**

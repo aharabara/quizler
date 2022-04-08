@@ -3,52 +3,52 @@
 
 namespace Quiz;
 
-use Symfony\Component\Serializer\Annotation\DiscriminatorMap;
-
-/**
- * @DiscriminatorMap(typeProperty="type", mapping={
- *    "choice"="\Quiz\Question\ChoiceQuestion",
- *    "guess"="\Quiz\Question\GuessQuestion",
- *    "snippet-guess"="\Quiz\Question\SnippetGuessQuestion"
- * })
- */
-abstract class Question
+class Question
 {
-    protected string $type;
-    protected string $content;
-    protected string $explanation = '';
-    /* @todo $question should not be aware of how it should be responded, and also shouldn't keep answer on itself*/
+    protected int $id;
+    protected string $question;
+    protected string $answer = '';
+    protected string $tip = '';
 
-    /* @fixme move to a separated class that will keep answers in Question=>Answer relation*/
-    public abstract function answer(callable $callback): void;
-
-    /* @fixme maybe replace with $report->answerToQuestionIsCorrect($question) ?*/
-    public abstract function answerIsCorrect(): bool;
-
-    public function setContent(string $content): self
+    public function setId(int $id): void
     {
-        $this->content = $content;
+        $this->id = $id;
+    }
+
+    public function setTip(string $tip): void
+    {
+        $this->tip = $tip;
+    }
+
+    public function setQuestion(string $question): self
+    {
+        $this->question = $question;
         return $this;
     }
 
-    public function getContent(): string
+    public function setAnswer(string $answer): self
     {
-        return $this->content;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    public function setExplanation(string $explanation): self
-    {
-        $this->explanation = $explanation;
+        $this->answer = $answer;
         return $this;
     }
 
-    public function explanation(): string
+    public function getQuestion(): string
     {
-        return $this->explanation;
+        return $this->question;
+    }
+
+    public function getTip(): string
+    {
+        return $this->tip;
+    }
+
+    public function getAnswer(): string
+    {
+        return $this->answer;
+    }
+
+    public function getId()
+    {
+        return $this->id;
     }
 }
