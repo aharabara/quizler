@@ -18,6 +18,7 @@ $application->add(new \Quiz\Command\ToDoCommand());
 $application->add(new \Quiz\Command\GenerateFromCommand());
 $application->add(new \Quiz\Command\DeployCommand());
 $application->add(new \Quiz\Command\ExportCommand());
+$application->add(new \Quiz\Command\ImportCommand());
 $application->run();
 
 // choice of quiz

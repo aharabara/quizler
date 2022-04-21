@@ -45,11 +45,6 @@ class DeployCommand extends Command
         }
         $dbDriver->deploy();
         $output->writeln("DB deployed.");
-        foreach ($storageDriver->getList() as $quiz) {
-            $quiz = $storageDriver->loadBy('name', $quiz);
-            $dbDriver->save($quiz, $force); // implement a locking mechanism with a strong cnfirmation
-            $output->writeln("saved {$quiz->getName()};");
-        }
 
         return Command::SUCCESS;
     }

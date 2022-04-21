@@ -9,10 +9,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ExportCommand extends Command
+class ImportCommand extends Command
 {
     /* the name of the command (the part after "bin/console")*/
-    protected static $defaultName = 'export';
+    protected static $defaultName = 'import';
 
     public function __construct(string $name = null)
     {
@@ -31,9 +31,9 @@ class ExportCommand extends Command
     {
         $fileDriver = new YamlStorageDriver();
         $dbDriver = new DBStorageDriver();
-        foreach ($dbDriver->getList() as $name){
+        foreach ($fileDriver->getList() as $name){
             $output->writeln("Exporting $name.");
-            $fileDriver->save($dbDriver->loadBy('name', $name), $input->getOption('force'));
+            $dbDriver->save($fileDriver->loadBy('name', $name), $input->getOption('force'));
         }
         return Command::SUCCESS;
     }

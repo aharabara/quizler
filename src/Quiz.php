@@ -8,7 +8,7 @@ use Quiz\Builder\SchemeBuilder\Identificator;
 class Quiz
 {
     #[Identificator()]
-    protected int $id;
+    protected ?int $id = null;
     protected string $name = 'not-set';
     protected int $version = 1;
 
@@ -76,7 +76,7 @@ class Quiz
         return $this;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

@@ -99,9 +99,6 @@ class DBStorageDriver implements StorageDriverInterface
 
     protected function quizExists(Quiz $model): bool
     {
-        if (!empty($model->getId())) {
-            return true;
-        }
         /* fixme create an attribute based uniqness check. */
         return $this->aggregate("SELECT count(*) FROM quizzes WHERE name = '{$model->getName()}'") !== 0;
     }

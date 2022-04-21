@@ -67,8 +67,15 @@ class Question
         return $this->answers;
     }
 
+    /**
+     * @param Answer[] $answers
+     * @return $this
+     */
     public function setAnswers(array $answers): self
     {
+        foreach ($answers as $answer) {
+            $answer->setQuestion($this);
+        }
         $this->answers = $answers;
         return $this;
     }
