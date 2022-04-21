@@ -4,6 +4,7 @@
 namespace Quiz;
 
 use Quiz\Builder\SchemeBuilder\Identificator;
+use Quiz\Traits\Timestampable;
 
 class Quiz
 {
@@ -11,6 +12,8 @@ class Quiz
     protected ?int $id = null;
     protected string $name = 'not-set';
     protected int $version = 1;
+
+    use Timestampable;
 
     /** @var Question[] */
     protected array $questions = [];

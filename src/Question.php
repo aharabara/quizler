@@ -5,6 +5,7 @@ namespace Quiz;
 
 use Quiz\Builder\SchemeBuilder\Identificator;
 use Quiz\Builder\SchemeBuilder\Relation;
+use Quiz\Traits\Timestampable;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
 class Question
@@ -13,17 +14,20 @@ class Question
     protected int $id;
     protected string $question;
     protected array $answers = [];
-    protected string $tip = '';
+    protected ?string $tip = null;
 
     #[Relation(Quiz::class)]
+    #[Ignore]
     private Quiz $quiz;
+
+    use Timestampable;
 
     public function setId(int $id): void
     {
         $this->id = $id;
     }
 
-    public function setTip(string $tip): void
+    public function setTip(?string $tip): void
     {
         $this->tip = $tip;
     }
@@ -41,10 +45,6 @@ class Question
 
     public function getTip(): ?string
     {
-        if (empty($this->tip)) {
-            return null;
-        }
-
         return $this->tip;
     }
 

@@ -17,6 +17,9 @@ class ColumnDefinition
             'array' => throw new \LogicException('Array type is not supported for column definitions'),
             default => $type
         };
+        if ($this->key instanceof Identificator){
+            $this->nullable = false;
+        }
     }
 
     public function __toString(){
@@ -44,5 +47,17 @@ class ColumnDefinition
         $type = strtoupper($this->type);
         return trim("{$this->name} {$type} {$default} {$nullability} {$key}");
     }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+
 
 }

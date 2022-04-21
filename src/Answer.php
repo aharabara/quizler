@@ -4,6 +4,8 @@ namespace Quiz;
 
 use Quiz\Builder\SchemeBuilder\Identificator;
 use Quiz\Builder\SchemeBuilder\Relation;
+use Quiz\Traits\Timestampable;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 class Answer
 {
@@ -13,10 +15,10 @@ class Answer
     protected bool $isCorrect = false;
 
     #[Relation(Question::class)]
+    #[Ignore]
     protected Question $question;
 
-    protected ?\DateTimeInterface $createdAt = null;
-    protected ?\DateTimeInterface $updatedAt = null;
+    use Timestampable;
 
     public function getId(): int
     {
@@ -31,22 +33,6 @@ class Answer
     public function getContent(): string
     {
         return $this->content;
-    }
-
-    public function getCreatedAt(): \DateTimeInterface
-    {
-        if (null === $this->createdAt){
-            $this->createdAt = date_create();
-        }
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): \DateTimeInterface
-    {
-        if (null === $this->updatedAt){
-            $this->updatedAt = date_create();
-        }
-        return $this->updatedAt;
     }
 
     public function setId(int $id): void
@@ -66,17 +52,7 @@ class Answer
         return $this;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): void
-    {
-        $this->createdAt = $createdAt;
-    }
-
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): void
-    {
-        $this->updatedAt = $updatedAt;
-    }
-
-    public function isCorrect(): bool
+    public function getIsCorrect(): bool
     {
         return $this->isCorrect;
     }

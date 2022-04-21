@@ -7,6 +7,7 @@ use LogicException;
 use PDO;
 use PDOException;
 use Quiz\Answer;
+use Quiz\Builder\SchemeBuilder;
 use Quiz\Question;
 use Quiz\Quiz;
 use Roave\BetterReflection\BetterReflection;
@@ -15,11 +16,12 @@ use Roave\BetterReflection\Reflector\Reflector;
 use RuntimeException;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
-use Symfony\Component\Serializer\Mapping\ClassDiscriminatorFromClassMetadata;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
+use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
-use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\String\Inflector\EnglishInflector;
 
@@ -42,12 +44,11 @@ class DBStorageDriver implements StorageDriverInterface
         }
         $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
 
-        $discriminator = new ClassDiscriminatorFromClassMetadata($classMetadataFactory);
-
-        $propertyNormalizer = new PropertyNormalizer($classMetadataFactory, null, new PhpDocExtractor(), $discriminator);
-
+        $camelCaseToSnakeCaseNameConverter = new CamelCaseToSnakeCaseNameConverter();
+        $phpDocExtractor = new PhpDocExtractor();
+        $getSetNormalizer = new GetSetMethodNormalizer($classMetadataFactory, $camelCaseToSnakeCaseNameConverter, $phpDocExtractor);
         $this->serializer = new Serializer(
-            [new ArrayDenormalizer(), $propertyNormalizer],
+            [new ArrayDenormalizer(), new DateTimeNormalizer(), $getSetNormalizer],
             [new YamlEncoder()]
         );
     }
@@ -60,10 +61,15 @@ class DBStorageDriver implements StorageDriverInterface
             throw new LogicException("Quiz with criteria $field=$value does not exist.");
         }
         $questions = $this->queryAll("SELECT * FROM questions WHERE quiz_id = $data[id]");
-        foreach ($questions as $k => $question) {
-            $questions[$k]['answers'] = $this->queryAll("SELECT * FROM answers WHERE question_id = $question[id]");
+        $ids = array_column($questions, 'id');
+        $answers = $this->queryAll("SELECT * FROM answers WHERE question_id IN (".implode(', ', $ids).")");
+        $answers = array_column($answers, null, 'question_id');
+        $questions = array_column($questions, null, 'id');
+        foreach ($answers as $answer) {
+            $answer['is_correct'] = (bool) $answer['is_correct'];
+            $questions[$answer['question_id']]['answers'][] = $answer;
         }
-        $data['questions'] = $questions;
+        $data['questions'] = array_values($questions);
 
         return $this->serializer->denormalize($data, Quiz::class);
     }
@@ -110,46 +116,20 @@ class DBStorageDriver implements StorageDriverInterface
 
     public function deploy(): bool
     {
-        /** @todo generate from models */
-        $schema = <<<'SCHEMA'
-CREATE TABLE IF NOT EXISTS questions
-(
-    id         integer
-        constraint questions_pk
-            primary key autoincrement,
-    question   string  not null,
-    answer   string,
-    tip        string default 'none',
-    quiz_id    integer not null,
-    updated_at integer,
-    created_at integer not null
-);
+        /** fixme extract it from environment */
+        $models = [
+            Quiz::class,
+            Question::class,
+            Answer::class
+        ];
+        foreach ($models as $model){
+            /* fixme make it stateless */
+            $schema = (new SchemeBuilder())
+                ->from($model)
+                ->build();
+            $this->connection->exec($schema);
+        }
 
-CREATE TABLE IF NOT EXISTS answers
-(
-    id         integer
-        constraint questions_pk
-            primary key autoincrement,
-    content   string,
-    question_id   integer not null,
-    is_correct    integer not null,
-    updated_at integer,
-    created_at integer not null
-);
-
-CREATE TABLE IF NOT EXISTS quizzes
-(
-    id         integer
-    constraint questions_pk
-        primary key autoincrement,
-    name       string  not null,
-    version    integer not null,
-    create_at  int,
-    updated_at integer
-);
-SCHEMA;
-
-        $this->connection->exec($schema);
         return true;
     }
 
@@ -216,12 +196,12 @@ SCHEMA;
     {
         $query = $this->connection
             ->prepare(
-                "INSERT INTO quizzes (name, version, create_at, updated_at)" .
-                " VALUES (:name, :version, :create_at, :updated_at)");
+                "INSERT INTO quizzes (name, version, created_at, updated_at)" .
+                " VALUES (:name, :version, :created_at, :updated_at)");
 
         $query->bindValue('name', $quiz->getName());
         $query->bindValue('version', $quiz->getVersion());
-        $query->bindValue('create_at', time());
+        $query->bindValue('created_at', time());
         $query->bindValue('updated_at', time());
 
         if (!$query->execute()) {
