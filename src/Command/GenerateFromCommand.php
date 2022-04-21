@@ -63,14 +63,12 @@ class GenerateFromCommand extends Command
                             default => "What `{$shortName}` class is used for?",
                         }
                     )
-                    ->setAnswer('')
             );
 
             foreach ($classInfo->getImmediateConstants() as $constant => $values){
                 $quiz->addQuestion(
                     (new Question())
                         ->setQuestion("What for is `{$shortName}::{$constant}` constant used for?")
-                        ->setAnswer('')
                 );
             }
         }

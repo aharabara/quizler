@@ -42,7 +42,7 @@ class AnswerStatsCommand extends Command
         $style->title("Quizzes statistics");
 
         foreach ($quizzes as $quiz) {
-            $total = count($quiz->questions());
+            $total = count($quiz->getQuestions());
             $availableQuestions = $quiz->availableQuestions();
             $color = match($total){
                 0 => new Color("white"),
@@ -50,7 +50,7 @@ class AnswerStatsCommand extends Command
                 default => new Color("yellow"),
             };
 
-            $style->writeln($color->apply("Quiz '{$quiz->name()}' is {$availableQuestions}/{$total} done"));
+            $style->writeln($color->apply("Quiz '{$quiz->getName()}' is {$availableQuestions}/{$total} done"));
         }
         $style->writeln("");
 

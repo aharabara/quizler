@@ -2,9 +2,8 @@
 
 namespace Quiz\Command;
 
+use Quiz\Answer;
 use Quiz\Quiz;
-use Quiz\Report;
-use Quiz\ReportExporter;
 use Quiz\Repository\QuizRepository;
 use Quiz\StorageDriver\DBStorageDriver;
 use Symfony\Component\Console\Command\Command;
@@ -34,6 +33,7 @@ class RunQuizCommand extends Command
     protected function configure()
     {
         $this->addOption('stop-on-fail', 'f');
+        $this->addOption('start-from-empty', 'e');
         $this->setDescription("Run a quiz");
     }
 
@@ -51,24 +51,29 @@ class RunQuizCommand extends Command
 
         $quiz = $this->chooseQuiz($style);
 
-        $questions = $quiz->questions();
+        $questions = $quiz->getQuestions();
         $total = count($questions);
-        $reports = [];
 
         foreach ($questions as $index => $question) {
+            if ($input->getOption('start-from-empty')){
+                if (!empty($question->getFirstAnswer())) continue; // skip all present answers
+            }
             $realIndex = $index + 1;
-            $style->section("{$quiz->name()} [{$realIndex}/{$total}]");
+            $style->section("{$quiz->getName()} [{$realIndex}/{$total}]");
             if ($question->getTip()) {
                 $style->writeln("<comment>{$question->getTip()}</comment>");
             }
             $response = $style->ask($question->getQuestion() . " ");
 
-            $style->writeln("<info>Correct answer</info> : " . $question->getAnswer());
+            $style->writeln("<info>Correct answer</info> : " . $question->getFirstAnswer());
             $style->writeln("<comment>Your answer</comment>    : " . $response);
 
             $this->driver
                 ->save(
-                    new Report(null, $question->getId(), $response, $style->confirm("Guessed?:"))
+                    (new Answer())
+                    ->setQuestion($question)
+                    ->setContent($response)
+                    ->setIsCorrect($style->confirm("Guessed?:"))
                 );
 
             if ($input->getOption('stop-on-fail')) {

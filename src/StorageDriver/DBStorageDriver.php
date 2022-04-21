@@ -6,9 +6,9 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use LogicException;
 use PDO;
 use PDOException;
+use Quiz\Answer;
 use Quiz\Question;
 use Quiz\Quiz;
-use Quiz\Report;
 use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\Reflection\ReflectionClass;
 use Roave\BetterReflection\Reflector\Reflector;
@@ -59,26 +59,33 @@ class DBStorageDriver implements StorageDriverInterface
         if (empty($data)) {
             throw new LogicException("Quiz with criteria $field=$value does not exist.");
         }
-        $data['questions'] = $this->queryAll("SELECT * FROM questions WHERE quiz_id = $data[id]");
+        $questions = $this->queryAll("SELECT * FROM questions WHERE quiz_id = $data[id]");
+        foreach ($questions as $k => $question) {
+            $questions[$k]['answers'] = $this->queryAll("SELECT * FROM answers WHERE question_id = $question[id]");
+        }
+        $data['questions'] = $questions;
 
         return $this->serializer->denormalize($data, Quiz::class);
     }
 
     public function save(object $model, bool $force = false): bool
     {
-        if ($model instanceof Report){
-            return $this->insertReport($model);
+        if ($model instanceof Answer) {
+            return $this->insertAnswer($model);
         }
-//        $reflClass = $this->reflector->reflectClass($model);
-//
-//        $table = $this->getModelTableName($reflClass);
-//
-//        if ($reflClass->hasMethod('getId')){
+        if ($model instanceof Question) {
+            return $this->insertQuestion($model);
+        }
+        if ($model instanceof Quiz) {
             if (!$force && $this->quizExists($model)) {
                 throw new LogicException('Quiz already exists');
             }
+            $this->insertQuiz($model);
+        }
+//        $reflClass = $this->reflector->reflectClass($model);
+//        $table = $this->getModelTableName($reflClass);
+//        if ($reflClass->hasMethod('getId')){
 //        }
-
         /*@fixme write a query builder */
 //        $data = $this->serializer->normalize($model);
 //
@@ -86,24 +93,17 @@ class DBStorageDriver implements StorageDriverInterface
 
 //        $insert = "INSERT INTO $table VALUES ($keys) VALUES ";
 //        $insert .= "(" . implode(", ", array_map([$this, 'escape'], $data)).")";
-//
-        $this->insertQuiz($model);
-        $model->setId((int)$this->connection->lastInsertId('quizzes'));
-//
-        foreach ($model->questions() as $question) {
-            $this->insertQuestion($model, $question);
-        }
 
         return true;
     }
 
-    protected function quizExists(object $model): bool
+    protected function quizExists(Quiz $model): bool
     {
         if (!empty($model->getId())) {
             return true;
         }
         /* fixme create an attribute based uniqness check. */
-        return $this->aggregate("SELECT count(*) FROM quizzes WHERE name = '{$model->name()}'") !== 0;
+        return $this->aggregate("SELECT count(*) FROM quizzes WHERE name = '{$model->getName()}'") !== 0;
     }
 
     public function getList(): array
@@ -128,6 +128,18 @@ CREATE TABLE IF NOT EXISTS questions
     created_at integer not null
 );
 
+CREATE TABLE IF NOT EXISTS answers
+(
+    id         integer
+        constraint questions_pk
+            primary key autoincrement,
+    content   string,
+    question_id   integer not null,
+    is_correct    integer not null,
+    updated_at integer,
+    created_at integer not null
+);
+
 CREATE TABLE IF NOT EXISTS quizzes
 (
     id         integer
@@ -138,41 +150,9 @@ CREATE TABLE IF NOT EXISTS quizzes
     create_at  int,
     updated_at integer
 );
-
-CREATE TABLE IF NOT EXISTS reports
-(
-    id          integer
-        constraint reports_pk
-            primary key autoincrement,
-    question_id integer not null,
-    answer      string  not null,
-    is_correct  integer default 0 not null,
-    created_at  integer not null
-);
 SCHEMA;
 
         $this->connection->exec($schema);
-        return true;
-    }
-
-    protected function insertQuestion(Quiz $quiz, Question $question): bool
-    {
-        $query = $this->connection
-            ->prepare(
-                "INSERT INTO questions (question,answer,tip,quiz_id,updated_at,created_at)" .
-                " VALUES (:question,:answer,:tip,:quiz_id,:updated_at,:created_at)");
-
-        $query->bindValue('question', $question->getQuestion());
-        $query->bindValue('answer', $question->getAnswer());
-        $query->bindValue('tip', $question->getTip());
-        $query->bindValue('quiz_id', $quiz->getId());
-        $query->bindValue('updated_at', time());
-        $query->bindValue('created_at', time());
-
-        if (!$query->execute()) {
-            throw new RuntimeException("[{$query->errorCode()}] {$query->errorInfo()}");
-        }
-
         return true;
     }
 
@@ -180,7 +160,58 @@ SCHEMA;
     {
         $this->connection->exec('DROP TABLE IF EXISTS questions;');
         $this->connection->exec('DROP TABLE IF EXISTS quizzes;');
+        $this->connection->exec('DROP TABLE IF EXISTS answers;');
         $this->connection->exec('DROP TABLE IF EXISTS reports;');
+        return true;
+    }
+
+    protected function insertQuestion(Question $question): bool
+    {
+        $query = $this->connection
+            ->prepare(
+                "INSERT INTO questions (question,tip,quiz_id,updated_at,created_at)" .
+                " VALUES (:question, :tip, :quiz_id, :updated_at, :created_at)");
+
+        $query->bindValue('question', $question->getQuestion());
+        $query->bindValue('tip', $question->getTip());
+        $query->bindValue('quiz_id', $question->getQuiz()->getId());
+        $query->bindValue('updated_at', time());
+        $query->bindValue('created_at', time());
+
+        if (!$query->execute()) {
+            throw new RuntimeException("[{$query->errorCode()}] {$query->errorInfo()}");
+        }
+
+        $question->setId((int)$this->connection->lastInsertId('questions'));
+
+        foreach ($question->getAnswers() as $answer) {
+            if (empty($answer->getContent())) {
+                continue;
+            }
+            $this->insertAnswer($answer);
+        }
+
+        return true;
+    }
+
+    protected function insertAnswer(Answer $answer): bool
+    {
+        $query = $this->connection
+            ->prepare(
+                "INSERT INTO answers (question_id, content, is_correct ,updated_at,created_at)" .
+                " VALUES (:question_id, :content, :is_correct, :updated_at, :created_at)");
+
+        $query->bindValue('question_id', $answer->getQuestion()->getId());
+        $query->bindValue('content', $answer->getContent());
+        $query->bindValue('is_correct', $answer->isCorrect());
+        $query->bindValue('updated_at', $answer->getUpdatedAt()->getTimestamp());
+        $query->bindValue('created_at', $answer->getCreatedAt()->getTimestamp());
+
+        if (!$query->execute()) {
+            throw new RuntimeException("[{$query->errorCode()}] {$query->errorInfo()}");
+        }
+        $answer->setId((int)$this->connection->lastInsertId('answers'));
+
         return true;
     }
 
@@ -191,14 +222,20 @@ SCHEMA;
                 "INSERT INTO quizzes (name, version, create_at, updated_at)" .
                 " VALUES (:name, :version, :create_at, :updated_at)");
 
-        $query->bindValue('name', $quiz->name());
-        $query->bindValue('version', $quiz->version());
+        $query->bindValue('name', $quiz->getName());
+        $query->bindValue('version', $quiz->getVersion());
         $query->bindValue('create_at', time());
         $query->bindValue('updated_at', time());
 
         if (!$query->execute()) {
             throw new RuntimeException("[{$query->errorCode()}] {$query->errorInfo()}");
         }
+        $quiz->setId((int)$this->connection->lastInsertId('quizzes'));
+
+        foreach ($quiz->getQuestions() as $question) {
+            $this->save($question);
+        }
+
         return true;
     }
 
@@ -233,24 +270,5 @@ SCHEMA;
     protected function getModelTableName(ReflectionClass $reflectionClass): void
     {
         strtolower($this->inflector->pluralize($reflectionClass->getShortName()));
-}
-
-    private function insertReport(Report $model): bool
-    {
-        $query = $this->connection
-            ->prepare(
-                "INSERT INTO reports (answer, question_id, is_correct, created_at)" .
-                " VALUES (:answer, :question_id, :is_correct, :created_at)");
-
-        $query->bindValue('answer', $model->getAnswer());
-        $query->bindValue('question_id', $model->getQuestionId());
-        $query->bindValue('is_correct', $model->isCorrect());
-        $query->bindValue('created_at', time());
-
-        if (!$query->execute()) {
-            throw new RuntimeException("[{$query->errorCode()}] {$query->errorInfo()}");
-        }
-        return true;
     }
-
 }

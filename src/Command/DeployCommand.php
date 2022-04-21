@@ -8,7 +8,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DeployCommand extends Command
 {
@@ -34,16 +33,22 @@ class DeployCommand extends Command
     {
         $dbDriver = new DBStorageDriver();
         $storageDriver = new YamlStorageDriver();
-        if ($input->getOption('force')){
+        $force = false;
+        if ($input->getOption('force')) {
+            $response = readline('Sure? [y/N] >') ?: 'n';
+            $force = strtolower($response) === 'y';
+        }
+
+        if ($force) {
             $dbDriver->drop();
             $output->writeln("DB dropped.");
         }
         $dbDriver->deploy();
         $output->writeln("DB deployed.");
-        foreach ($storageDriver->getList() as $quiz){
+        foreach ($storageDriver->getList() as $quiz) {
             $quiz = $storageDriver->loadBy('name', $quiz);
-            $dbDriver->save($quiz, $input->getOption('force'));
-            $output->writeln("saved {$quiz->name()};");
+            $dbDriver->save($quiz, $force); // implement a locking mechanism with a strong cnfirmation
+            $output->writeln("saved {$quiz->getName()};");
         }
 
         return Command::SUCCESS;

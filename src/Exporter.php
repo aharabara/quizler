@@ -8,7 +8,7 @@ use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class ReportExporter
+class Exporter
 {
     private Serializer $serializer;
     private string $folder;
@@ -31,7 +31,7 @@ class ReportExporter
             'yaml_inline' => 3
         ]);
 
-        $this->getStoragePath("{$this->folder}/{$quiz->name()}");
+        $this->getStoragePath("{$this->folder}/{$quiz->getName()}");
         $path = "{$this->folder}/report_".time().'.yaml';
 
         file_put_contents($path, $serializedQuiz);

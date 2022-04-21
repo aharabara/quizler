@@ -12,12 +12,12 @@ use Symfony\Component\Console\Application;
 $application = new Application();
 
 $application->add(new \Quiz\Command\RunQuizCommand());
-$application->add(new \Quiz\Command\CreateQuizCommand());
 $application->add(new \Quiz\Command\SearchAnswerCommand());
 $application->add(new \Quiz\Command\AnswerStatsCommand());
 $application->add(new \Quiz\Command\ToDoCommand());
 $application->add(new \Quiz\Command\GenerateFromCommand());
 $application->add(new \Quiz\Command\DeployCommand());
+$application->add(new \Quiz\Command\ExportCommand());
 $application->run();
 
 // choice of quiz

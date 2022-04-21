@@ -11,7 +11,10 @@
         "symfony/var-dumper": "^5.3",
         "roave/better-reflection": "^5.3",
         "symfony/http-kernel": "^6.0",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "symfony/dependency-injection": "^6.0",
+        "symfony/config": "^6.0",
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "files": [

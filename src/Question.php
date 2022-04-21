@@ -3,12 +3,20 @@
 
 namespace Quiz;
 
+use Quiz\Builder\SchemeBuilder\Identificator;
+use Quiz\Builder\SchemeBuilder\Relation;
+use Symfony\Component\Serializer\Annotation\Ignore;
+
 class Question
 {
+    #[Identificator()]
     protected int $id;
     protected string $question;
-    protected string $answer = '';
+    protected array $answers = [];
     protected string $tip = '';
+
+    #[Relation(Quiz::class)]
+    private Quiz $quiz;
 
     public function setId(int $id): void
     {
@@ -26,29 +34,59 @@ class Question
         return $this;
     }
 
-    public function setAnswer(string $answer): self
-    {
-        $this->answer = $answer;
-        return $this;
-    }
-
     public function getQuestion(): string
     {
         return $this->question;
     }
 
-    public function getTip(): string
+    public function getTip(): ?string
     {
+        if (empty($this->tip)) {
+            return null;
+        }
+
         return $this->tip;
     }
 
-    public function getAnswer(): string
+    /** @Ignore */
+    public function getFirstAnswer(): string
     {
-        return $this->answer;
+        /*fixme first correct answer */
+        if (empty($this->answers)) {
+            return '';
+        }
+
+        return reset($this->answers)->getContent();
     }
 
-    public function getId()
+    /**
+     * @return Answer[]
+     */
+    public function getAnswers(): array
+    {
+        return $this->answers;
+    }
+
+    public function setAnswers(array $answers): self
+    {
+        $this->answers = $answers;
+        return $this;
+    }
+
+
+    public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getQuiz(): Quiz
+    {
+        return $this->quiz;
+    }
+
+    public function setQuiz(Quiz $quiz): static
+    {
+        $this->quiz = $quiz;
+        return $this;
     }
 }

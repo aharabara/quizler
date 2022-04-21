@@ -4,6 +4,7 @@ namespace Quiz\Command;
 
 use Quiz\OutputStyle\QuizStyle;
 use Quiz\Quiz;
+use Quiz\StorageDriver\DBStorageDriver;
 use Quiz\StorageDriver\YamlStorageDriver;
 use SplFileInfo;
 use Symfony\Component\Console\Color;
@@ -33,6 +34,8 @@ class SearchAnswerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        throw new \RuntimeException('Not implemented yet');
+
         $style = new QuizStyle($input, $output);
         $quizzes = $this->loadQuizzes();
 
@@ -40,11 +43,11 @@ class SearchAnswerCommand extends Command
         $style->clear();
         while ($request = $style->ask("Your request: ")) {
             foreach ($quizzes as $quiz) {
-                foreach ($quiz->questions() as $index => $question) {
+                foreach ($quiz->getQuestions() as $index => $question) {
                     $content = s($question->getQuestion());
                     if ($content->lower()->containsAny(s($request)->lower())) {
                         $style->writeln($content->padStart(3)->prepend('<comment>')->append('</comment>')->toString());
-                        $style->writeln($this->textWithSidebar(">> ", $question->getAnswer()));
+                        $style->writeln($this->textWithSidebar(">> ", $question->getFirstAnswer()));
                     }
                 }
             }
@@ -60,14 +63,10 @@ class SearchAnswerCommand extends Command
     /** @return Quiz[] */
     protected function loadQuizzes(): array
     {
-        $loader = new YamlStorageDriver();
+        $loader = new DBStorageDriver();
         $finder = new Finder();
 
         // $HOME/.config/quizler/*.yaml
-
-        $files = $finder->in(QUIZZES_FOLDER_PATH) /* move to ::getQuizzList*/
-            ->name("*.yaml")
-            ->files();
 
         return array_map(fn(SplFileInfo $file) => $loader->loadBy('name', $file->getRealPath()), iterator_to_array($files->getIterator()));
     }

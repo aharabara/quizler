@@ -3,16 +3,24 @@
 
 namespace Quiz;
 
+use Quiz\Builder\SchemeBuilder\Identificator;
+
 class Quiz
 {
-    protected int  $id = 0;
-    protected string  $name = 'not-set';
-    protected string|int  $version = 1;
+    #[Identificator()]
+    protected int $id;
+    protected string $name = 'not-set';
+    protected int $version = 1;
 
     /** @var Question[] */
     protected array $questions = [];
 
-    public function name(): string
+    public function getVersion(): int
+    {
+        return $this->version;
+    }
+
+    public function getName(): string
     {
         return $this->name;
     }
@@ -22,7 +30,7 @@ class Quiz
      *
      * @psalm-return array<array-key, Question>
      */
-    public function questions(): array
+    public function getQuestions(): array
     {
         return $this->questions;
     }
@@ -30,8 +38,8 @@ class Quiz
     public function availableQuestions(): int
     {
         $notEmpty = 0;
-        foreach ($this->questions() as $question) {
-            if (!empty($question->getAnswer())) {
+        foreach ($this->getQuestions() as $question) {
+            if (!empty($question->getFirstAnswer())) {
                 $notEmpty++;
             }
         }
@@ -52,7 +60,20 @@ class Quiz
     public function addQuestion(Question $question): Question
     {
         $this->questions[] = $question;
+        $question->setQuiz($this);
         return $question;
+    }
+
+    /**
+     * @param Question[] $questions
+     */
+    public function setQuestions(array $questions): self
+    {
+        $this->questions = $questions;
+        foreach ($questions as $question) {
+            $question->setQuiz($this);
+        }
+        return $this;
     }
 
     public function getId(): int
@@ -60,16 +81,7 @@ class Quiz
         return $this->id;
     }
 
-    public function version(): int
-    {
-        $version = $this->version;
-        if (is_string($version)){
-            $version = (int)trim(str_replace('.', '', $version), '0');
-        }
-        return $version;
-    }
-
-    public function setId(int $id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
