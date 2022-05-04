@@ -5,6 +5,7 @@ namespace Quiz;
 
 use Quiz\Builder\SchemeBuilder\Identificator;
 use Quiz\Builder\SchemeBuilder\Relation;
+use Quiz\Builder\SchemeBuilder\Searchable;
 use Quiz\Traits\Timestampable;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
@@ -12,6 +13,8 @@ class Question
 {
     #[Identificator()]
     protected int $id;
+
+    #[Searchable]
     protected string $question;
     protected array $answers = [];
     protected ?string $tip = null;

@@ -7,7 +7,7 @@ use LogicException;
 use PDO;
 use PDOException;
 use Quiz\Answer;
-use Quiz\Builder\SchemeBuilder;
+use Quiz\Builder\TableDefinitionExtractor;
 use Quiz\Question;
 use Quiz\Quiz;
 use Roave\BetterReflection\BetterReflection;
@@ -122,10 +122,11 @@ class DBStorageDriver implements StorageDriverInterface
             Question::class,
             Answer::class
         ];
+        $tableDefinitionExtractor = new TableDefinitionExtractor;
+
         foreach ($models as $model){
-            /* fixme make it stateless */
-            $schema = (new SchemeBuilder())
-                ->from($model)
+            $schema = $tableDefinitionExtractor
+                ->extract($model)
                 ->build();
             $this->connection->exec($schema);
         }
@@ -180,7 +181,7 @@ class DBStorageDriver implements StorageDriverInterface
 
         $query->bindValue('question_id', $answer->getQuestion()->getId());
         $query->bindValue('content', $answer->getContent());
-        $query->bindValue('is_correct', $answer->isCorrect());
+        $query->bindValue('is_correct', $answer->getIsCorrect());
         $query->bindValue('updated_at', $answer->getUpdatedAt()->getTimestamp());
         $query->bindValue('created_at', $answer->getCreatedAt()->getTimestamp());
 
@@ -216,7 +217,7 @@ class DBStorageDriver implements StorageDriverInterface
         return true;
     }
 
-    protected function queryAll(string $sql): array
+    public function queryAll(string $sql): array
     {
         $query = $this->connection->query($sql);
         if (!$query->execute()) {
@@ -225,7 +226,7 @@ class DBStorageDriver implements StorageDriverInterface
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    protected function queryOne(string $sql): array
+    public function queryOne(string $sql): array
     {
         $query = $this->connection->query($sql);
         if (!$query->execute()) {

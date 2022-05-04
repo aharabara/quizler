@@ -6,22 +6,29 @@ use DateTimeInterface;
 use Quiz\Builder\SchemeBuilder\ColumnDefinition;
 use Quiz\Builder\SchemeBuilder\Key;
 use Quiz\Builder\SchemeBuilder\Relation;
+use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\Reflection\ReflectionAttribute;
 use Roave\BetterReflection\Reflection\ReflectionIntersectionType;
 use Roave\BetterReflection\Reflection\ReflectionNamedType;
 use Roave\BetterReflection\Reflection\ReflectionProperty;
 use Roave\BetterReflection\Reflection\ReflectionType;
 use Roave\BetterReflection\Reflection\ReflectionUnionType;
+use Roave\BetterReflection\Reflector\Reflector;
 use function Symfony\Component\String\s;
 
-class ColumnDefinitionExtractor
+class ColumnDefinitionExtractor implements DefinitionExtractorInterface
 {
     const SCALARS = [
         'int', 'null', 'string', 'float', 'bool', 'double'
     ];
+    private Reflector $reflector;
 
-    public function extract(ReflectionProperty $property): ?ColumnDefinition
+    public function __construct()
     {
+        $this->reflector = (new BetterReflection())->reflector();
+    }
+
+    public function extractColumn(ReflectionProperty $property): ?ColumnDefinition {
         $type = $property->getType();
         if (str_contains((string)$type, 'array')) return null; // probably a relation, need to elaborate later
 
@@ -38,18 +45,30 @@ class ColumnDefinitionExtractor
                 }
             }
         }
-//        dump([$property->getDeclaringClass()->getName(), $property->getName()]);
         return null;
     }
 
-    protected function getConstraintKey(ReflectionProperty $property): ?Key
+    public function extract(string $className): array
     {
+        $class = $this->reflector->reflectClass($className);
+
+        $columns = [];
+        foreach ($class->getProperties() as $property){
+            $columns[] = $this->extractColumn($property);
+        }
+
+        return array_filter($columns);
+    }
+
+    protected function getConstraintKeys(ReflectionProperty $property): array
+    {
+        $keys = [];
         foreach ($property->getAttributes() as $attribute) {
             if ($this->isType($attribute->getName(), Key::class)) {
-                return new ($attribute->getName())(...$attribute->getArguments());
+                $keys[] = new ($attribute->getName())(...$attribute->getArguments());
             }
         }
-        return null;
+        return $keys;
     }
 
     /**
@@ -106,7 +125,7 @@ class ColumnDefinitionExtractor
             $type->getName(),
             $nullable,
             $property->getDefaultValue(),
-            $this->getConstraintKey($property)
+            ...$this->getConstraintKeys($property)
         );
     }
 
@@ -121,7 +140,7 @@ class ColumnDefinitionExtractor
             "integer", // @todo use identificator property later
             $property->getType()->allowsNull(),
             null,
-            $this->getConstraintKey($property)
+            ...$this->getConstraintKeys($property)
         );
     }
 
@@ -136,7 +155,7 @@ class ColumnDefinitionExtractor
             "integer", // @todo use identificator property later
             $property->getType()->allowsNull(),
             null,
-            $this->getConstraintKey($property)
+            ...$this->getConstraintKeys($property)
         );
     }
 

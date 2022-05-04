@@ -14,7 +14,9 @@
         "ext-pdo": "*",
         "symfony/dependency-injection": "^6.0",
         "symfony/config": "^6.0",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "symfony/routing": "^6.0",
+        "teamtnt/tntsearch": "^2.9"
     },
     "autoload": {
         "files": [

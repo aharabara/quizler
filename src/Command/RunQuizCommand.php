@@ -65,6 +65,10 @@ class RunQuizCommand extends Command
             }
             $response = $style->ask($question->getQuestion() . " ");
 
+            if (empty($response) && $style->confirm("Wanna skip?")){
+                continue;
+            }
+
             $style->writeln("<info>Correct answer</info> : " . $question->getFirstAnswer());
             $style->writeln("<comment>Your answer</comment>    : " . $response);
 
