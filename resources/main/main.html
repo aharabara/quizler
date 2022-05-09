@@ -1,0 +1,42 @@
+<html>
+<head>
+    <title>Quizzler</title>
+</head>
+<body>
+<p>Quizzler</p>
+<form id="answer-form">
+    <label>
+        <span id="question">...</span>
+        <input type="text" id="response" value="">
+    </label>
+</form>
+<form id="question-form" style="display: none">
+    <label>
+        <span id="question">Question:</span>
+        <input type="text" id="question" value="">
+    </label>
+</form>
+<script src="./node_modules/keyboardjs/dist/keyboard.min.js"></script>
+<script>
+    keyboardJS.bind('enter', (e) => {
+        console.log('Response is:', document.getElementById('response').value)
+    });
+    keyboardJS.bind('num4', (e) => {
+        fetch('/question?id=10').then((r) => {
+            console.log(r)
+        })
+        console.log('Previous question.')
+    });
+    keyboardJS.bind('num6', (e) => {
+        fetch('/question?id=10')
+            .then(r => r.text())
+            .then(data => console.log(data))
+        console.log('Next question.')
+    });
+    keyboardJS.bind('num0', (e) => {
+        console.log("New question?")
+    });
+    // keyboardJS.bind('', (e) => console.log(e));
+</script>
+</body>
+</html>

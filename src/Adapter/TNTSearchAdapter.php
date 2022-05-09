@@ -2,9 +2,9 @@
 
 namespace Quiz\Adapter;
 
-use Quiz\Builder\SchemeBuilder\ColumnDefinition;
-use Quiz\Builder\TableDefinitionExtractor;
-use Quiz\StorageDriver\DBStorageDriver;
+use Quiz\ORM\Builder\SchemeBuilder\ColumnDefinition;
+use Quiz\ORM\Builder\TableDefinitionExtractor;
+use Quiz\ORM\StorageDriver\DBStorageDriver;
 use TeamTNT\TNTSearch\TNTSearch;
 
 class TNTSearchAdapter

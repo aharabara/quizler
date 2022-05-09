@@ -19,9 +19,6 @@
         "teamtnt/tntsearch": "^2.9"
     },
     "autoload": {
-        "files": [
-            "helpers/functions.php"
-        ],
         "psr-4": {
             "Quiz\\": "src"
         }
