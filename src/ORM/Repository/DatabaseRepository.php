@@ -1,20 +1,18 @@
 <?php
 
-namespace Quiz\ORM\StorageDriver;
+namespace Quiz\ORM\Repository;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use LogicException;
 use PDO;
 use PDOException;
+use Quiz\Core\Collection;
 use Quiz\Domain\Answer;
 use Quiz\Domain\Question;
 use Quiz\Domain\Quiz;
-use Quiz\ORM\Builder\CachedDefinitionExtractor;
-use Quiz\ORM\Builder\SchemeBuilder\TableDefinition;
-use Quiz\ORM\Builder\TableDefinitionExtractor;
-use Quiz\ORM\Collection;
-use Roave\BetterReflection\BetterReflection;
-use Roave\BetterReflection\Reflector\Reflector;
+use Quiz\ORM\Scheme\Definition\TableDefinition;
+use Quiz\ORM\Scheme\Extractor\CachedDefinitionExtractor;
+use Quiz\ORM\Scheme\Extractor\TableDefinitionExtractor;
 use RuntimeException;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
@@ -25,22 +23,17 @@ use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\String\Inflector\EnglishInflector;
 
 /** @fixme rewrite to support any entity, not only quiz and question. */
-class DBStorageDriver implements StorageDriverInterface
+class DatabaseRepository implements RepositoryInterface
 {
     private Serializer $serializer;
     private PDO $connection;
-    private EnglishInflector $inflector;
-    private Reflector $reflector;
-    private CachedDefinitionExtractor $tableExtractor;
+    private CachedDefinitionExtractor|TableDefinitionExtractor $tableExtractor;
 
     public function __construct()
     {
         $this->tableExtractor = new CachedDefinitionExtractor(new TableDefinitionExtractor());
-        $this->inflector = new EnglishInflector();
-        $this->reflector = (new BetterReflection())->reflector();
         try {
             $this->connection = new PDO('sqlite:' . DB_PATH);
         } catch (PDOException $e) {
@@ -57,15 +50,16 @@ class DBStorageDriver implements StorageDriverInterface
         );
     }
 
-    public function loadBy(string $field, mixed $value): Quiz
+    public function loadBy(string $class, array $criteria): Quiz
     {
-
-        $quizData = $this->first(Quiz::class, [$field => $value]);
+        $quizData = $this->first($class, $criteria);
         if (empty($quizData)) {
-            throw new LogicException("Quiz with criteria $field=$value does not exist.");
+            throw new LogicException(
+                sprintf("'%s' with criteria %s does not exist.", $class, json_encode($criteria))
+            );
         }
 
-        return $this->serializer->denormalize($quizData, Quiz::class);
+        return $this->serializer->denormalize($quizData, $class);
     }
 
     public function save(object $model, bool $force = false): bool
@@ -78,8 +72,11 @@ class DBStorageDriver implements StorageDriverInterface
             return $this->insertQuestion($model);
         }
         if ($model instanceof Quiz) {
-            if (!$force && $this->quizExists($model)) {
+            if (!$force && $this->exists($model)) {
                 throw new LogicException('Quiz already exists');
+            }
+            if ($force){
+                // fixme use insert ignore by unique field
             }
             $this->insertQuiz($model);
         }
@@ -87,12 +84,21 @@ class DBStorageDriver implements StorageDriverInterface
         return true;
     }
 
-    protected function quizExists(Quiz $model): bool
+    protected function exists(object $model): bool
     {
+        $table = $this->tableExtractor->extract(get_class($model));
         /* fixme create an attribute based uniqness check. */
-        return $this
-                ->queryAll("SELECT count(*) FROM quizzes WHERE name = '{$model->getName()}'")
-                ->first() !== 0;
+        $field = $table->getUniqueColumn() ?? $table->getIdentityColumn();
+
+        $refObj = new \ReflectionObject($model);
+        $property = $refObj->getProperty($field->getName());
+        $criteria = [
+            $field->getName() => $property->getValue($model)
+        ];
+        $result = $this
+            ->queryAll("SELECT count(*) as aggregate FROM {$table->getName()} WHERE {$this->prepareWhereClause($criteria)}");
+
+        return $result->first()['aggregate'] !== 0;
     }
 
     public function getList(): Collection
@@ -114,19 +120,17 @@ class DBStorageDriver implements StorageDriverInterface
             $schema = $tableDefinitionExtractor
                 ->extract($model)
                 ->build();
+
             $this->connection->exec($schema);
         }
 
         return true;
     }
 
-    public function drop(): bool
+    public function drop(string $class): bool
     {
-        /*fixme drop by entity class */
-        $this->connection->exec('DROP TABLE IF EXISTS questions;');
-        $this->connection->exec('DROP TABLE IF EXISTS quizzes;');
-        $this->connection->exec('DROP TABLE IF EXISTS answers;');
-        $this->connection->exec('DROP TABLE IF EXISTS reports;');
+        $table = $this->tableExtractor->extract($class);
+        $this->connection->exec("DROP TABLE IF EXISTS {$table->getName()};");
         return true;
     }
 
@@ -235,6 +239,7 @@ class DBStorageDriver implements StorageDriverInterface
 
         $parentRecords = new Collection();
         $parentRecords->push(...$rows);
+
 
         foreach ($definition->getColumns() as $column) {
             if ($column->isRelationFiled()) { /* fixme add eager/lazy loading and bidirectional setting */

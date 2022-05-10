@@ -16,7 +16,8 @@
         "symfony/config": "^6.0",
         "phpunit/phpunit": "^9.5",
         "symfony/routing": "^6.0",
-        "teamtnt/tntsearch": "^2.9"
+        "teamtnt/tntsearch": "^2.9",
+        "monolog/monolog": "^2.5"
     },
     "autoload": {
         "psr-4": {

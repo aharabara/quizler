@@ -2,20 +2,20 @@
 
 namespace Quiz\Adapter;
 
-use Quiz\ORM\Builder\SchemeBuilder\ColumnDefinition;
-use Quiz\ORM\Builder\TableDefinitionExtractor;
-use Quiz\ORM\StorageDriver\DBStorageDriver;
+use Quiz\ORM\Repository\DatabaseRepository;
+use Quiz\ORM\Scheme\Definition\ColumnDefinition;
+use Quiz\ORM\Scheme\Extractor\TableDefinitionExtractor;
 use TeamTNT\TNTSearch\TNTSearch;
 
 class TNTSearchAdapter
 {
     private TNTSearch $search;
     private TableDefinitionExtractor $tableDefinitionExtractor;
-    private DBStorageDriver $storageDriver;
+    private DatabaseRepository $repository;
 
     public function __construct()
     {
-        $this->storageDriver = new DBStorageDriver();
+        $this->repository = new DatabaseRepository();
         $this->tableDefinitionExtractor = new TableDefinitionExtractor();
 
         $this->search = new TNTSearch;
@@ -33,14 +33,10 @@ class TNTSearchAdapter
 
         $tableDef = $this->tableDefinitionExtractor->extract($class);
 
-        $fields = array_map(function (ColumnDefinition $columnDef){
-            if ($columnDef->isSearchable() || $columnDef->isIdentityField()){
-                return $columnDef->getName();
-            }
-            return null;
-        }, $tableDef->getColumns());
-
-        $fields = array_filter($fields);
+        $fields = $tableDef->getColumns()
+            ->filter(fn (ColumnDefinition $column) => $column->isSearchable() || $column->isIdentityField())
+            ->map(fn(ColumnDefinition $column) => $column->getName())
+            ->toArray();
 
 
         $indexer = $this->search->createIndex("{$tableDef->getName()}.index");
@@ -60,7 +56,7 @@ class TNTSearchAdapter
         $ids = $result['ids'] ?? [];
         $ids = implode(',', $ids);
 
-        $result = $this->storageDriver->queryAll("SELECT * FROM {$tableDef->getName()} WHERE id IN ($ids)");
+        $result = $this->repository->queryAll("SELECT * FROM {$tableDef->getName()} WHERE id IN ($ids)");
         return array_column($result, 'content', 'id');
     }
 

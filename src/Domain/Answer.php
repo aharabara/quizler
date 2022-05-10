@@ -2,8 +2,9 @@
 
 namespace Quiz\Domain;
 
-use Quiz\ORM\Builder\SchemeBuilder\Identificator;
-use Quiz\ORM\Builder\SchemeBuilder\Searchable;
+use Quiz\ORM\Scheme\Attribute\Identificator;
+use Quiz\ORM\Scheme\Attribute\ParentRelation;
+use Quiz\ORM\Scheme\Attribute\Searchable;
 use Quiz\ORM\Traits\Timestampable;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
@@ -16,8 +17,8 @@ class Answer
     protected string $content;
     protected bool $isCorrect = false;
 
-//    #[Relation(Question::class)] fixme add loading when it is main class (if quiz then load nested, if answer, then load parent). Maybe solve with ParentRelation or LazyRelation
     #[Ignore]
+    #[ParentRelation(Question::class, 'question_id', 'id')]
     protected Question $question;
 
     use Timestampable;

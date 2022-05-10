@@ -4,7 +4,7 @@ namespace Quiz\Console\Command;
 
 use Quiz\Domain\Question;
 use Quiz\Domain\Quiz;
-use Quiz\ORM\StorageDriver\YamlStorageDriver;
+use Quiz\ORM\Repository\DatabaseRepository;
 use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\Reflection\ReflectionClass;
 use Symfony\Component\Console\Command\Command;
@@ -27,26 +27,21 @@ class GenerateFromCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $folder = $input->getArgument('folder');
-//        $finder = new Finder();
-//        $files = $finder
-//            ->in($folder)
-//            ->name('*.php')
-//            ->getIterator();
+        $repository = new DatabaseRepository();
 
         $classInfo = (new BetterReflection());
 
         exec('composer dumpa -o'); # generate a list of classes
-        $classes = require __DIR__."/../../vendor/composer/autoload_classmap.php";
+        $classes = require VENDOR_FOLDER . "/composer/autoload_classmap.php";
 
         $reflector = (new BetterReflection())
             ->reflector();
 
-        $folder = realpath($folder);
+        $folder = realpath($input->getArgument('folder'));
         $quiz = new Quiz();
 
         foreach ($classes as $class => $file) {
-            if (!str_contains($file, $folder)){
+            if (!str_contains($file, $folder)) {
                 continue;
             }
             $classInfo = $reflector->reflectClass($class);
@@ -55,7 +50,7 @@ class GenerateFromCommand extends Command
             $quiz->addQuestion(
                 (new Question())
                     ->setQuestion(
-                        match (true){
+                        match (true) {
                             !empty($classInfo->getAttributesByName('Attribute')) => "What `@{$shortName}` attribute is used for?",
                             $classInfo->isEnum() => "What `{$shortName}` enum is used for?",
                             $classInfo->isInterface() => "What `{$shortName}` interface is used for?",
@@ -65,7 +60,7 @@ class GenerateFromCommand extends Command
                     )
             );
 
-            foreach ($classInfo->getImmediateConstants() as $constant => $values){
+            foreach ($classInfo->getImmediateConstants() as $constant => $values) {
                 $quiz->addQuestion(
                     (new Question())
                         ->setQuestion("What for is `{$shortName}::{$constant}` constant used for?")
@@ -75,9 +70,7 @@ class GenerateFromCommand extends Command
 
         $quiz->setName($this->getTestName($folder));
 
-
-        $loader = new YamlStorageDriver();
-        $loader->save($quiz, $input->getOption('rewrite'));
+        $repository->save($quiz, $input->getOption('rewrite'));
 
         $output->writeln("Test generated.");
 

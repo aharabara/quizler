@@ -2,8 +2,10 @@
 
 namespace Quiz\Console\Command;
 
-use Quiz\ORM\StorageDriver\DBStorageDriver;
-use Quiz\ORM\StorageDriver\YamlStorageDriver;
+use Quiz\Domain\Answer;
+use Quiz\Domain\Question;
+use Quiz\Domain\Quiz;
+use Quiz\ORM\Repository\DatabaseRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -13,7 +15,6 @@ class DeployCommand extends Command
 {
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'deploy';
-    private YamlStorageDriver $quizLoader;
 
     public function __construct(string $name = null)
     {
@@ -31,8 +32,8 @@ class DeployCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $dbDriver = new DBStorageDriver();
-        $storageDriver = new YamlStorageDriver();
+        $dbDriver = new DatabaseRepository();
+
         $force = false;
         if ($input->getOption('force')) {
             $response = readline('Sure? [y/N] >') ?: 'n';
@@ -40,7 +41,9 @@ class DeployCommand extends Command
         }
 
         if ($force) {
-            $dbDriver->drop();
+            $dbDriver->drop(Quiz::class);
+            $dbDriver->drop(Question::class);
+            $dbDriver->drop(Answer::class);
             $output->writeln("DB dropped.");
         }
         $dbDriver->deploy();

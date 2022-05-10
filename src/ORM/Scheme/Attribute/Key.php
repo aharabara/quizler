@@ -1,15 +1,14 @@
 <?php
 
-namespace Quiz\ORM\Builder\SchemeBuilder;
+namespace Quiz\ORM\Scheme\Attribute;
 
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class Unique extends Key
+abstract class Key
 {
     public function __construct()
     {
-        parent::__construct();
     }
 
 }

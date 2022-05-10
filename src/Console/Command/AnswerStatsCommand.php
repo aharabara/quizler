@@ -4,7 +4,7 @@ namespace Quiz\Console\Command;
 
 use Quiz\Console\OutputStyle\QuizStyle;
 use Quiz\Domain\Quiz;
-use Quiz\ORM\StorageDriver\YamlStorageDriver;
+use Quiz\ORM\Repository\YamlRepository;
 use SplFileInfo;
 use Symfony\Component\Console\Color;
 use Symfony\Component\Console\Command\Command;
@@ -60,7 +60,7 @@ class AnswerStatsCommand extends Command
     /** @return Quiz[] */
     protected function loadQuizzes(): array
     {
-        $loader = new YamlStorageDriver();
+        $loader = new YamlRepository();
         $finder = new Finder();
 
         // $HOME/.config/quizler/*.yaml
@@ -70,7 +70,7 @@ class AnswerStatsCommand extends Command
             ->files();
 
         return array_map(function (SplFileInfo $file) use ($loader) {
-            return $loader->loadBy('name', explode('.', $file->getFilename())[0]);
+            return $loader->loadBy(Quiz::class, ['name' => explode('.', $file->getFilename())[0]]);
         }, iterator_to_array($files->getIterator()));
     }
 

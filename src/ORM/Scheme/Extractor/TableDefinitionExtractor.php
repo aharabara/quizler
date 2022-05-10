@@ -1,16 +1,13 @@
 <?php
 
-namespace Quiz\ORM\Builder;
+namespace Quiz\ORM\Scheme\Extractor;
 
-use Quiz\ORM\Builder\SchemeBuilder\TableDefinition;
-use Roave\BetterReflection\BetterReflection;
-use Roave\BetterReflection\Reflector\Reflector;
+use Quiz\ORM\Scheme\Definition\TableDefinition;
 use Symfony\Component\String\Inflector\EnglishInflector;
 use function Symfony\Component\String\s;
 
 class TableDefinitionExtractor implements DefinitionExtractorInterface
 {
-    private Reflector $reflector;
     private EnglishInflector $inflector;
     private ColumnDefinitionExtractor $columnDefinitionExtractor;
 
@@ -18,7 +15,6 @@ class TableDefinitionExtractor implements DefinitionExtractorInterface
     public function __construct()
     {
         $this->inflector = new EnglishInflector();
-        $this->reflector = (new BetterReflection())->reflector();
         $this->columnDefinitionExtractor = new ColumnDefinitionExtractor();
     }
 

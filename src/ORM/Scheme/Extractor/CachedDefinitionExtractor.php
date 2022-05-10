@@ -1,6 +1,6 @@
 <?php
 
-namespace Quiz\ORM\Builder;
+namespace Quiz\ORM\Scheme\Extractor;
 
 class CachedDefinitionExtractor implements DefinitionExtractorInterface
 {

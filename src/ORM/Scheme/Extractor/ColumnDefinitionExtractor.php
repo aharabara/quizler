@@ -1,11 +1,11 @@
 <?php
 
-namespace Quiz\ORM\Builder;
+namespace Quiz\ORM\Scheme\Extractor;
 
 use DateTimeInterface;
-use Quiz\ORM\Builder\SchemeBuilder\ColumnDefinition;
-use Quiz\ORM\Builder\SchemeBuilder\Key;
-use Quiz\ORM\Builder\SchemeBuilder\Relation;
+use Quiz\ORM\Scheme\Attribute\Key;
+use Quiz\ORM\Scheme\Attribute\ParentRelation;
+use Quiz\ORM\Scheme\Definition\ColumnDefinition;
 use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\Reflection\ReflectionAttribute;
 use Roave\BetterReflection\Reflection\ReflectionIntersectionType;
@@ -14,7 +14,6 @@ use Roave\BetterReflection\Reflection\ReflectionProperty;
 use Roave\BetterReflection\Reflection\ReflectionType;
 use Roave\BetterReflection\Reflection\ReflectionUnionType;
 use Roave\BetterReflection\Reflector\Reflector;
-use function Quiz\Builder\str_contains;
 use function Symfony\Component\String\s;
 
 class ColumnDefinitionExtractor implements DefinitionExtractorInterface
@@ -35,9 +34,11 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
         if ($this->isScalarProperty($type)) {
             return $this->extractScalarFieldDefinition($property);
         }
-        if ($this->isRelationProperty($property)) {
+
+        if ($this->isParentRelationProperty($property)) {
             return $this->extractRelationFieldDefinition($property);
         }
+
         if ($type instanceof ReflectionUnionType) {
             foreach ($type->getTypes() as $subType) {
                 if ($this->isType($subType->getName(), DateTimeInterface::class)) {
@@ -92,10 +93,10 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
      * @param mixed $property
      * @return bool
      */
-    protected function isRelationProperty(mixed $property): bool
+    protected function isParentRelationProperty(mixed $property): bool
     {
         /** @var ReflectionAttribute $relation */
-        $relation = $property->getAttributesByName(Relation::class)[0] ?? null;
+        $relation = $property->getAttributesByName(ParentRelation::class)[0] ?? null;
         return !empty($relation);
     }
 

@@ -2,8 +2,9 @@
 
 namespace Quiz\Console\Command;
 
-use Quiz\ORM\StorageDriver\DBStorageDriver;
-use Quiz\ORM\StorageDriver\YamlStorageDriver;
+use Quiz\Domain\Quiz;
+use Quiz\ORM\Repository\DatabaseRepository;
+use Quiz\ORM\Repository\YamlRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -29,11 +30,11 @@ class ImportCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $fileDriver = new YamlStorageDriver();
-        $dbDriver = new DBStorageDriver();
+        $fileDriver = new YamlRepository();
+        $dbDriver = new DatabaseRepository();
         foreach ($fileDriver->getList() as $name){
             $output->writeln("Exporting $name.");
-            $dbDriver->save($fileDriver->loadBy('name', $name), $input->getOption('force'));
+            $dbDriver->save($fileDriver->loadBy(Quiz::class, ['name' => $name]), $input->getOption('force'));
         }
         return Command::SUCCESS;
     }

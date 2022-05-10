@@ -3,9 +3,10 @@
 
 namespace Quiz\Domain;
 
-use Quiz\ORM\Builder\SchemeBuilder\Identificator;
-use Quiz\ORM\Builder\SchemeBuilder\Relation;
-use Quiz\ORM\Builder\SchemeBuilder\Searchable;
+use Quiz\ORM\Scheme\Attribute\Identificator;
+use Quiz\ORM\Scheme\Attribute\ParentRelation;
+use Quiz\ORM\Scheme\Attribute\ChildRelation;
+use Quiz\ORM\Scheme\Attribute\Searchable;
 use Quiz\ORM\Traits\Timestampable;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
@@ -17,11 +18,12 @@ class Question
     #[Searchable]
     protected string $question;
 
-    #[Relation(Answer::class, 'id', 'question_id')]
+    #[ChildRelation(Answer::class, 'id', 'question_id')]
     protected array $answers = [];
     protected ?string $tip = null;
 
     #[Ignore]
+    #[ParentRelation(Quiz::class, 'quiz_id', 'id')]
     private Quiz $quiz;
 
     use Timestampable;

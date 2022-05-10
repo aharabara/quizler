@@ -1,6 +1,6 @@
 <?php
 
-namespace Quiz\ORM\Builder\SchemeBuilder;
+namespace Quiz\ORM\Scheme\Attribute;
 
 use Attribute;
 

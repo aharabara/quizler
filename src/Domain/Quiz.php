@@ -3,21 +3,23 @@
 
 namespace Quiz\Domain;
 
-use Quiz\ORM\Builder\SchemeBuilder\Identificator;
-use Quiz\ORM\Builder\SchemeBuilder\Relation;
+use Quiz\ORM\Scheme\Attribute\Identificator;
+use Quiz\ORM\Scheme\Attribute\ChildRelation;
+use Quiz\ORM\Scheme\Attribute\Unique;
 use Quiz\ORM\Traits\Timestampable;
 
 class Quiz
 {
     #[Identificator()]
     protected ?int $id = null;
+    #[Unique()]
     protected string $name = 'not-set';
     protected int $version = 1;
 
     use Timestampable;
 
     /** @var Question[] */
-    #[Relation(Question::class, 'id', 'quiz_id')]
+    #[ChildRelation(Question::class, 'id', 'quiz_id')]
     protected array $questions = [];
 
     public function getVersion(): int

@@ -4,8 +4,7 @@ namespace Quiz\Console\Command;
 
 use Quiz\Domain\Answer;
 use Quiz\Domain\Quiz;
-use Quiz\ORM\Repository\QuizRepository;
-use Quiz\ORM\StorageDriver\DBStorageDriver;
+use Quiz\ORM\Repository\DatabaseRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,15 +14,12 @@ class RunQuizCommand extends Command
 {
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'run';
-    private QuizRepository $quizRepository;
-    private $driver;
+    private DatabaseRepository $repository;
 
     public function __construct(string $name = null)
     {
         parent::__construct($name);
-        $this->driver = new DBStorageDriver(DB_PATH);
-//        $this->driver = new YamlStorageDriver();
-        $this->quizRepository = new QuizRepository($this->driver);
+        $this->repository = new DatabaseRepository();
 
     }
 
@@ -72,7 +68,7 @@ class RunQuizCommand extends Command
             $style->writeln("<info>Correct answer</info> : " . $question->getFirstAnswer());
             $style->writeln("<comment>Your answer</comment>    : " . $response);
 
-            $this->driver
+            $this->repository
                 ->save(
                     (new Answer())
                     ->setQuestion($question)
@@ -93,12 +89,10 @@ class RunQuizCommand extends Command
 
     protected function chooseQuiz(SymfonyStyle $style): Quiz
     {
-        ## new YamlStorageDriver();
-
-        $choices = $this->driver->getList();
+        $choices = $this->repository->getList();
 
         $name = $style->choice("Choose your quiz:", $choices->getArrayCopy());
 
-        return $this->driver->loadBy('name', $name);
+        return $this->repository->loadBy(Quiz::class, ['name' => $name]);
     }
 }

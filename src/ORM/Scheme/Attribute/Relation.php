@@ -1,11 +1,8 @@
 <?php
 
-namespace Quiz\ORM\Builder\SchemeBuilder;
+namespace Quiz\ORM\Scheme\Attribute;
 
-use Attribute;
-
-#[Attribute(Attribute::TARGET_PROPERTY)]
-class Relation extends Key
+abstract class Relation extends Key
 {
     public function __construct(
         protected string $class,

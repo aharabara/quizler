@@ -1,9 +1,10 @@
 <?php
 
-namespace Quiz\ORM\StorageDriver;
+namespace Quiz\ORM\Repository;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use LogicException;
+use Quiz\Core\Collection;
 use Quiz\Domain\Quiz;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -17,7 +18,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class YamlStorageDriver implements StorageDriverInterface
+class YamlRepository implements RepositoryInterface
 {
     private Serializer $serializer;
     private string $folder;
@@ -39,8 +40,9 @@ class YamlStorageDriver implements StorageDriverInterface
         );
     }
 
-    public function loadBy(string $field, mixed $value): Quiz
+    public function loadBy(string $class, array $criteria): Quiz
     {
+        [$value] = $criteria;
         $file = "{$this->folder}/$value.yaml";
         if (!file_exists($file)) {
             throw new LogicException("Quiz '$value' does not exist.");
@@ -78,7 +80,7 @@ class YamlStorageDriver implements StorageDriverInterface
         return rtrim($this->folder, '/')."/".str_replace("/", "-", ltrim($quiz->getName(), "/")).".yaml";
     }
 
-    public function getList(): array
+    public function getList(): Collection
     {
         $finder = new Finder();
 
@@ -91,7 +93,7 @@ class YamlStorageDriver implements StorageDriverInterface
             $choices[] = $file->getFilenameWithoutExtension();
         }
 
-        return $choices;
+        return new Collection($choices);
     }
 
 

@@ -1,13 +1,23 @@
 <?php
 
-namespace Quiz\ORM\Builder\SchemeBuilder;
+namespace Quiz\ORM\Scheme\Definition;
+
+use Quiz\ORM\Scheme\Attribute\Identificator;
+use Quiz\ORM\Scheme\Attribute\Key;
+use Quiz\ORM\Scheme\Attribute\ChildRelation;
+use Quiz\ORM\Scheme\Attribute\ParentRelation;
+use Quiz\ORM\Scheme\Attribute\Relation;
+use Quiz\ORM\Scheme\Attribute\Searchable;
+use Quiz\ORM\Scheme\Attribute\Unique;
 
 class ColumnDefinition
 {
     protected array $keys;
     private bool $isSearchable = false;
     private bool $isIdentity = false;
-    private bool $isRelation = false;
+    private bool $isChildRelation = false;
+    private bool $isParentRelation = false;
+    private bool $isUnique = false;
 
     public function __construct(
         protected string $name,
@@ -31,8 +41,14 @@ class ColumnDefinition
             if ($key instanceof Identificator){
                 $this->isIdentity = true;
             }
-            if ($key instanceof Relation){
-                $this->isRelation = true;
+            if ($key instanceof ChildRelation){
+                $this->isChildRelation = true;
+            }
+            if ($key instanceof ParentRelation){
+                $this->isParentRelation = true;
+            }
+            if ($key instanceof Unique){
+                $this->isUnique = true;
             }
         }
 
@@ -54,7 +70,7 @@ class ColumnDefinition
             $constraint = match (get_class($key)){
                 Identificator::class =>
                     "CONSTRAINT {$this->name}_pk PRIMARY KEY" .($key->isAutoincrement() ? " autoincrement" : ""),
-                Unique::class => "CONSTRAINT {$this->name}_uk UNIQUE KEY",
+                Unique::class => "CONSTRAINT {$this->name}_uk UNIQUE",
     //            Relation::class => "CONSTRAINT {$this->name}_fk FOREIGN KEY",
                 default => ""
             };
@@ -93,7 +109,7 @@ class ColumnDefinition
 
     public function isRelationFiled(): bool
     {
-        return $this->isRelation;
+        return $this->isChildRelation;
     }
 
     public function getRelationAttribute(): ?Relation
@@ -102,6 +118,11 @@ class ColumnDefinition
             if ($key instanceof Relation) return $key;
         }
         return null;
+    }
+
+    public function isUniqueField(): bool
+    {
+        return $this->isUnique;
     }
 
 

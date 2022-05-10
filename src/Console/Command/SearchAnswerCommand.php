@@ -4,13 +4,12 @@ namespace Quiz\Console\Command;
 
 use Quiz\Console\OutputStyle\QuizStyle;
 use Quiz\Domain\Quiz;
-use Quiz\ORM\StorageDriver\DBStorageDriver;
+use Quiz\ORM\Repository\DatabaseRepository;
 use SplFileInfo;
 use Symfony\Component\Console\Color;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Finder\Finder;
 use function Symfony\Component\String\s;
 
 class SearchAnswerCommand extends Command
@@ -33,6 +32,7 @@ class SearchAnswerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        /** fixme work in progress */
         throw new \RuntimeException('Not implemented yet');
 
         $style = new QuizStyle($input, $output);
@@ -62,12 +62,9 @@ class SearchAnswerCommand extends Command
     /** @return Quiz[] */
     protected function loadQuizzes(): array
     {
-        $loader = new DBStorageDriver();
-        $finder = new Finder();
+        $loader = new DatabaseRepository();
 
-        // $HOME/.config/quizler/*.yaml
-
-        return array_map(fn(SplFileInfo $file) => $loader->loadBy('name', $file->getRealPath()), iterator_to_array($files->getIterator()));
+        return array_map(fn(SplFileInfo $file) => $loader->loadBy(Quiz::class, ['name' => $file->getRealPath()]), iterator_to_array($files->getIterator()));
     }
 
     /**

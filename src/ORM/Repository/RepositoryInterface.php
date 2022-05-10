@@ -2,13 +2,12 @@
 
 namespace Quiz\ORM\Repository;
 
+use Quiz\Core\Collection;
+use Quiz\Domain\Quiz;
+
 interface RepositoryInterface
 {
-    public function all(): array;
-
-    public function loadByName(string $name): object;
-
-    public function loadById(int $name): object;
-
-    public function save(object $quiz): bool;
+    public function save(Quiz $quiz): bool;
+    public function loadBy(string $class, array $criteria): object;
+    public function getList(): Collection;
 }
