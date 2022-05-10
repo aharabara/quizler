@@ -20,7 +20,7 @@ class IndexController
 
     public function index(Request $request): Response
     {
-        return new Response(file_get_contents(__DIR__ . '/../../resources/main/main.html'));
+        return new Response(file_get_contents(ROOT_FOLDER . '/resources/main/main.html'));
     }
 
     public function question(Request $request): JsonResponse

@@ -50,7 +50,8 @@ class ToDoCommand extends Command
             '[x] Finish symfony/http-kernel quiz 75/168.',
             '[x] Finish symfony/http-kernel quiz 100/168.',
             '[x] Write a fast search for questions/answers with tnt search',
-            '[ ] Finish symfony/http-kernel quiz 125/168.',
+            '[x] Finish symfony/http-kernel quiz 125/168.',
+            '[x] Move command generate-from to db storage',
             '[ ] Write a primitive frontend using http kernel with builtin server in order to perform quiz runs.',
             '[ ] Finish symfony/http-kernel quiz 150/168.',
             '[ ] Implement a indexer that will extract references and will store them in a separate index-table so it can be used to jump across related questions and answers',
@@ -58,7 +59,6 @@ class ToDoCommand extends Command
             '[ ] Finish symfony/http-kernel quiz 168/168.',
             '[ ] Start testing quiz',
             '[ ] Cover with tests',
-            '[ ] Move command generate-from to db storage',
             '[ ] Implement second adapter for search to use simple SQL instead of TNT',
             '[ ] WebsocketKernel for searches and etc. Maybe used instead of http in a give-me-fragment(SSI/ESI lol) mode,',
             '[ ] https://www.w3.org/TR/edge-arch/', # fook # fook me twice it is also about ESI
@@ -72,6 +72,7 @@ class ToDoCommand extends Command
                 '[ ] https://foshttpcachebundle.readthedocs.org/',
             '[ ] Write a Command bus with handlers autoresolving though method signature + reflectio API.',
             '[ ] Replace is_correct with priority levels to sort responses from correct to less correct and wrong (or use statuses)',
+            '[ ] Write SAML specification quiz',
             '[ ] Write JSON:API specification quiz',
             '[ ] Write Jsend specification quiz',
             '[ ] Write SOAP specification quiz',
@@ -97,6 +98,8 @@ class ToDoCommand extends Command
              *                  ->withEncodersFor('json', 'xml');
              */
             '[ ] When a quiz question has more than one answer we can output a choice between answers (1 correct other are wrong).',
+            '[ ] Locking mechanisms. Filesystem locks.',
+            '[ ] HTTP headers and directives.',
         ]);
 
         return Command::SUCCESS;

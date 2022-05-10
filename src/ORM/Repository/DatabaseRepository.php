@@ -35,7 +35,7 @@ class DatabaseRepository implements RepositoryInterface
     {
         $this->tableExtractor = new CachedDefinitionExtractor(new TableDefinitionExtractor());
         try {
-            $this->connection = new PDO('sqlite:' . DB_PATH);
+            $this->connection = new PDO('sqlite:' . \DB_PATH);
         } catch (PDOException $e) {
             die ('DB Error. ' . $e->getMessage());
         }

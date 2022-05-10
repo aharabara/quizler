@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__."/../vendor/autoload.php";
+require_once __DIR__."/../bootloader.php";
 
 $eventDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
 $eventDispatcher->addSubscriber(new \Quiz\Http\Listener\RouterListener());

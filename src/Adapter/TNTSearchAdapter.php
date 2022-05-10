@@ -21,7 +21,7 @@ class TNTSearchAdapter
         $this->search = new TNTSearch;
         $this->search->loadConfig([
             'driver'    => 'sqlite',
-            'database'  => DB_PATH,
+            'database'  => \DB_PATH,
             'storage'   => STORAGE_FOLDER.'/indexes/',
             'stemmer'   => \TeamTNT\TNTSearch\Stemmer\PorterStemmer::class//optional
         ]);
@@ -57,7 +57,7 @@ class TNTSearchAdapter
         $ids = implode(',', $ids);
 
         $result = $this->repository->queryAll("SELECT * FROM {$tableDef->getName()} WHERE id IN ($ids)");
-        return array_column($result, 'content', 'id');
+        return $result->pluck('content', 'id')->toArray();
     }
 
 }
