@@ -19,8 +19,11 @@ class RunQuizCommand extends Command
     public function __construct(string $name = null)
     {
         parent::__construct($name);
-        $this->repository = new DatabaseRepository();
 
+    }
+    public function getDatabaseRepository(): DatabaseRepository
+    {
+        return $this->repository ??= new DatabaseRepository();
     }
 
     /**
@@ -68,7 +71,7 @@ class RunQuizCommand extends Command
             $style->writeln("<info>Correct answer</info> : " . $question->getFirstAnswer());
             $style->writeln("<comment>Your answer</comment>    : " . $response);
 
-            $this->repository
+            $this->getDatabaseRepository()
                 ->save(
                     (new Answer())
                     ->setQuestion($question)
@@ -89,10 +92,10 @@ class RunQuizCommand extends Command
 
     protected function chooseQuiz(SymfonyStyle $style): Quiz
     {
-        $choices = $this->repository->getList();
+        $choices = $this->getDatabaseRepository()->getList();
 
         $name = $style->choice("Choose your quiz:", $choices->getArrayCopy());
 
-        return $this->repository->loadBy(Quiz::class, ['name' => $name]);
+        return $this->getDatabaseRepository()->loadBy(Quiz::class, ['name' => $name]);
     }
 }

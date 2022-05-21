@@ -42,7 +42,7 @@ class YamlRepository implements RepositoryInterface
 
     public function loadBy(string $class, array $criteria): Quiz
     {
-        [$value] = $criteria;
+        $value = array_shift($criteria);
         $file = "{$this->folder}/$value.yaml";
         if (!file_exists($file)) {
             throw new LogicException("Quiz '$value' does not exist.");

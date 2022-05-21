@@ -10,6 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 class DeployCommand extends Command
 {
@@ -32,6 +33,12 @@ class DeployCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $fs = new Filesystem();
+
+        if (!$fs->exists(QUIZZES_FOLDER_PATH)) {
+            $fs->mkdir(QUIZZES_FOLDER_PATH);
+        }
+
         $dbDriver = new DatabaseRepository();
 
         $force = false;

@@ -52,15 +52,15 @@ class ToDoCommand extends Command
             '[x] Write a fast search for questions/answers with tnt search',
             '[x] Finish symfony/http-kernel quiz 125/168.',
             '[x] Move command generate-from to db storage',
-            '[ ] Write a primitive frontend using http kernel with builtin server in order to perform quiz runs.',
-            '[ ] Finish symfony/http-kernel quiz 150/168.',
-            '[ ] Implement a indexer that will extract references and will store them in a separate index-table so it can be used to jump across related questions and answers',
-            '[ ] Implement graph-like UI that will tell me what tags/references are related to current question/answer and give me possibility to jump to it.',
-            '[ ] Finish symfony/http-kernel quiz 168/168.',
+            '[x] Finish symfony/http-kernel quiz 150/168.',
+            '[x] Finish symfony/http-kernel quiz 168/168.',
             '[ ] Start testing quiz',
             '[ ] Cover with tests',
+            '[ ] Write a primitive frontend using http kernel with builtin server in order to perform quiz runs.',
+            '[ ] Implement a indexer that will extract references and will store them in a separate index-table so it can be used to jump across related questions and answers',
+            '[ ] Implement graph-like UI that will tell me what tags/references are related to current question/answer and give me possibility to jump to it.',
             '[ ] Implement second adapter for search to use simple SQL instead of TNT',
-            '[ ] WebsocketKernel for searches and etc. Maybe used instead of http in a give-me-fragment(SSI/ESI lol) mode,',
+            '[ ] WebsocketKernel for searches and etc. Maybe used instead of http in a give-me-fragment(SSI/ESI lol) mode.',
             '[ ] https://www.w3.org/TR/edge-arch/', # fook # fook me twice it is also about ESI
             '[ ] https://www.w3.org/1999/04/Editing/#3.1', # sheet
             '[ ] Symfony http cache.', # about caching standart used by symfony
@@ -70,7 +70,7 @@ class ToDoCommand extends Command
                 '[ ] https://www.mnot.net/cache_docs/',
                 '[ ] https://datatracker.ietf.org/doc/html/rfc7232/',
                 '[ ] https://foshttpcachebundle.readthedocs.org/',
-            '[ ] Write a Command bus with handlers autoresolving though method signature + reflectio API.',
+            '[ ] Write a Command bus with handlers autoresolving though method signature + reflection API.',
             '[ ] Replace is_correct with priority levels to sort responses from correct to less correct and wrong (or use statuses)',
             '[ ] Write SAML specification quiz',
             '[ ] Write JSON:API specification quiz',
@@ -78,6 +78,8 @@ class ToDoCommand extends Command
             '[ ] Write SOAP specification quiz',
             '[ ] Write OpenAPI specification quiz',
             '[ ] Write HATEOAS specification quiz',
+            '[ ] Locking mechanisms. Filesystem locks.',
+            '[ ] HTTP headers and directives.',
             '[ ] Fix column sorting with timestamps',
             '[ ] Write a query builder.',
             '[ ] Move quizzler:stats to run command.',
@@ -98,8 +100,6 @@ class ToDoCommand extends Command
              *                  ->withEncodersFor('json', 'xml');
              */
             '[ ] When a quiz question has more than one answer we can output a choice between answers (1 correct other are wrong).',
-            '[ ] Locking mechanisms. Filesystem locks.',
-            '[ ] HTTP headers and directives.',
         ]);
 
         return Command::SUCCESS;

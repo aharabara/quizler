@@ -4,14 +4,11 @@ namespace Quiz\Console\Command;
 
 use Quiz\Console\OutputStyle\QuizStyle;
 use Quiz\Domain\Quiz;
-use Quiz\ORM\Repository\YamlRepository;
-use SplFileInfo;
+use Quiz\ORM\Repository\DatabaseRepository;
 use Symfony\Component\Console\Color;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Finder\Finder;
-use function Symfony\Component\String\s;
 
 class AnswerStatsCommand extends Command
 {
@@ -60,33 +57,10 @@ class AnswerStatsCommand extends Command
     /** @return Quiz[] */
     protected function loadQuizzes(): array
     {
-        $loader = new YamlRepository();
-        $finder = new Finder();
+        $loader = new DatabaseRepository();
 
-        // $HOME/.config/quizler/*.yaml
-
-        $files = $finder->in(QUIZZES_FOLDER_PATH)
-            ->name("*.yaml")
-            ->files();
-
-        return array_map(function (SplFileInfo $file) use ($loader) {
-            return $loader->loadBy(Quiz::class, ['name' => explode('.', $file->getFilename())[0]]);
-        }, iterator_to_array($files->getIterator()));
-    }
-
-    /**
-     * @param string $text
-     * @param string $bar
-     * @return string
-     */
-    protected function textWithSidebar(string $bar, string $text): string
-    {
-        $barColor = new Color("cyan");
-        $bar = ($barColor)->apply($bar);
-        return
-            s($text)
-                ->wordwrap(getenv('COLUMNS') - strlen($bar))
-                ->prepend("$bar<info>")
-                ->append("</info>");
+        return $loader->getList()
+            ->map(fn(string $name): Quiz => $loader->loadBy(Quiz::class, ['name' => $name]))
+            ->toArray();
     }
 }

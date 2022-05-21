@@ -34,11 +34,7 @@ class DatabaseRepository implements RepositoryInterface
     public function __construct()
     {
         $this->tableExtractor = new CachedDefinitionExtractor(new TableDefinitionExtractor());
-        try {
-            $this->connection = new PDO('sqlite:' . \DB_PATH);
-        } catch (PDOException $e) {
-            die ('DB Error. ' . $e->getMessage());
-        }
+        $this->connection = $this->getConnection();
         $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
 
         $camelCaseToSnakeCaseNameConverter = new CamelCaseToSnakeCaseNameConverter();
@@ -75,7 +71,7 @@ class DatabaseRepository implements RepositoryInterface
             if (!$force && $this->exists($model)) {
                 throw new LogicException('Quiz already exists');
             }
-            if ($force){
+            if ($force) {
                 // fixme use insert ignore by unique field
             }
             $this->insertQuiz($model);
@@ -217,7 +213,7 @@ class DatabaseRepository implements RepositoryInterface
         return new Collection($query->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    protected function first(string $class, array $criteria): array
+    protected function first(string $class, array $criteria): ?array
     {
         return $this
             ->all($class, $criteria, 1)
@@ -289,5 +285,17 @@ class DatabaseRepository implements RepositoryInterface
             $clause[] = "$field = $value";
         }
         return implode(' AND ', $clause);
+    }
+
+    public function getConnection(): PDO
+    {
+        try {
+            return new PDO('sqlite:' . \DB_PATH);
+        } catch (PDOException $e) {
+            if ($e->getCode() === 14) {
+                throw new RuntimeException('Application was not yet deployed. Please use `quizler deploy` command');
+            }
+            throw $e;
+        }
     }
 }
