@@ -92,4 +92,14 @@ class Quiz
     {
         $this->id = $id;
     }
+
+    public function hasQuestion(Question $question): bool
+    {
+        foreach ($this->questions as $ownQuestions) {
+            if ($ownQuestions->getQuestion() === $question->getQuestion()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

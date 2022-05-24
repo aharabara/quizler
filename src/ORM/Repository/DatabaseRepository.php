@@ -80,10 +80,9 @@ class DatabaseRepository implements RepositoryInterface
         return true;
     }
 
-    protected function exists(object $model): bool
+    public function exists(object $model): bool
     {
         $table = $this->tableExtractor->extract(get_class($model));
-        /* fixme create an attribute based uniqness check. */
         $field = $table->getUniqueColumn() ?? $table->getIdentityColumn();
 
         $refObj = new \ReflectionObject($model);

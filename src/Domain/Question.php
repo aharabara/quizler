@@ -7,6 +7,7 @@ use Quiz\ORM\Scheme\Attribute\Identificator;
 use Quiz\ORM\Scheme\Attribute\ParentRelation;
 use Quiz\ORM\Scheme\Attribute\ChildRelation;
 use Quiz\ORM\Scheme\Attribute\Searchable;
+use Quiz\ORM\Scheme\Attribute\Unique;
 use Quiz\ORM\Traits\Timestampable;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
@@ -16,6 +17,7 @@ class Question
     protected int $id;
 
     #[Searchable]
+    #[Unique]
     protected string $question;
 
     #[ChildRelation(Answer::class, 'id', 'question_id')]
