@@ -5,6 +5,7 @@ namespace Quiz\Console\Command;
 use Quiz\Domain\Question;
 use Quiz\Domain\Quiz;
 use Quiz\ORM\Repository\DatabaseRepository;
+use Quiz\ORM\Repository\YamlRepository;
 use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\Reflection\ReflectionClass;
 use Symfony\Component\Console\Command\Command;
@@ -16,18 +17,25 @@ use Symfony\Component\Console\Output\OutputInterface;
 class GenerateFromCommand extends Command
 {
     // the name of the command (the part after "bin/console")
+    const OPTION_INTO_FILE_STORAGE = "into-file-storage";
+    const OPTION_REWRITE = "rewrite";
     protected static $defaultName = 'generate-from';
 
     protected function configure()
     {
         $this->addArgument("folder", InputArgument::REQUIRED);
-        $this->addOption("rewrite", 'r', InputOption::VALUE_NEGATABLE, '', false);
+        $this->addOption(self::OPTION_INTO_FILE_STORAGE, 's', InputOption::VALUE_NEGATABLE, 'Generate into yaml file', false);
+        $this->addOption(self::OPTION_REWRITE, 'r', InputOption::VALUE_NEGATABLE, '', false);
         $this->setDescription("...");
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $repository = new DatabaseRepository();
+        if ($input->getOption(self::OPTION_INTO_FILE_STORAGE)) {
+            $repository = new YamlRepository();
+        } else {
+            $repository = new DatabaseRepository();
+        }
 
         $classInfo = (new BetterReflection());
 
@@ -70,7 +78,7 @@ class GenerateFromCommand extends Command
 
         $quiz->setName($this->getTestName($folder));
 
-        $repository->save($quiz, $input->getOption('rewrite'));
+        $repository->save($quiz, $input->getOption(self::OPTION_REWRITE));
 
         $output->writeln("Test generated.");
 

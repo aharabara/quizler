@@ -54,16 +54,25 @@ class YamlRepository implements RepositoryInterface
 
     public function save(Quiz $quiz, bool $force = false): bool
     {
-        $serializedQuiz = $this->serializer->serialize($quiz, 'yaml', [
-            'yaml_inline' => 4,
-            YamlEncoder::YAML_INDENT => 0,
-            AbstractNormalizer::IGNORED_ATTRIBUTES => ['id', 'createdAt', 'updatedAt'],
-            AbstractObjectNormalizer::SKIP_NULL_VALUES => true,
-        ]);
 
         if (!$force && $this->quizExists($quiz)) {
             throw new \LogicException('Quiz already exists');
         }
+
+        $serializedQuiz = $this->serializer->normalize($quiz, 'yaml', [
+            AbstractNormalizer::IGNORED_ATTRIBUTES => ['id', 'createdAt', 'updatedAt'],
+            AbstractObjectNormalizer::SKIP_NULL_VALUES => true,
+        ]);
+        $serializedQuiz['questions'] = (new Collection($serializedQuiz['questions']))
+            ->map(array_filter(...))
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $serializedQuiz = $this->serializer->serialize($serializedQuiz, 'yaml', [
+            'yaml_inline' => 4,
+            YamlEncoder::YAML_INDENT => 0,
+        ]);
 
         file_put_contents($this->getFileFullPathFor($quiz), $serializedQuiz);
 

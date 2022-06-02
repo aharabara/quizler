@@ -28,7 +28,8 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
         $this->reflector = (new BetterReflection())->reflector();
     }
 
-    public function extractColumn(ReflectionProperty $property): ?ColumnDefinition {
+    protected function extractColumn(ReflectionProperty $property): ?ColumnDefinition
+    {
         $type = $property->getType();
 
         if ($this->isScalarProperty($type)) {
@@ -49,12 +50,13 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
         return null;
     }
 
+    /** @return ColumnDefinition[] */
     public function extract(string $className): array
     {
         $class = $this->reflector->reflectClass($className);
 
         $columns = [];
-        foreach ($class->getProperties() as $property){
+        foreach ($class->getProperties() as $property) {
             $columns[] = $this->extractColumn($property);
         }
 

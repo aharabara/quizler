@@ -84,4 +84,14 @@ class Collection extends \ArrayObject
         return sprintf($template, ...$this->getArrayCopy());
     }
 
+    public function values(): static
+    {
+        return new self(array_values($this->getArrayCopy()));
+    }
+
+    public function keys(): static
+    {
+        return new self(array_keys($this->getArrayCopy()));
+    }
+
 }

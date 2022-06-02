@@ -17,11 +17,17 @@
         "phpunit/phpunit": "^9.5",
         "symfony/routing": "^6.0",
         "teamtnt/tntsearch": "^2.9",
-        "monolog/monolog": "^2.5"
+        "monolog/monolog": "^2.5",
+        "symfony/runtime": "^6.1"
     },
     "autoload": {
         "psr-4": {
             "Quiz\\": "src"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "symfony/runtime": true
         }
     }
 }

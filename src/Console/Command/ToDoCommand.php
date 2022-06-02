@@ -61,8 +61,11 @@ class ToDoCommand extends Command
             '[ ] Check what you can do with gherkin',
             '[ ] Cover application with tests',
             '[ ] Write a query builder.',
+            '[ ] Add --only-questions flag into export/import to minimize the size of the file.',
             '[ ] Write an interactive todo app based on yaml that can be integrated into quizzler',
             '[ ] Docker quiz',
+            '[ ] CodeReferenceStemmer for faster search through questions.',
+            '[ ] Virtual DOM',
             '[ ] Siege gorilla - takes a OAS and iterates over each endpoint passing payloads that were mixed with correct and wrong data and data types.' .
             'After a run it will ask for is the responses of the system are correct and will try to figure out patterns of responses.' .
             'On second run it will only ask for differences in behaviour. If differences are ok - it will try to figure out the pattern, if they are not ok, then it will proved a set of scenarios where it happens.',
