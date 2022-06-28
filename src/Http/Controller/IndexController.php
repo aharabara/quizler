@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IndexController
 {
-
     private DatabaseRepository $repository;
 
     public function __construct()

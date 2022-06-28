@@ -24,12 +24,12 @@ class TableDefinition
 
     public function getUniqueColumn(): ?ColumnDefinition
     {
-        return $this->columns->firstWhere(fn(ColumnDefinition $columnDef) => $columnDef->isUniqueField());
+        return $this->columns->firstWhere(fn (ColumnDefinition $columnDef) => $columnDef->isUniqueField());
     }
 
     public function getIdentityColumn(): ?ColumnDefinition
     {
-        return $this->columns->firstWhere(fn(ColumnDefinition $columnDef) => $columnDef->isIdentityField());
+        return $this->columns->firstWhere(fn (ColumnDefinition $columnDef) => $columnDef->isIdentityField());
     }
 
     public function getClass(): string
@@ -50,9 +50,8 @@ class TableDefinition
         });
 
         return $this->columns
-            ->filter(fn(ColumnDefinition $def) => !$def->isCollectionField())
-            ->map(fn($col) => "    $col")
+            ->filter(fn (ColumnDefinition $def) => !$def->isCollectionField())
+            ->map(fn ($col) => "    $col")
             ->sprintf("CREATE TABLE IF NOT EXISTS {$this->name} (\n%s\n);", ",\n");
     }
-
 }

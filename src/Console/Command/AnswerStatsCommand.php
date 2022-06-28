@@ -66,7 +66,7 @@ class AnswerStatsCommand extends Command
         $loader = new DatabaseRepository();
 
         return $loader->getList()
-            ->map(fn(string $name): Quiz => $loader->loadBy(Quiz::class, ['name' => $name]))
+            ->map(fn (string $name): Quiz => $loader->loadBy(Quiz::class, ['name' => $name]))
             ->toArray();
     }
 }

@@ -23,7 +23,7 @@ class TNTSearchAdapter
         $this->repository = new DatabaseRepository();
         $this->tableDefinitionExtractor = new TableDefinitionExtractor();
 
-        $this->search = new TNTSearch;
+        $this->search = new TNTSearch();
 
         $this->search->loadConfig([
             'driver'    => 'sqlite',
@@ -39,8 +39,8 @@ class TNTSearchAdapter
         $tableDef = $this->tableDefinitionExtractor->extract($class);
 
         $fields = $tableDef->getColumns()
-            ->filter(fn(ColumnDefinition $column) => $column->isSearchable() || $column->isIdentityField())
-            ->map(fn(ColumnDefinition $column) => $column->getName())
+            ->filter(fn (ColumnDefinition $column) => $column->isSearchable() || $column->isIdentityField())
+            ->map(fn (ColumnDefinition $column) => $column->getName())
             ->toArray();
 
         $indexer = $this->search->createIndex("{$tableDef->getName()}.index");

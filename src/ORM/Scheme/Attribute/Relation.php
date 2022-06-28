@@ -8,9 +8,8 @@ abstract class Relation extends Key
         protected string $class,
         protected string $localKey,
         protected string $relationKey,
-    )
-    {
-        if (!class_exists($class)){
+    ) {
+        if (!class_exists($class)) {
             throw new \InvalidArgumentException('Relation requires an existing class.');
         }
         parent::__construct();
@@ -30,5 +29,4 @@ abstract class Relation extends Key
     {
         return $this->relationKey;
     }
-
 }

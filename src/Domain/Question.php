@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 
 class Question
 {
+    use Timestampable;
     #[Identificator()]
     protected int $id;
 
@@ -27,8 +28,6 @@ class Question
     #[Ignore]
     #[ParentRelation(Quiz::class, 'quiz_id', 'id')]
     private Quiz $quiz;
-
-    use Timestampable;
 
     /**
      * @param int $id

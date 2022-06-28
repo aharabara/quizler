@@ -4,10 +4,8 @@ namespace Quiz\Core;
 
 class Collection extends \ArrayObject
 {
-
     public function groupBy(string $key): static
     {
-
         $data = [];
         foreach ($this as $record) {
             $data[$record[$key]][] = $record;
@@ -18,7 +16,6 @@ class Collection extends \ArrayObject
 
     public function keyBy(string $key): static
     {
-
         $data = [];
         foreach ($this as $record) {
             $data[$record[$key]] = $record;
@@ -93,5 +90,4 @@ class Collection extends \ArrayObject
     {
         return new self(array_keys($this->getArrayCopy()));
     }
-
 }

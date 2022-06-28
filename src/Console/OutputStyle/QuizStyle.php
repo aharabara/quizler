@@ -1,6 +1,7 @@
 <?php
 
 namespace Quiz\Console\OutputStyle;
+
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class QuizStyle extends SymfonyStyle

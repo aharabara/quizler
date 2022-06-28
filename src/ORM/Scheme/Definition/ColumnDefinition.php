@@ -25,49 +25,49 @@ class ColumnDefinition
         protected bool $nullable = true,
         protected mixed $default = null,
         Key ...$keys,
-    )
-    {
-        $this->type = match ($type){
+    ) {
+        $this->type = match ($type) {
             'int', 'bool' => 'integer',
             default => $type
         };
 
         $this->keys = $keys;
 
-        foreach ($this->keys as $key){
-            if ($key instanceof Searchable){
+        foreach ($this->keys as $key) {
+            if ($key instanceof Searchable) {
                 $this->isSearchable = true;
             }
-            if ($key instanceof Identificator){
+            if ($key instanceof Identificator) {
                 $this->isIdentity = true;
             }
-            if ($key instanceof ChildRelation){
+            if ($key instanceof ChildRelation) {
                 $this->isChildRelation = true;
             }
-            if ($key instanceof ParentRelation){
+            if ($key instanceof ParentRelation) {
                 $this->isParentRelation = true;
             }
-            if ($key instanceof Unique){
+            if ($key instanceof Unique) {
                 $this->isUnique = true;
             }
         }
 
-        if ($this->isIdentity){
+        if ($this->isIdentity) {
             $this->nullable = false;
         }
     }
 
-    public function __toString(){
+    public function __toString()
+    {
         $default = $this->default;
-        if (is_string($default)){
+        if (is_string($default)) {
             $default = "'$default'";
         }
 
         $default = $default ? "DEFAULT {$default}" : "";
 
         $constraint = '';
-        foreach ($this->keys as $key){
-            $constraint = match (get_class($key)){
+        foreach ($this->keys as $key) {
+            $constraint = match (get_class($key)) {
                 Identificator::class =>
                     "CONSTRAINT {$this->name}_pk PRIMARY KEY" .($key->isAutoincrement() ? " autoincrement" : ""),
                 Unique::class => "CONSTRAINT {$this->name}_uk UNIQUE",
@@ -114,8 +114,10 @@ class ColumnDefinition
 
     public function getRelationAttribute(): ?Relation
     {
-        foreach ($this->keys as $key){
-            if ($key instanceof Relation) return $key;
+        foreach ($this->keys as $key) {
+            if ($key instanceof Relation) {
+                return $key;
+            }
         }
         return null;
     }
@@ -124,6 +126,4 @@ class ColumnDefinition
     {
         return $this->isUnique;
     }
-
-
 }

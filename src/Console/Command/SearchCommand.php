@@ -71,9 +71,9 @@ class SearchCommand extends Command
 
                 $style->writeln("<info>query:</info> ".$query);
 
-                $words = array_filter(explode(" ", $query), fn($word) => !in_array($word, ['and', 'or']));
+                $words = array_filter(explode(" ", $query), fn ($word) => !in_array($word, ['and', 'or']));
 
-                $replacement = array_map(static fn($word) => "<comment>".trim($word, " -")."</comment>", $words);
+                $replacement = array_map(static fn ($word) => "<comment>".trim($word, " -")."</comment>", $words);
 
                 foreach (array_slice($rows, 0, 5) as $row) {
                     $output->writeln(" - ".str_replace($words, $replacement, $row));

@@ -2,7 +2,6 @@
 
 namespace Quiz\Http\Listener;
 
-
 use Quiz\Http\Controller\IndexController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -24,7 +23,7 @@ class RouterListener implements EventSubscriberInterface
     {
         $request = $event->getRequest();
         /* FIXME write a route matcher */
-        $controller = match ($request->getMethod().' '.$request->getPathInfo()){
+        $controller = match ($request->getMethod().' '.$request->getPathInfo()) {
             "GET /" => [IndexController::class, 'index'],
             "GET /question" => [IndexController::class, 'question'],
             "GET /answer" => [IndexController::class, 'answer'],

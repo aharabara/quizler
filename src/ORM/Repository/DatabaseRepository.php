@@ -109,7 +109,7 @@ class DatabaseRepository implements RepositoryInterface
             Question::class,
             Answer::class
         ];
-        $tableDefinitionExtractor = new TableDefinitionExtractor;
+        $tableDefinitionExtractor = new TableDefinitionExtractor();
 
         foreach ($models as $model) {
             $schema = $tableDefinitionExtractor
@@ -134,7 +134,8 @@ class DatabaseRepository implements RepositoryInterface
         $query = $this->connection
             ->prepare(
                 "INSERT INTO questions (question,tip,quiz_id,updated_at,created_at)" .
-                " VALUES (:question, :tip, :quiz_id, :updated_at, :created_at)");
+                " VALUES (:question, :tip, :quiz_id, :updated_at, :created_at)"
+            );
 
         $query->bindValue('question', $question->getQuestion());
         $query->bindValue('tip', $question->getTip());
@@ -163,7 +164,8 @@ class DatabaseRepository implements RepositoryInterface
         $query = $this->connection
             ->prepare(
                 "INSERT INTO answers (question_id, content, is_correct ,updated_at,created_at)" .
-                " VALUES (:question_id, :content, :is_correct, :updated_at, :created_at)");
+                " VALUES (:question_id, :content, :is_correct, :updated_at, :created_at)"
+            );
 
         $query->bindValue('question_id', $answer->getQuestion()->getId());
         $query->bindValue('content', $answer->getContent());
@@ -184,7 +186,8 @@ class DatabaseRepository implements RepositoryInterface
         $query = $this->connection
             ->prepare(
                 "INSERT INTO quizzes (name, version, created_at, updated_at)" .
-                " VALUES (:name, :version, :created_at, :updated_at)");
+                " VALUES (:name, :version, :created_at, :updated_at)"
+            );
 
         $query->bindValue('name', $quiz->getName());
         $query->bindValue('version', $quiz->getVersion());

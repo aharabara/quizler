@@ -34,7 +34,7 @@ class ExportCommand extends Command
         $fileRepo = new YamlRepository();
         $dbRepo = new DatabaseRepository();
 
-        foreach ($dbRepo->getList() as $name){
+        foreach ($dbRepo->getList() as $name) {
             $output->writeln("Exporting $name.");
             $fileRepo->save($dbRepo->loadBy(Quiz::class, ['name' => $name]), $input->getOption('force'));
         }
