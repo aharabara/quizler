@@ -17,18 +17,19 @@ class DeployCommand extends Command
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'deploy';
 
-    public function __construct(string $name = null)
-    {
-        parent::__construct($name);
-    }
-
-    protected function configure()
+    /**
+     * @return void
+     */
+    protected function configure(): void
     {
         $this->addOption('force', 'f', InputOption::VALUE_NEGATABLE, 'drop db before deploy', false);
         $this->setDescription('Create a quiz');
     }
 
     /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -42,6 +43,7 @@ class DeployCommand extends Command
         $dbDriver = new DatabaseRepository();
 
         $force = false;
+
         if ($input->getOption('force')) {
             $response = readline('Sure? [y/N] >') ?: 'n';
             $force = strtolower($response) === 'y';
@@ -53,10 +55,10 @@ class DeployCommand extends Command
             $dbDriver->drop(Answer::class);
             $output->writeln("DB dropped.");
         }
+
         $dbDriver->deploy();
         $output->writeln("DB deployed.");
 
         return Command::SUCCESS;
     }
-
 }

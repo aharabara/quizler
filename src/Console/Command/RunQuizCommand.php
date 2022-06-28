@@ -14,13 +14,12 @@ class RunQuizCommand extends Command
 {
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'run';
+
     private DatabaseRepository $repository;
 
-    public function __construct(string $name = null)
-    {
-        parent::__construct($name);
-
-    }
+    /**
+     * @return DatabaseRepository
+     */
     public function getDatabaseRepository(): DatabaseRepository
     {
         return $this->repository ??= new DatabaseRepository();
@@ -29,7 +28,7 @@ class RunQuizCommand extends Command
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->addOption('stop-on-fail', 'f');
         $this->addOption('start-from-empty', 'e');
@@ -37,9 +36,10 @@ class RunQuizCommand extends Command
     }
 
     /**
-     * @return int
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
-     * @psalm-return 0|1
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -54,29 +54,34 @@ class RunQuizCommand extends Command
         $total = count($questions);
 
         foreach ($questions as $index => $question) {
-            if ($input->getOption('start-from-empty')){
-                if (!empty($question->getFirstAnswer())) continue; // skip all present answers
-            }
-            $realIndex = $index + 1;
-            $style->section("{$quiz->getName()} [{$realIndex}/{$total}]");
-            if ($question->getTip()) {
-                $style->writeln("<comment>{$question->getTip()}</comment>");
-            }
-            $response = $style->ask($question->getQuestion() . " ");
-
-            if (empty($response) && $style->confirm("Wanna skip?")){
+            // skip all present answers
+            if ($input->getOption('start-from-empty') && !empty($question->getFirstAnswer())) {
                 continue;
             }
 
-            $style->writeln("<info>Correct answer</info> : " . $question->getFirstAnswer());
-            $style->writeln("<comment>Your answer</comment>    : " . $response);
+            $realIndex = $index + 1;
+
+            $style->section("{$quiz->getName()} [{$realIndex}/{$total}]");
+
+            if ($question->getTip()) {
+                $style->writeln("<comment>{$question->getTip()}</comment>");
+            }
+
+            $response = $style->ask($question->getQuestion()." ");
+
+            if (empty($response) && $style->confirm("Wanna skip?")) {
+                continue;
+            }
+
+            $style->writeln("<info>Correct answer</info> : ".$question->getFirstAnswer());
+            $style->writeln("<comment>Your answer</comment>    : ".$response);
 
             $this->getDatabaseRepository()
                 ->save(
                     (new Answer())
-                    ->setQuestion($question)
-                    ->setContent($response)
-                    ->setIsCorrect($style->confirm("Guessed?:"))
+                        ->setQuestion($question)
+                        ->setContent($response)
+                        ->setIsCorrect($style->confirm("Guessed?:"))
                 );
 
             if ($input->getOption('stop-on-fail')) {
@@ -86,10 +91,14 @@ class RunQuizCommand extends Command
 
 //        (new ReportExporter(REPORTS_FOLDER_PATH))->export($quiz);
 
-
         return Command::SUCCESS;
     }
 
+    /**
+     * @param SymfonyStyle $style
+     *
+     * @return Quiz
+     */
     protected function chooseQuiz(SymfonyStyle $style): Quiz
     {
         $choices = $this->getDatabaseRepository()->getList();

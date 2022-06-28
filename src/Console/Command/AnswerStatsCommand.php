@@ -18,21 +18,24 @@ class AnswerStatsCommand extends Command
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setDescription("...");
     }
 
     /**
-     * @return int
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
-     * @psalm-return 0|1
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $style = new QuizStyle($input, $output);
         $quizzes = $this->loadQuizzes();
+
         ksort($quizzes);
+
         $quizzes = array_reverse($quizzes);
 
         $style->clear();
@@ -40,8 +43,10 @@ class AnswerStatsCommand extends Command
 
         foreach ($quizzes as $quiz) {
             $total = count($quiz->getQuestions());
+
             $availableQuestions = $quiz->availableQuestions();
-            $color = match($total){
+
+            $color = match ($total) {
                 0 => new Color("white"),
                 $availableQuestions => new Color("green"),
                 default => new Color("yellow"),
@@ -49,6 +54,7 @@ class AnswerStatsCommand extends Command
 
             $style->writeln($color->apply("Quiz '{$quiz->getName()}' is {$availableQuestions}/{$total} done"));
         }
+
         $style->writeln("");
 
         return Command::SUCCESS;
