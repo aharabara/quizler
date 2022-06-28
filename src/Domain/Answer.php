@@ -10,6 +10,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 
 class Answer
 {
+    use Timestampable;
     #[Identificator()]
     protected int $id;
 
@@ -20,8 +21,6 @@ class Answer
     #[Ignore]
     #[ParentRelation(Question::class, 'question_id', 'id')]
     protected Question $question;
-
-    use Timestampable;
 
     public function getId(): int
     {
@@ -65,5 +64,4 @@ class Answer
         $this->isCorrect = $isCorrect;
         return $this;
     }
-
 }

@@ -12,7 +12,7 @@ class CachedDefinitionExtractor implements DefinitionExtractorInterface
 
     public function extract(string $className)
     {
-        if (!isset($this->cache[$className])){
+        if (!isset($this->cache[$className])) {
             $this->cache[$className] = $this->extractor->extract($className);
         }
         return $this->cache[$className];

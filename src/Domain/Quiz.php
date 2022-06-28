@@ -9,6 +9,7 @@ use Quiz\ORM\Traits\Timestampable;
 
 class Quiz
 {
+    use Timestampable;
     #[Identificator()]
     protected ?int $id = null;
 
@@ -16,8 +17,6 @@ class Quiz
     protected string $name = 'not-set';
 
     protected int $version = 1;
-
-    use Timestampable;
 
     /** @var Question[] */
     #[ChildRelation(Question::class, 'id', 'quiz_id')]

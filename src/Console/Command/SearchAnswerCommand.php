@@ -70,7 +70,7 @@ class SearchAnswerCommand extends Command
         $loader = new DatabaseRepository();
 
         return array_map(
-            static fn(SplFileInfo $file) => $loader->loadBy(Quiz::class, ['name' => $file->getRealPath()]),
+            static fn (SplFileInfo $file) => $loader->loadBy(Quiz::class, ['name' => $file->getRealPath()]),
             iterator_to_array($files->getIterator())
         );
     }

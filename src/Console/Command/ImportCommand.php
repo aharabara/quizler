@@ -34,10 +34,10 @@ class ImportCommand extends Command
         $fileDriver = new YamlRepository();
         $dbDriver = new DatabaseRepository();
 
-        foreach ($fileDriver->getList() as $name){
+        foreach ($fileDriver->getList() as $name) {
             $quiz = $fileDriver->loadBy(Quiz::class, ['name' => $name]);
 
-            if (!$dbDriver->exists($quiz)){
+            if (!$dbDriver->exists($quiz)) {
                 $output->writeln("Importing $name.");
                 $dbDriver->save($quiz, $input->getOption('force'));
                 continue;
@@ -48,7 +48,7 @@ class ImportCommand extends Command
             $output->writeln("Updating $name.");
 
             foreach ($quiz->getQuestions() as $question) {
-                if (!$dbQuiz->hasQuestion($question)){
+                if (!$dbQuiz->hasQuestion($question)) {
                     $output->writeln("- {$quiz->getName()} : {$question->getQuestion()}.");
                     $dbQuiz->addQuestion($question);
                     $dbDriver->save($question);

@@ -16,5 +16,4 @@ class Identificator extends Key
     {
         return $this->autoincrement;
     }
-
 }

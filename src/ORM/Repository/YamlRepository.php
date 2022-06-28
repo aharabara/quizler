@@ -54,7 +54,6 @@ class YamlRepository implements RepositoryInterface
 
     public function save(Quiz $quiz, bool $force = false): bool
     {
-
         if (!$force && $this->quizExists($quiz)) {
             throw new \LogicException('Quiz already exists');
         }
@@ -104,6 +103,4 @@ class YamlRepository implements RepositoryInterface
 
         return new Collection($choices);
     }
-
-
 }

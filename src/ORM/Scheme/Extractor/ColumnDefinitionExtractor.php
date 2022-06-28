@@ -18,7 +18,7 @@ use function Symfony\Component\String\s;
 
 class ColumnDefinitionExtractor implements DefinitionExtractorInterface
 {
-    const SCALARS = [
+    public const SCALARS = [
         'int', 'null', 'string', 'float', 'bool', 'double'
     ];
     private Reflector $reflector;
@@ -161,5 +161,4 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
             ...$this->getConstraintKeys($property)
         );
     }
-
 }
