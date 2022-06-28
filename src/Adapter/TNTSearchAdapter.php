@@ -5,12 +5,17 @@ namespace Quiz\Adapter;
 use Quiz\ORM\Repository\DatabaseRepository;
 use Quiz\ORM\Scheme\Definition\ColumnDefinition;
 use Quiz\ORM\Scheme\Extractor\TableDefinitionExtractor;
+use TeamTNT\TNTSearch\Exceptions\IndexNotFoundException;
+use TeamTNT\TNTSearch\Stemmer\PorterStemmer;
 use TeamTNT\TNTSearch\TNTSearch;
+use const DB_PATH;
 
 class TNTSearchAdapter
 {
     private TNTSearch $search;
+
     private TableDefinitionExtractor $tableDefinitionExtractor;
+
     private DatabaseRepository $repository;
 
     public function __construct()
@@ -19,36 +24,45 @@ class TNTSearchAdapter
         $this->tableDefinitionExtractor = new TableDefinitionExtractor();
 
         $this->search = new TNTSearch;
+
         $this->search->loadConfig([
             'driver'    => 'sqlite',
-            'database'  => \DB_PATH,
+            'database'  => DB_PATH,
             'storage'   => STORAGE_FOLDER.'/indexes/',
-            'stemmer'   => \TeamTNT\TNTSearch\Stemmer\PorterStemmer::class//optional
+            'stemmer'   => PorterStemmer::class
         ]);
     }
 
     /*fixme*/
     public function indexTable(string $class): void
     {
-
         $tableDef = $this->tableDefinitionExtractor->extract($class);
 
         $fields = $tableDef->getColumns()
-            ->filter(fn (ColumnDefinition $column) => $column->isSearchable() || $column->isIdentityField())
+            ->filter(fn(ColumnDefinition $column) => $column->isSearchable() || $column->isIdentityField())
             ->map(fn(ColumnDefinition $column) => $column->getName())
             ->toArray();
-
 
         $indexer = $this->search->createIndex("{$tableDef->getName()}.index");
 
         $fields = implode(',', $fields);
+
         $indexer->query("SELECT {$fields} FROM {$tableDef->getName()};");
         $indexer->run();
     }
 
+    /**
+     * @param string $class
+     * @param string $query
+     *
+     * @throws IndexNotFoundException
+     *
+     * @return array
+     */
     public function search(string $class, string $query): array
     {
         $tableDef = $this->tableDefinitionExtractor->extract($class);
+
         $this->search->asYouType = true;
         $this->search->selectIndex("{$tableDef->getName()}.index");
 
@@ -57,7 +71,7 @@ class TNTSearchAdapter
         $ids = implode(',', $ids);
 
         $result = $this->repository->queryAll("SELECT * FROM {$tableDef->getName()} WHERE id IN ($ids)");
+
         return $result->pluck('content', 'id')->toArray();
     }
-
 }
