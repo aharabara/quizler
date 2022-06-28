@@ -18,16 +18,24 @@
         "symfony/routing": "^6.0",
         "teamtnt/tntsearch": "^2.9",
         "monolog/monolog": "^2.5",
-        "symfony/runtime": "^6.1"
+        "symfony/runtime": "^6.1",
+        "friendsofphp/php-cs-fixer": "^3.8"
     },
     "autoload": {
         "psr-4": {
             "Quiz\\": "src"
         }
     },
+    "scripts": {
+        "phpstan": "phpstan analyse -c phpstan.neon",
+        "code-fix": "php-cs-fixer fix src"
+    },
     "config": {
         "allow-plugins": {
             "symfony/runtime": true
         }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.7"
     }
 }
