@@ -69,8 +69,7 @@ class GenerateFromCommand extends Command
             }
 
             $classInfo = $reflector->reflectClass($class);
-            $shortName = $this->getShortenedName($classInfo);
-            $question = $this->prepareQuestion($classInfo, $shortName);
+            $question = $this->prepareQuestion($classInfo);
 
             $quiz->addQuestion($question);
         }
@@ -87,9 +86,11 @@ class GenerateFromCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function prepareQuestion(ReflectionClass $classInfo, string $shortName): Question
+    private function prepareQuestion(ReflectionClass $classInfo): Question
     {
         $question = new Question();
+
+        $shortName = $this->getShortenedName($classInfo);
 
         $question
             ->setQuestion(
