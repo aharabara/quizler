@@ -27,20 +27,8 @@ class GenerateFromCommand extends Command
     {
         $this
             ->addArgument("folder", InputArgument::REQUIRED)
-            ->addOption(
-                self::OPTION_INTO_FILE_STORAGE,
-                's',
-                InputOption::VALUE_NEGATABLE,
-                'Generate into yaml file',
-                false
-            )
-            ->addOption(
-                self::OPTION_REWRITE,
-                'r',
-                InputOption::VALUE_NEGATABLE,
-                '',
-                false
-            )
+            ->addOption(self::OPTION_INTO_FILE_STORAGE, 's', InputOption::VALUE_NEGATABLE, 'Generate into yaml file', false)
+            ->addOption(self::OPTION_REWRITE, 'r', InputOption::VALUE_NEGATABLE, '', false)
             ->setDescription("...");
     }
 
