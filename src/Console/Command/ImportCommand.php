@@ -15,33 +15,38 @@ class ImportCommand extends Command
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'import';
 
-    public function __construct(string $name = null)
-    {
-        parent::__construct($name);
-    }
-
-    protected function configure()
+    /**
+     * @return void
+     */
+    protected function configure(): void
     {
         $this->addOption('force', 'f', InputOption::VALUE_NEGATABLE, '', false);
     }
 
     /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $fileDriver = new YamlRepository();
         $dbDriver = new DatabaseRepository();
+
         foreach ($fileDriver->getList() as $name){
             $quiz = $fileDriver->loadBy(Quiz::class, ['name' => $name]);
+
             if (!$dbDriver->exists($quiz)){
                 $output->writeln("Importing $name.");
                 $dbDriver->save($quiz, $input->getOption('force'));
                 continue;
             }
+
             $dbQuiz = $dbDriver->loadBy(Quiz::class, ['name' => $quiz->getName()]);
 
             $output->writeln("Updating $name.");
+
             foreach ($quiz->getQuestions() as $question) {
                 if (!$dbQuiz->hasQuestion($question)){
                     $output->writeln("- {$quiz->getName()} : {$question->getQuestion()}.");
@@ -50,7 +55,7 @@ class ImportCommand extends Command
                 }
             }
         }
+
         return Command::SUCCESS;
     }
-
 }

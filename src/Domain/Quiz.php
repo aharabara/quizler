@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Quiz\Domain;
 
 use Quiz\ORM\Scheme\Attribute\Identificator;
@@ -12,8 +11,10 @@ class Quiz
 {
     #[Identificator()]
     protected ?int $id = null;
+
     #[Unique()]
     protected string $name = 'not-set';
+
     protected int $version = 1;
 
     use Timestampable;
@@ -45,13 +46,14 @@ class Quiz
     public function availableQuestions(): int
     {
         $notEmpty = 0;
+
         foreach ($this->getQuestions() as $question) {
             if (!empty($question->getFirstAnswer())) {
                 $notEmpty++;
             }
         }
-        return $notEmpty;
 
+        return $notEmpty;
     }
 
     public function setName(string $name): void
@@ -67,7 +69,9 @@ class Quiz
     public function addQuestion(Question $question): Question
     {
         $this->questions[] = $question;
+
         $question->setQuiz($this);
+
         return $question;
     }
 
@@ -77,9 +81,11 @@ class Quiz
     public function setQuestions(array $questions): self
     {
         $this->questions = $questions;
+
         foreach ($questions as $question) {
             $question->setQuiz($this);
         }
+
         return $this;
     }
 
@@ -100,6 +106,7 @@ class Quiz
                 return true;
             }
         }
+
         return false;
     }
 }

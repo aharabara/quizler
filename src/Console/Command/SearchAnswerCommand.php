@@ -20,15 +20,16 @@ class SearchAnswerCommand extends Command
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setDescription("Run a quiz");
     }
 
     /**
-     * @return int
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
-     * @psalm-return 0|1
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -40,19 +41,23 @@ class SearchAnswerCommand extends Command
 
         /** @todo create a fuzzy-search component */
         $style->clear();
+
         while ($request = $style->ask("Your request: ")) {
             foreach ($quizzes as $quiz) {
                 foreach ($quiz->getQuestions() as $index => $question) {
                     $content = s($question->getQuestion());
+
                     if ($content->lower()->containsAny(s($request)->lower())) {
                         $style->writeln($content->padStart(3)->prepend('<comment>')->append('</comment>')->toString());
                         $style->writeln($this->textWithSidebar(">> ", $question->getFirstAnswer()));
                     }
                 }
             }
+
             if (!$style->confirm("Continue...")) {
                 return Command::SUCCESS;
-            };
+            }
+
             $style->clear();
         }
 
@@ -64,22 +69,26 @@ class SearchAnswerCommand extends Command
     {
         $loader = new DatabaseRepository();
 
-        return array_map(fn(SplFileInfo $file) => $loader->loadBy(Quiz::class, ['name' => $file->getRealPath()]), iterator_to_array($files->getIterator()));
+        return array_map(
+            static fn(SplFileInfo $file) => $loader->loadBy(Quiz::class, ['name' => $file->getRealPath()]),
+            iterator_to_array($files->getIterator())
+        );
     }
 
     /**
      * @param string $text
      * @param string $bar
+     *
      * @return string
      */
     protected function textWithSidebar(string $bar, string $text): string
     {
         $barColor = new Color("cyan");
         $bar = ($barColor)->apply($bar);
-        return
-            s($text)
-                ->wordwrap(getenv('COLUMNS') - strlen($bar))
-                ->prepend("$bar<info>")
-                ->append("</info>");
+
+        return s($text)
+            ->wordwrap(getenv('COLUMNS') - strlen($bar))
+            ->prepend("$bar<info>")
+            ->append("</info>");
     }
 }

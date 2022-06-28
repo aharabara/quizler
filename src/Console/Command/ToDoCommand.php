@@ -12,12 +12,10 @@ class ToDoCommand extends Command
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'todo';
 
-    public function __construct(string $name = null)
-    {
-        parent::__construct($name);
-    }
-
-    protected function configure()
+    /**
+     * @return void
+     */
+    protected function configure(): void
     {
         $this->setDescription('Create a quiz');
     }
@@ -25,6 +23,7 @@ class ToDoCommand extends Command
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
+     *
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -116,5 +115,4 @@ class ToDoCommand extends Command
 
         return Command::SUCCESS;
     }
-
 }

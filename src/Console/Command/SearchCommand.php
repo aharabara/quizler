@@ -16,12 +16,10 @@ class SearchCommand extends Command
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'search';
 
-    public function __construct(string $name = null)
-    {
-        parent::__construct($name);
-    }
-
-    protected function configure()
+    /**
+     * @return void
+     */
+    protected function configure(): void
     {
         $this->setDescription('Search through answers');
         $this->addArgument('model', InputArgument::OPTIONAL, 'which model to search through', 'answer');
@@ -30,6 +28,7 @@ class SearchCommand extends Command
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
+     *
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -37,37 +36,45 @@ class SearchCommand extends Command
         $style = new SymfonyStyle($input, $output);
         $adapter = new TNTSearchAdapter();
 
-        $entityClass = match ($input->getArgument('model')){
+        $entityClass = match ($input->getArgument('model')) {
             'answer' => Answer::class,
             'question' => Question::class,
             default => null
         };
-        if(!$entityClass){
+
+        if (!$entityClass) {
             $style->error('Entity not supported');
+
             return Command::FAILURE;
         }
 
         $adapter->indexTable($entityClass);
 //        while($t = readline(">")){
         system('stty cbreak');
+
         $query = '';
-        while(true){
-            if($char = fread(STDIN, 1)) {
+
+        while (true) {
+            if ($char = fread(STDIN, 1)) {
 //                system('clear');
-                if ($char === "\x7F"){
-                    $query = substr($query, 0, strlen($query) - 1);
-                }elseif(\ctype_print($char)){
+                if ($char === "\x7F") {
+                    $query = substr($query, 0, -1);
+                } elseif (\ctype_print($char)) {
                     $query .= $char;
                 }
 
                 $rows = $adapter->search($entityClass, trim($query, " "));
+
                 $output->writeln("<info>-----</info>");
+
                 print "\033c";
+
                 $style->writeln("<info>query:</info> ".$query);
+
                 $words = array_filter(explode(" ", $query), fn($word) => !in_array($word, ['and', 'or']));
-                $replacement = array_map(function ($word){
-                    return "<comment>" . trim($word, " -") . "</comment>";
-                }, $words);
+
+                $replacement = array_map(static fn($word) => "<comment>".trim($word, " -")."</comment>", $words);
+
                 foreach (array_slice($rows, 0, 5) as $row) {
                     $output->writeln(" - ".str_replace($words, $replacement, $row));
                 }
@@ -77,5 +84,4 @@ class SearchCommand extends Command
 
         return Command::SUCCESS;
     }
-
 }
