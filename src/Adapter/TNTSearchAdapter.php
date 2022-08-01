@@ -2,6 +2,7 @@
 
 namespace Quiz\Adapter;
 
+use Quiz\ConsoleKernel;
 use Quiz\ORM\Repository\DatabaseRepository;
 use Quiz\ORM\Scheme\Definition\ColumnDefinition;
 use Quiz\ORM\Scheme\Extractor\TableDefinitionExtractor;
@@ -13,16 +14,16 @@ class TNTSearchAdapter
     private TableDefinitionExtractor $tableDefinitionExtractor;
     private DatabaseRepository $repository;
 
-    public function __construct()
+    public function __construct(ConsoleKernel $kernel)
     {
-        $this->repository = new DatabaseRepository();
+        $this->repository = new DatabaseRepository($kernel->getDatabasePath());
         $this->tableDefinitionExtractor = new TableDefinitionExtractor();
 
         $this->search = new TNTSearch;
         $this->search->loadConfig([
             'driver'    => 'sqlite',
-            'database'  => \DB_PATH,
-            'storage'   => STORAGE_FOLDER.'/indexes/',
+            'database'  => $kernel->getDatabasePath(),
+            'storage'   => $kernel->getStoragePath().'/indexes/',
             'stemmer'   => \TeamTNT\TNTSearch\Stemmer\PorterStemmer::class//optional
         ]);
     }

@@ -21,11 +21,9 @@ use Symfony\Component\Serializer\Serializer;
 class YamlRepository implements RepositoryInterface
 {
     private Serializer $serializer;
-    private string $folder;
 
-    public function __construct()
+    public function __construct(protected string $folder)
     {
-        $this->folder = QUIZZES_FOLDER_PATH;
 
         $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
         $phpDocExtractor = new PhpDocExtractor();

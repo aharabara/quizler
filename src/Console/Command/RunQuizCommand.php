@@ -2,6 +2,7 @@
 
 namespace Quiz\Console\Command;
 
+use Quiz\ConsoleKernel;
 use Quiz\Domain\Answer;
 use Quiz\Domain\Quiz;
 use Quiz\ORM\Repository\DatabaseRepository;
@@ -16,14 +17,14 @@ class RunQuizCommand extends Command
     protected static $defaultName = 'run';
     private DatabaseRepository $repository;
 
-    public function __construct(string $name = null)
+    public function __construct(protected ConsoleKernel $kernel,string $name = null)
     {
         parent::__construct($name);
 
     }
     public function getDatabaseRepository(): DatabaseRepository
     {
-        return $this->repository ??= new DatabaseRepository();
+        return $this->repository ??= new DatabaseRepository($this->kernel->getDatabasePath());
     }
 
     /**

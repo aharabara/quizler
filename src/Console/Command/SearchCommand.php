@@ -3,6 +3,7 @@
 namespace Quiz\Console\Command;
 
 use Quiz\Adapter\TNTSearchAdapter;
+use Quiz\ConsoleKernel;
 use Quiz\Domain\Answer;
 use Quiz\Domain\Question;
 use Symfony\Component\Console\Command\Command;
@@ -16,7 +17,7 @@ class SearchCommand extends Command
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'search';
 
-    public function __construct(string $name = null)
+    public function __construct(protected ConsoleKernel $kernel, string $name = null)
     {
         parent::__construct($name);
     }
@@ -35,7 +36,7 @@ class SearchCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $style = new SymfonyStyle($input, $output);
-        $adapter = new TNTSearchAdapter();
+        $adapter = new TNTSearchAdapter($this->kernel);
 
         $entityClass = match ($input->getArgument('model')){
             'answer' => Answer::class,

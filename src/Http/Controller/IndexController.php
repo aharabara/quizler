@@ -2,6 +2,7 @@
 
 namespace Quiz\Http\Controller;
 
+use Quiz\ConsoleKernel;
 use Quiz\Domain\Quiz;
 use Quiz\ORM\Repository\DatabaseRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,14 +14,14 @@ class IndexController
 
     private DatabaseRepository $repository;
 
-    public function __construct()
+    public function __construct(protected ConsoleKernel $kernel)
     {
-        $this->repository = new DatabaseRepository();
+        $this->repository = new DatabaseRepository($kernel->getDatabasePath());
     }
 
     public function index(Request $request): Response
     {
-        return new Response(file_get_contents(ROOT_FOLDER . '/resources/main/main.html'));
+        return new Response(file_get_contents("{$this->kernel->getResourcesPath()}/main/main.html"));
     }
 
     public function question(Request $request): JsonResponse
@@ -30,7 +31,7 @@ class IndexController
 
     public function answer(Request $request): Response
     {
-        return new Response(file_get_contents(__DIR__ . '/../../resources/main/main.html'));
+        return new Response(file_get_contents("{$this->kernel->getResourcesPath()}/main/main.html"));
     }
 
     public function debug(Request $request): Response

@@ -30,6 +30,7 @@ class AnswerStatsCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        throw new \LogicException('Should be rewritten and moved to the run command (show near quiz name)');
         $style = new QuizStyle($input, $output);
         $quizzes = $this->loadQuizzes();
         ksort($quizzes);

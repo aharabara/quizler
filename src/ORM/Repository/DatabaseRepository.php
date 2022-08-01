@@ -31,7 +31,7 @@ class DatabaseRepository implements RepositoryInterface
     private PDO $connection;
     private CachedDefinitionExtractor|TableDefinitionExtractor $tableExtractor;
 
-    public function __construct()
+    public function __construct(protected string $dbPath)
     {
         $this->tableExtractor = new CachedDefinitionExtractor(new TableDefinitionExtractor());
         $this->connection = $this->getConnection();
@@ -289,7 +289,7 @@ class DatabaseRepository implements RepositoryInterface
     public function getConnection(): PDO
     {
         try {
-            return new PDO('sqlite:' . \DB_PATH);
+            return new PDO('sqlite:' . $this->dbPath);
         } catch (PDOException $e) {
             if ($e->getCode() === 14) {
                 throw new RuntimeException('Application was not yet deployed. Please use `quizler deploy` command');

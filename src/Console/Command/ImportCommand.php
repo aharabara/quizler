@@ -2,6 +2,7 @@
 
 namespace Quiz\Console\Command;
 
+use Quiz\ConsoleKernel;
 use Quiz\Domain\Quiz;
 use Quiz\ORM\Repository\DatabaseRepository;
 use Quiz\ORM\Repository\YamlRepository;
@@ -15,7 +16,7 @@ class ImportCommand extends Command
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'import';
 
-    public function __construct(string $name = null)
+    public function __construct(protected ConsoleKernel $kernel, string $name = null)
     {
         parent::__construct($name);
     }
@@ -30,8 +31,8 @@ class ImportCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $fileDriver = new YamlRepository();
-        $dbDriver = new DatabaseRepository();
+        $fileDriver = new YamlRepository($this->kernel->getFileReplicaPath());
+        $dbDriver = new DatabaseRepository($this->kernel->getDatabasePath());
         foreach ($fileDriver->getList() as $name){
             $quiz = $fileDriver->loadBy(Quiz::class, ['name' => $name]);
             if (!$dbDriver->exists($quiz)){

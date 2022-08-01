@@ -2,6 +2,7 @@
 
 namespace Quiz\Console\Command;
 
+use Quiz\ConsoleKernel;
 use Quiz\Domain\Answer;
 use Quiz\Domain\Question;
 use Quiz\Domain\Quiz;
@@ -17,7 +18,7 @@ class DeployCommand extends Command
     /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'deploy';
 
-    public function __construct(string $name = null)
+    public function __construct(protected ConsoleKernel $kernel, string $name = null)
     {
         parent::__construct($name);
     }
@@ -35,11 +36,15 @@ class DeployCommand extends Command
     {
         $fs = new Filesystem();
 
-        if (!$fs->exists(QUIZZES_FOLDER_PATH)) {
-            $fs->mkdir(QUIZZES_FOLDER_PATH);
+        $fileReplicaPath = $this->kernel->getFileReplicaPath();
+
+        $output->writeln('Deployment path: '. $fileReplicaPath);
+        if (!$fs->exists($fileReplicaPath)) {
+            $output->writeln('- Folder created.');
+            $fs->mkdir($fileReplicaPath);
         }
 
-        $dbDriver = new DatabaseRepository();
+        $dbDriver = new DatabaseRepository($this->kernel->getDatabasePath());
 
         $force = false;
         if ($input->getOption('force')) {
@@ -51,10 +56,10 @@ class DeployCommand extends Command
             $dbDriver->drop(Quiz::class);
             $dbDriver->drop(Question::class);
             $dbDriver->drop(Answer::class);
-            $output->writeln("DB dropped.");
+            $output->writeln("- DB dropped.");
         }
         $dbDriver->deploy();
-        $output->writeln("DB deployed.");
+        $output->writeln("- DB deployed.");
 
         return Command::SUCCESS;
     }
