@@ -16,13 +16,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class GenerateFromCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
     private const OPTION_INTO_FILE_STORAGE = "into-file-storage";
 
     private const OPTION_REWRITE = "rewrite";
 
     protected static $defaultName = 'generate-from';
 
+    /**
+     * @return void
+     */
     protected function configure(): void
     {
         $this
@@ -32,14 +34,18 @@ class GenerateFromCommand extends Command
             ->setDescription("...");
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $repository = $input->getOption(self::OPTION_INTO_FILE_STORAGE) ? new YamlRepository() : new DatabaseRepository();
 
-        $classInfo = (new BetterReflection());
-
         // generate a list of classes
-        exec('composer dumpa -o');
+        exec('composer dump -o');
 
         $classes = require VENDOR_FOLDER . "/composer/autoload_classmap.php";
 
@@ -69,11 +75,16 @@ class GenerateFromCommand extends Command
         $output->writeln("Test generated.");
 
         // fallback
-        exec('composer dumpa');
+        exec('composer dump');
 
         return Command::SUCCESS;
     }
 
+    /**
+     * @param ReflectionClass $classInfo
+     *
+     * @return Question
+     */
     private function prepareQuestion(ReflectionClass $classInfo): Question
     {
         $question = new Question();
@@ -102,11 +113,21 @@ class GenerateFromCommand extends Command
         return $question;
     }
 
+    /**
+     * @param ReflectionClass $classInfo
+     *
+     * @return string
+     */
     protected function getShortenedName(ReflectionClass $classInfo): string
     {
         return implode("\\", array_slice(explode("\\", $classInfo->getName()), -2, 2));
     }
 
+    /**
+     * @param string $folder
+     *
+     * @return string
+     */
     protected function getTestName(string $folder): string
     {
         return implode('-', array_slice(explode(DIRECTORY_SEPARATOR, $folder), -2, 2));

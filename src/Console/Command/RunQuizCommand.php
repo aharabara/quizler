@@ -12,7 +12,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RunQuizCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
     protected static $defaultName = 'run';
 
     private DatabaseRepository $repository;
@@ -88,8 +87,6 @@ class RunQuizCommand extends Command
                 return Command::FAILURE;
             }
         }
-
-//        (new ReportExporter(REPORTS_FOLDER_PATH))->export($quiz);
 
         return Command::SUCCESS;
     }

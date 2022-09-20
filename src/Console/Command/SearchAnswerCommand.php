@@ -14,7 +14,6 @@ use function Symfony\Component\String\s;
 
 class SearchAnswerCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
     protected static $defaultName = 'search-answer';
 
     /**
@@ -69,6 +68,7 @@ class SearchAnswerCommand extends Command
     {
         $loader = new DatabaseRepository();
 
+        /** Todo We should fix this part cause variable $files is not declared */
         return array_map(
             static fn (SplFileInfo $file) => $loader->loadBy(Quiz::class, ['name' => $file->getRealPath()]),
             iterator_to_array($files->getIterator())

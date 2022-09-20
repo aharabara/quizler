@@ -1,4 +1,5 @@
 <?php
+
 const ROOT_FOLDER = __DIR__;
 const VENDOR_FOLDER = __DIR__ . '/vendor';
 const STORAGE_FOLDER = __DIR__ . '/storage';

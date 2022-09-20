@@ -1,11 +1,23 @@
 <?php
 
+use Quiz\Http\Listener\RouterListener;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Controller\ControllerResolver;
+use Symfony\Component\HttpKernel\HttpKernel;
+
 require_once __DIR__."/../bootloader.php";
 
-$eventDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
-$eventDispatcher->addSubscriber(new \Quiz\Http\Listener\RouterListener());
-$controllerResolver = new \Symfony\Component\HttpKernel\Controller\ControllerResolver();
-$kernel = new \Symfony\Component\HttpKernel\HttpKernel($eventDispatcher, $controllerResolver);
-$response = $kernel->handle(\Symfony\Component\HttpFoundation\Request::createFromGlobals());
+$eventDispatcher = new EventDispatcher();
+$eventDispatcher->addSubscriber(new RouterListener());
+
+$controllerResolver = new ControllerResolver();
+$kernel = new HttpKernel($eventDispatcher, $controllerResolver);
+
+try {
+    $response = $kernel->handle(Request::createFromGlobals());
+} catch (Exception $e) {
+    return $e->getMessage();
+}
 
 $response->send();

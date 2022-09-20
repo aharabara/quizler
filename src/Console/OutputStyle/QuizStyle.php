@@ -6,8 +6,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class QuizStyle extends SymfonyStyle
 {
+    /**
+     * @return void
+     */
     public function clear(): void
     {
-        $this->getErrorOutput()->write(sprintf("\033\143"));
+        $this->getErrorOutput()->write("\033\143");
     }
 }

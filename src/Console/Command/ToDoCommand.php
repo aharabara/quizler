@@ -9,7 +9,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ToDoCommand extends Command
 {
-    /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'todo';
 
     /**
@@ -28,6 +27,7 @@ class ToDoCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        /** @TODO this part should be changed fmpov */
         $symfonyStyle = new SymfonyStyle($input, $output);
         $symfonyStyle->listing([
             '[x] Continue building symfony/serializer quiz.',

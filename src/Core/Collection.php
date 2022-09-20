@@ -2,7 +2,9 @@
 
 namespace Quiz\Core;
 
-class Collection extends \ArrayObject
+use ArrayObject;
+
+final class Collection extends ArrayObject
 {
     public function groupBy(string $key): static
     {
@@ -27,12 +29,14 @@ class Collection extends \ArrayObject
     public function first(): mixed
     {
         $array = $this->getArrayCopy();
+
         return array_shift($array);
     }
 
     public function pluck(string|int $column, string|int $index = null): Collection
     {
         $array = $this->getArrayCopy();
+
         return new static(array_column($array, $column, $index));
     }
 
@@ -50,7 +54,7 @@ class Collection extends \ArrayObject
         return $this->getArrayCopy();
     }
 
-    public function firstWhere(callable $callback)
+    public function firstWhere(callable $callback): mixed
     {
         return $this
             ->filter($callback)

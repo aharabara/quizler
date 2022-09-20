@@ -12,7 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ExportCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
     protected static $defaultName = 'export';
 
     /**

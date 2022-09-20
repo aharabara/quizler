@@ -14,7 +14,6 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DeployCommand extends Command
 {
-    /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'deploy';
 
     /**

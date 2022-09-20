@@ -8,7 +8,6 @@ use Quiz\ORM\Scheme\Attribute\ParentRelation;
 use Quiz\ORM\Scheme\Definition\ColumnDefinition;
 use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\Reflection\ReflectionAttribute;
-use Roave\BetterReflection\Reflection\ReflectionIntersectionType;
 use Roave\BetterReflection\Reflection\ReflectionNamedType;
 use Roave\BetterReflection\Reflection\ReflectionProperty;
 use Roave\BetterReflection\Reflection\ReflectionType;
@@ -19,8 +18,14 @@ use function Symfony\Component\String\s;
 class ColumnDefinitionExtractor implements DefinitionExtractorInterface
 {
     public const SCALARS = [
-        'int', 'null', 'string', 'float', 'bool', 'double'
+        'int',
+        'null',
+        'string',
+        'float',
+        'bool',
+        'double',
     ];
+
     private Reflector $reflector;
 
     public function __construct()
@@ -28,6 +33,11 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
         $this->reflector = (new BetterReflection())->reflector();
     }
 
+    /**
+     * @param ReflectionProperty $property
+     *
+     * @return ColumnDefinition|null
+     */
     protected function extractColumn(ReflectionProperty $property): ?ColumnDefinition
     {
         $type = $property->getType();
@@ -47,6 +57,7 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
                 }
             }
         }
+
         return null;
     }
 
@@ -56,6 +67,7 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
         $class = $this->reflector->reflectClass($className);
 
         $columns = [];
+
         foreach ($class->getProperties() as $property) {
             $columns[] = $this->extractColumn($property);
         }
@@ -63,26 +75,32 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
         return array_filter($columns);
     }
 
+    /**
+     * @param ReflectionProperty $property
+     *
+     * @return array<int, object>
+     */
     protected function getConstraintKeys(ReflectionProperty $property): array
     {
         $keys = [];
+
         foreach ($property->getAttributes() as $attribute) {
             if ($this->isType($attribute->getName(), Key::class)) {
                 $keys[] = new ($attribute->getName())(...$attribute->getArguments());
             }
         }
+
         return $keys;
     }
 
     /**
-     * @param ReflectionUnionType|ReflectionNamedType|ReflectionIntersectionType|null $type
+     * @param ReflectionType|null $type
+     *
      * @return bool
      */
     protected function isScalarProperty(?ReflectionType $type): bool
     {
-        $filteringClause = function ($type) {
-            return in_array((string)$type, self::SCALARS);
-        };
+        $filteringClause = static fn ($type) => in_array((string)$type, self::SCALARS);
 
         return ($type instanceof ReflectionNamedType && $type->isBuiltin())
             || (
@@ -93,18 +111,21 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
 
     /**
      * @param mixed $property
+     *
      * @return bool
      */
     protected function isParentRelationProperty(mixed $property): bool
     {
         /** @var ReflectionAttribute $relation */
         $relation = $property->getAttributesByName(ParentRelation::class)[0] ?? null;
-        return !empty($relation);
+
+        return $relation !== null;
     }
 
     /**
      * @param string $subType
      * @param string $type
+     *
      * @return bool
      */
     protected function isType(string $subType, string $type): bool
@@ -114,6 +135,7 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
 
     /**
      * @param ReflectionProperty $property
+     *
      * @return ColumnDefinition
      */
     protected function extractScalarFieldDefinition(ReflectionProperty $property): ColumnDefinition
@@ -123,6 +145,7 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
         if ($property->getType() instanceof ReflectionUnionType) {
             $type = $property->getType()->getTypes()[0]; // take first, usually it is what we want
         }
+
         return new ColumnDefinition(
             s($property->getName())->snake(),
             $type->getName(),
@@ -134,12 +157,13 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
 
     /**
      * @param ReflectionProperty $property
+     *
      * @return ColumnDefinition
      */
     protected function extractRelationFieldDefinition(ReflectionProperty $property): ColumnDefinition
     {
         return new ColumnDefinition(
-            s($property->getName())->snake() . "_id",
+            s($property->getName())->snake()."_id",
             "integer", // @todo use identificator property later
             $property->getType()->allowsNull(),
             null,
@@ -149,6 +173,7 @@ class ColumnDefinitionExtractor implements DefinitionExtractorInterface
 
     /**
      * @param ReflectionProperty $property
+     *
      * @return ColumnDefinition
      */
     protected function extractTimestampFieldDefinition(ReflectionProperty $property): ColumnDefinition

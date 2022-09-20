@@ -22,46 +22,81 @@ class Answer
     #[ParentRelation(Question::class, 'question_id', 'id')]
     protected Question $question;
 
+    /**
+     * @return int
+     */
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * @return Question
+     */
     public function getQuestion(): Question
     {
         return $this->question;
     }
 
+    /**
+     * @return string
+     */
     public function getContent(): string
     {
         return $this->content;
     }
 
+    /**
+     * @param int $id
+     *
+     * @return void
+     */
     public function setId(int $id): void
     {
         $this->id = $id;
     }
 
+    /**
+     * @param Question $question
+     *
+     * @return $this
+     */
     public function setQuestion(Question $question): Answer
     {
         $this->question = $question;
+
         return $this;
     }
 
+    /**
+     * @param string $content
+     *
+     * @return $this
+     */
     public function setContent(string $content): Answer
     {
         $this->content = $content;
+
         return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function getIsCorrect(): bool
     {
         return $this->isCorrect;
     }
 
+    /**
+     * @param bool $isCorrect
+     *
+     * @return $this
+     */
     public function setIsCorrect(bool $isCorrect): Answer
     {
         $this->isCorrect = $isCorrect;
+
         return $this;
     }
 }

@@ -13,7 +13,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class SearchCommand extends Command
 {
-    /* the name of the command (the part after "bin/console")*/
     protected static $defaultName = 'search';
 
     /**
@@ -49,14 +48,13 @@ class SearchCommand extends Command
         }
 
         $adapter->indexTable($entityClass);
-//        while($t = readline(">")){
+
         system('stty cbreak');
 
-        $query = '';
-
         while (true) {
+            $query = '';
+
             if ($char = fread(STDIN, 1)) {
-//                system('clear');
                 if ($char === "\x7F") {
                     $query = substr($query, 0, -1);
                 } elseif (\ctype_print($char)) {
@@ -71,7 +69,7 @@ class SearchCommand extends Command
 
                 $style->writeln("<info>query:</info> ".$query);
 
-                $words = array_filter(explode(" ", $query), fn ($word) => !in_array($word, ['and', 'or']));
+                $words = array_filter(explode(" ", $query), static fn ($word) => !in_array($word, ['and', 'or']));
 
                 $replacement = array_map(static fn ($word) => "<comment>".trim($word, " -")."</comment>", $words);
 
@@ -80,8 +78,8 @@ class SearchCommand extends Command
                 }
             }
         }
-//        }
 
+        /** TODO this part should be fixed because this return will never be used */
         return Command::SUCCESS;
     }
 }

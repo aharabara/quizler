@@ -1,4 +1,6 @@
 parameters:
+	bootstrapFiles:
+		- bootloader.php
 	level: 6
 	paths:
 		- src

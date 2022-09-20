@@ -22,14 +22,13 @@ class TNTSearchAdapter
     {
         $this->repository = new DatabaseRepository();
         $this->tableDefinitionExtractor = new TableDefinitionExtractor();
-
         $this->search = new TNTSearch();
 
         $this->search->loadConfig([
-            'driver'    => 'sqlite',
-            'database'  => DB_PATH,
-            'storage'   => STORAGE_FOLDER.'/indexes/',
-            'stemmer'   => PorterStemmer::class
+            'driver' => 'sqlite',
+            'database' => DB_PATH,
+            'storage' => STORAGE_FOLDER.'/indexes/',
+            'stemmer' => PorterStemmer::class,
         ]);
     }
 
@@ -57,7 +56,7 @@ class TNTSearchAdapter
      *
      * @throws IndexNotFoundException
      *
-     * @return array
+     * @return array<string|null>
      */
     public function search(string $class, string $query): array
     {

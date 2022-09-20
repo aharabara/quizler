@@ -10,6 +10,7 @@ use Quiz\ORM\Traits\Timestampable;
 class Quiz
 {
     use Timestampable;
+
     #[Identificator()]
     protected ?int $id = null;
 
@@ -22,11 +23,17 @@ class Quiz
     #[ChildRelation(Question::class, 'id', 'quiz_id')]
     protected array $questions = [];
 
+    /**
+     * @return int
+     */
     public function getVersion(): int
     {
         return $this->version;
     }
 
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return $this->name;
@@ -42,6 +49,9 @@ class Quiz
         return $this->questions;
     }
 
+    /**
+     * @return int
+     */
     public function availableQuestions(): int
     {
         $notEmpty = 0;
@@ -55,16 +65,31 @@ class Quiz
         return $notEmpty;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return void
+     */
     public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    public function setVersion(string $version): void
+    /**
+     * @param int $version
+     *
+     * @return void
+     */
+    public function setVersion(int $version): void
     {
         $this->version = $version;
     }
 
+    /**
+     * @param Question $question
+     *
+     * @return Question
+     */
     public function addQuestion(Question $question): Question
     {
         $this->questions[] = $question;
@@ -88,16 +113,29 @@ class Quiz
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @param int $id
+     *
+     * @return void
+     */
     public function setId(int $id): void
     {
         $this->id = $id;
     }
 
+    /**
+     * @param Question $question
+     *
+     * @return bool
+     */
     public function hasQuestion(Question $question): bool
     {
         foreach ($this->questions as $ownQuestions) {

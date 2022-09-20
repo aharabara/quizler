@@ -5,17 +5,12 @@ namespace Quiz\Http\Listener;
 use Quiz\Http\Controller\IndexController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
-use Symfony\Component\HttpKernel\Event\FinishRequestEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class RouterListener implements EventSubscriberInterface
 {
     public function __construct()
-    {
-    }
-
-    public function onKernelFinishRequest(FinishRequestEvent $event)
     {
     }
 
