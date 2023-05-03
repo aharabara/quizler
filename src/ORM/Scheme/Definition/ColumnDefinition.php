@@ -70,6 +70,7 @@ class ColumnDefinition
             $constraint = match (get_class($key)){
                 Identificator::class =>
                     "CONSTRAINT {$this->name}_pk PRIMARY KEY" .($key->isAutoincrement() ? " autoincrement" : ""),
+                /*fixme move unique to the class level so we can have multicolumn constraint */
                 Unique::class => "CONSTRAINT {$this->name}_uk UNIQUE",
     //            Relation::class => "CONSTRAINT {$this->name}_fk FOREIGN KEY",
                 default => ""

@@ -3,9 +3,8 @@
 namespace Quiz\Console\Command;
 
 use Quiz\Console\OutputStyle\QuizStyle;
-use Quiz\Domain\Quiz;
+use Quiz\ConsoleKernel;
 use Quiz\ORM\Repository\DatabaseRepository;
-use Symfony\Component\Console\Color;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,6 +13,11 @@ class AnswerStatsCommand extends Command
 {
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'stats';
+
+    public function __construct(protected ConsoleKernel $kernel, string $name = null)
+    {
+        parent::__construct($name);
+    }
 
     /**
      * @return void
@@ -30,38 +34,12 @@ class AnswerStatsCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        throw new \LogicException('Should be rewritten and moved to the run command (show near quiz name)');
+        $repository = new DatabaseRepository($this->kernel->getDatabasePath());
         $style = new QuizStyle($input, $output);
-        $quizzes = $this->loadQuizzes();
-        ksort($quizzes);
-        $quizzes = array_reverse($quizzes);
 
-        $style->clear();
-        $style->title("Quizzes statistics");
+        $stats = $repository->getStats();
 
-        foreach ($quizzes as $quiz) {
-            $total = count($quiz->getQuestions());
-            $availableQuestions = $quiz->availableQuestions();
-            $color = match($total){
-                0 => new Color("white"),
-                $availableQuestions => new Color("green"),
-                default => new Color("yellow"),
-            };
-
-            $style->writeln($color->apply("Quiz '{$quiz->getName()}' is {$availableQuestions}/{$total} done"));
-        }
-        $style->writeln("");
-
+        $style->table(array_keys(reset($stats)), $stats);
         return Command::SUCCESS;
-    }
-
-    /** @return Quiz[] */
-    protected function loadQuizzes(): array
-    {
-        $loader = new DatabaseRepository();
-
-        return $loader->getList()
-            ->map(fn(string $name): Quiz => $loader->loadBy(Quiz::class, ['name' => $name]))
-            ->toArray();
     }
 }

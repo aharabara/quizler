@@ -20,13 +20,15 @@ class ConsoleKernel extends Application
     {
         $this->add(new RunQuizCommand($this));
         $this->add(new SearchAnswerCommand());
-        $this->add(new AnswerStatsCommand());
+        $this->add(new AnswerStatsCommand($this));
         $this->add(new ToDoCommand());
         $this->add(new GenerateFromCommand($this));
         $this->add(new DeployCommand($this));
         $this->add(new ExportCommand($this));
         $this->add(new ImportCommand($this));
         $this->add(new SearchCommand($this));
+
+        ini_set('xdebug.max_nesting_level', 1000);
 
         return $this->run();
     }

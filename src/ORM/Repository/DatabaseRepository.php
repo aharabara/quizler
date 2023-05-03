@@ -46,7 +46,7 @@ class DatabaseRepository implements RepositoryInterface
         );
     }
 
-    public function loadBy(string $class, array $criteria): Quiz
+    public function loadBy(string $class, array $criteria): object
     {
         $quizData = $this->first($class, $criteria);
         if (empty($quizData)) {
@@ -56,6 +56,16 @@ class DatabaseRepository implements RepositoryInterface
         }
 
         return $this->serializer->denormalize($quizData, $class);
+    }
+
+    public function loadAllBy(string $class, array $criteria): array
+    {
+        $quizData = $this->all($class, $criteria)->toArray();
+        if (empty($quizData)) {
+            return [];
+        }
+
+        return $this->serializer->denormalize($quizData, $class.'[]');
     }
 
     public function save(object $model, bool $force = false): bool
@@ -76,6 +86,41 @@ class DatabaseRepository implements RepositoryInterface
             }
             $this->insertQuiz($model);
         }
+
+        return true;
+    }
+
+    /* note This method looks fine  */
+    public function delete(object $model, bool $cascade = false): bool
+    {
+        if (!$this->exists($model)) {
+            throw new LogicException('Entity does not exists.' .
+                ' Class :"' . get_class($model) . '", ID :"' . $model->getId() . '"');
+        }
+        $table = $this->tableExtractor->extract(get_class($model));
+
+        if ($cascade) {
+            foreach ($table->getColumns() as $column) {
+                if ($column->isRelationFiled()) {
+                    $relationAttribute = $column->getRelationAttribute();
+                    $nestedItems = $this->loadAllBy($relationAttribute->getClass(), [
+                        $relationAttribute->getRelationKey() => $model->getId()
+                    ]);
+                    /*fixme add here a check for isCascade. If it isn't the throw an exception */
+                    foreach ($nestedItems as $item){
+                        $this->delete($item, $cascade);
+                    }
+                }
+            }
+        }
+
+        $field = $table->getIdentityColumn();
+
+        $query = $this
+            ->connection
+            ->query("DELETE FROM {$table->getName()} WHERE {$field->getName()}={$model->getId()}");
+
+        $query->execute();
 
         return true;
     }
@@ -142,8 +187,11 @@ class DatabaseRepository implements RepositoryInterface
         $query->bindValue('updated_at', time());
         $query->bindValue('created_at', time());
 
-        if (!$query->execute()) {
-            throw new RuntimeException("[{$query->errorCode()}] {$query->errorInfo()}");
+        try {
+            $query->execute();
+        } catch (\Throwable $e) {
+            dump("Exception thrown for '{$question->getQuestion()}' question from '{$question->getQuiz()->getName()}' quiz.");
+            throw $e;
         }
 
         $question->setId((int)$this->connection->lastInsertId('questions'));
@@ -179,6 +227,9 @@ class DatabaseRepository implements RepositoryInterface
         return true;
     }
 
+    /**
+     * @throws PDOException
+     */
     protected function insertQuiz(Quiz $quiz): bool
     {
         $query = $this->connection
@@ -191,9 +242,13 @@ class DatabaseRepository implements RepositoryInterface
         $query->bindValue('created_at', time());
         $query->bindValue('updated_at', time());
 
-        if (!$query->execute()) {
-            throw new RuntimeException("[{$query->errorCode()}] {$query->errorInfo()}");
+        try {
+            $query->execute();
+        } catch (\Throwable $e) {
+            dump("Exception thrown for '{$quiz->getName()}'. Exception " . $e->getMessage());
+            throw $e;
         }
+
         $quiz->setId((int)$this->connection->lastInsertId('quizzes'));
 
         foreach ($quiz->getQuestions() as $question) {
@@ -296,5 +351,37 @@ class DatabaseRepository implements RepositoryInterface
             }
             throw $e;
         }
+    }
+
+    public function getStats(): array
+    {
+        $totals = $this
+            ->getConnection()
+            ->query("SELECT quizzes.name, COUNT(questions.id) total
+                FROM quizzes 
+                LEFT JOIN questions ON questions.quiz_id = quizzes.id
+                GROUP BY questions.quiz_id
+                ORDER BY quizzes.name DESC ")
+            ->fetchAll(PDO::FETCH_ASSOC);
+
+        $answered = $this
+            ->getConnection()
+            ->query("SELECT quizzes.name, COUNT(answers.id) total
+                FROM quizzes 
+                LEFT JOIN questions ON questions.quiz_id = quizzes.id
+                LEFT JOIN answers ON answers.question_id = questions.id
+                WHERE
+                    answers.is_correct = 1
+                GROUP BY questions.quiz_id")
+            ->fetchAll(PDO::FETCH_ASSOC);
+
+        $totals = array_column($totals, null, 'name');
+        $answered = array_column($answered, null, 'name');
+
+        foreach ($totals as $key => $row) {
+            $totals[$key]['answered'] = $answered[$key]['total'] ?? 0;
+        }
+
+        return $totals;
     }
 }

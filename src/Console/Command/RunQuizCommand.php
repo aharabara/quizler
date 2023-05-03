@@ -69,6 +69,18 @@ class RunQuizCommand extends Command
                 continue;
             }
 
+            if ($response === '~'){
+                $this->getDatabaseRepository()
+                    ->save(
+                        (new Answer())
+                            ->setQuestion($question)
+                            ->setContent($response)
+                            ->setIsCorrect(false)
+                    );
+                $style->writeln("<info>Question marked as irelevant (~)</info>");
+                continue;
+            }
+
             $style->writeln("<info>Correct answer</info> : " . $question->getFirstAnswer());
             $style->writeln("<comment>Your answer</comment>    : " . $response);
 

@@ -19,7 +19,7 @@ class GenerateFromCommand extends Command
 {
     // the name of the command (the part after "bin/console")
     const OPTION_INTO_FILE_STORAGE = "into-file-storage";
-    const OPTION_REWRITE = "rewrite";
+    const OPTION_OVERWRITE = "overwrite";
     protected static $defaultName = 'generate-from';
 
     public function __construct(protected ConsoleKernel $kernel, string $name = null)
@@ -31,7 +31,7 @@ class GenerateFromCommand extends Command
     {
         $this->addArgument("folder", InputArgument::REQUIRED);
         $this->addOption(self::OPTION_INTO_FILE_STORAGE, 's', InputOption::VALUE_NEGATABLE, 'Generate into yaml file', false);
-        $this->addOption(self::OPTION_REWRITE, 'r', InputOption::VALUE_NEGATABLE, '', false);
+        $this->addOption(self::OPTION_OVERWRITE, 'r', InputOption::VALUE_NEGATABLE, '', false);
         $this->setDescription("...");
     }
 
@@ -48,7 +48,7 @@ class GenerateFromCommand extends Command
         $folder = realpath($input->getArgument('folder'));
         $vendorFolder = dirname($folder, 2);
 
-        // switch to place where composer should run it's commands
+        // switch to place where composer should run its commands
         chdir(dirname($vendorFolder));
         $output->writeln("- Vendor at: $vendorFolder");
         $output->writeln("- Project root at: " . dirname($folder));
@@ -65,6 +65,8 @@ class GenerateFromCommand extends Command
             ->reflector();
 
         $quiz = new Quiz();
+        $quizName = $this->getTestName($folder);
+
 
         foreach ($classes as $class => $file) {
             if (!str_contains($file, $folder)) {
@@ -77,11 +79,11 @@ class GenerateFromCommand extends Command
                 (new Question())
                     ->setQuestion(
                         match (true) {
-                            !empty($classInfo->getAttributesByName('Attribute')) => "What `@{$shortName}` attribute is used for?",
-                            $classInfo->isEnum() => "What `{$shortName}` enum is used for?",
-                            $classInfo->isInterface() => "What `{$shortName}` interface is used for?",
-                            $classInfo->isTrait() => "What `{$shortName}` trait is used for?",
-                            default => "What `{$shortName}` class is used for?",
+                            !empty($classInfo->getAttributesByName('Attribute')) => "[$quizName] What `@{$shortName}` attribute is used for?",
+                            $classInfo->isEnum() => "[$quizName] What `{$shortName}` enum is used for?",
+                            $classInfo->isInterface() => "[$quizName] What `{$shortName}` interface is used for?",
+                            $classInfo->isTrait() => "[$quizName] What `{$shortName}` trait is used for?",
+                            default => "[$quizName] What `{$shortName}` class is used for?",
                         }
                     )
             );
@@ -89,14 +91,19 @@ class GenerateFromCommand extends Command
             foreach ($classInfo->getImmediateConstants() as $constant => $values) {
                 $quiz->addQuestion(
                     (new Question())
-                        ->setQuestion("What for is `{$shortName}::{$constant}` constant used for?")
+                        ->setQuestion("[$quizName] What for is `{$shortName}::{$constant}` constant used for?")
                 );
             }
         }
 
-        $quiz->setName($this->getTestName($folder));
+        $quiz->setName($quizName);
 
-        $repository->save($quiz, $input->getOption(self::OPTION_REWRITE));
+        if ($input->getOption(self::OPTION_OVERWRITE)){
+            $oldQuiz = $repository->loadBy(Quiz::class, ['name' => 'symfony-framework-bundle']);
+            $repository->delete($oldQuiz, true);
+        }
+
+        $repository->save($quiz, $input->getOption(self::OPTION_OVERWRITE));
 
         $output->writeln("Test generated.");
 
