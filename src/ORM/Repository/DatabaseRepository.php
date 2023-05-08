@@ -143,7 +143,7 @@ class DatabaseRepository implements RepositoryInterface
 
     public function getList(): Collection
     {
-        return $this->queryAll('SELECT * FROM quizzes')->pluck('name');
+        return $this->queryAll('SELECT id, name FROM quizzes')->pluck('name', 'id');
     }
 
     public function deploy(): bool

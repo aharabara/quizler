@@ -1,0 +1,6 @@
+{
+  "controllers": [],
+  "entrypoints": {
+    "quiz": "controllers/quiz_controller.js"
+  }
+}

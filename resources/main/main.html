@@ -1,26 +1,31 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Quizzler</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/build/app.css" rel="stylesheet" crossorigin="anonymous">
+    <title>Quiz App</title>
 </head>
 <body>
-<p>Quizzler</p>
-<form id="answer-form">
-    <label>
-        <span id="question-text">...</span>
-        <input type="text" id="answer" value="">
-    </label>
-</form>
-<form id="question-form" style="display: none">
-    <label>
-        <span>Question:</span>
-        <input type="text" id="new-question" value="">
-    </label>
-</form>
-<section id="latest-answers"></section>
+<div class="container">
+    <div data-controller="quiz">
+<!--        data-action="keydown->quiz#navigateQuestions"-->
 
-<script src="./node_modules/keyboardjs/dist/keyboard.min.js"></script>
-<script src="./js/ElementContainer.js"></script>
-<script src="./js/Application.js"></script>
-<script src="./js/bootloader.js"></script>
+        <div class="row">
+            <h1 class="mt-3">Quiz App</h1>
+            <div class="col-3">
+                <ul data-quiz-target="quizList" class="mb-3 list-group"></ul>
+            </div>
+            <div class="col-9">
+                <div data-quiz-target="quizContent" hidden>
+                    <div data-quiz-target="questionContainer" class="mb-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/build/runtime.js" defer></script>
+<script src="/build/app.js" defer></script>
 </body>
 </html>

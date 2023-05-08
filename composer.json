@@ -20,7 +20,9 @@
         "monolog/monolog": "^2.5",
         "symfony/runtime": "^6.1",
         "symfony/framework-bundle": "^6.0",
-        "phpspec/prophecy": "*"
+        "phpspec/prophecy": "*",
+        "symfony/webpack-encore-pack": "*",
+        "symfony/webpack-encore-bundle": "*"
     },
     "autoload": {
         "psr-4": {

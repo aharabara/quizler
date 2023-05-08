@@ -6,15 +6,19 @@ use Quiz\ORM\Scheme\Attribute\Identificator;
 use Quiz\ORM\Scheme\Attribute\ParentRelation;
 use Quiz\ORM\Scheme\Attribute\Searchable;
 use Quiz\ORM\Traits\Timestampable;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
 class Answer
 {
     #[Identificator()]
+    #[Groups(['api'])]
     protected int $id;
 
     #[Searchable()]
+    #[Groups(['api'])]
     protected string $content;
+    #[Groups(['api'])]
     protected bool $isCorrect = false;
 
     #[Ignore]

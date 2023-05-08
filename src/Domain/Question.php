@@ -9,19 +9,24 @@ use Quiz\ORM\Scheme\Attribute\ChildRelation;
 use Quiz\ORM\Scheme\Attribute\Searchable;
 use Quiz\ORM\Scheme\Attribute\Unique;
 use Quiz\ORM\Traits\Timestampable;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
 class Question
 {
     #[Identificator()]
+    #[Groups(['api'])]
     protected int $id;
 
     #[Searchable]
     #[Unique]
+    #[Groups(['api'])]
     protected string $question;
 
     #[ChildRelation(Answer::class, 'id', 'question_id')]
+    #[Groups(['api'])]
     protected array $answers = [];
+    #[Groups(['api'])]
     protected ?string $tip = null;
 
     #[Ignore]
@@ -71,6 +76,14 @@ class Question
      * @return Answer[]
      */
     public function getAnswers(): array
+    {
+        return $this->answers;
+    }
+
+    /**
+     * @return Answer[]
+     */
+    public function addAnswer(Answer $answer): array
     {
         return $this->answers;
     }

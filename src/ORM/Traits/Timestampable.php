@@ -2,9 +2,14 @@
 
 namespace Quiz\ORM\Traits;
 
+use Symfony\Component\Serializer\Annotation\Groups;
+
 trait Timestampable
 {
+    #[Groups(['api'])]
     protected ?\DateTimeInterface $createdAt = null;
+
+    #[Groups(['api'])]
     protected ?\DateTimeInterface $updatedAt = null;
 
     public function getCreatedAt(): \DateTimeInterface

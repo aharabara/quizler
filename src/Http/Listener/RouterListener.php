@@ -23,11 +23,13 @@ class RouterListener implements EventSubscriberInterface
     public function onKernelRequest(RequestEvent $event)
     {
         $request = $event->getRequest();
+        $controller = new IndexController();
         /* FIXME write a route matcher */
         $controller = match ($request->getMethod().' '.$request->getPathInfo()){
             "GET /" => [IndexController::class, 'index'],
-            "GET /question" => [IndexController::class, 'question'],
-            "GET /answer" => [IndexController::class, 'answer'],
+            "GET /quizzes" => [IndexController::class, 'quizzes'],
+            "GET /quiz" => [IndexController::class, 'quiz'],
+            "POST /answer-to" => [IndexController::class, 'answer'],
             default => [IndexController::class, 'debug']
         };
 

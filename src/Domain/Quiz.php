@@ -7,19 +7,26 @@ use Quiz\ORM\Scheme\Attribute\Identificator;
 use Quiz\ORM\Scheme\Attribute\ChildRelation;
 use Quiz\ORM\Scheme\Attribute\Unique;
 use Quiz\ORM\Traits\Timestampable;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 class Quiz
 {
     #[Identificator()]
+    #[Groups(['api'])]
     protected ?int $id = null;
+
     #[Unique()]
+    #[Groups(['api'])]
     protected string $name = 'not-set';
+
+    #[Groups(['api'])]
     protected int $version = 1;
 
     use Timestampable;
 
     /** @var Question[] */
     #[ChildRelation(Question::class, 'id', 'quiz_id')]
+    #[Groups(['api'])]
     protected array $questions = [];
 
     public function getVersion(): int
