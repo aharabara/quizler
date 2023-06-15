@@ -51,7 +51,7 @@ class IndexController
 
     public function quizzes(Request $request): JsonResponse
     {
-        return new JsonResponse($this->repository->getList()->toArray());
+        return new JsonResponse($this->repository->getStats());
     }
 
     public function answer(Request $request): JsonResponse
@@ -66,6 +66,7 @@ class IndexController
             ->setQuestion($question)
             ->setContent($response['content'])
             ->setIsCorrect(true);
+        $answer->setUpdatedAt(date_create());
 
         $this->repository->save($answer);
 

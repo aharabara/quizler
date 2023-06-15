@@ -21,8 +21,7 @@
         "symfony/runtime": "^6.1",
         "symfony/framework-bundle": "^6.0",
         "phpspec/prophecy": "*",
-        "symfony/webpack-encore-pack": "*",
-        "symfony/webpack-encore-bundle": "*"
+        "symfony/validator": "*"
     },
     "autoload": {
         "psr-4": {

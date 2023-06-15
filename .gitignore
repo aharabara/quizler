@@ -3,3 +3,5 @@ vendor/
 out/
 !out/.gitkeep
 storage/
+node_modules/
+public/build/

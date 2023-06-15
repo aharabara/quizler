@@ -1,5 +1,5 @@
 // assets/controllers/quiz_controller.js
-import {Controller} from 'stimulus';
+import {Controller} from '@hotwired/stimulus';
 import axios from 'axios';
 
 export default class QuizController extends Controller {
@@ -7,36 +7,55 @@ export default class QuizController extends Controller {
         'quizList',
         'quizContent',
         'questionContainer',
+        'questionTitle',
         'hint',
         'answers',
-        'submitBtn',
         'navigation',
-        'answer'
+        'answer',
+        'nextBtn', 'previousBtn', 'submitBtn',
     ];
 
     connect() {
         this.fetchQuizzes();
+        this.currentPosition = 0;
     }
 
+    quizzes;
+
     async fetchQuizzes() {
+        await this.loadLastCheckpoint();
         const response = await axios.get('/quizzes');
-        this.quizListTarget.innerHTML = Object.entries(response.data)
-            .map(([id, name]) => {
-                const amountOfAnswers = 1;
-                return `<li class="list-group-item d-flex justify-content-between align-items-start" 
+
+        this.quizzes = response.data;
+        this.renderQuizList();
+
+    }
+
+    renderQuizList() {
+        this.quizListTarget.innerHTML = Object.entries(this.quizzes)
+            .map(([id, quiz], index) => {
+                let type = 'bg-primary';
+                if (quiz.answered > quiz.total - 1) {
+                    type = 'bg-success';
+                }
+                if (quiz.answered === 0) {
+                    type = 'bg-secondary';
+                }
+
+                let active = (quiz.id === this.currentQuiz?.id) ? 'active' : '';
+
+                return `<li class="${active} list-group-item d-flex justify-content-between align-items-start" 
                             data-action="
                                 click->quiz#loadQuiz
                                 mouseover->quiz#activateElement
                                 mouseout->quiz#deactivateElement
                             "
-                            data-id="${id}">
-                    ${name}
-                    <span class="badge bg-primary rounded-pill">${amountOfAnswers}</span>
+                            data-id="${quiz.id}">
+                    ${quiz.name}
+                    <span class="badge ${type} rounded-pill">${quiz.answered}/${quiz.total}</span>
                 </li>`
             })
             .join('');
-
-        this.loadLastCheckpoint();
     }
 
     activateElement(e) {
@@ -63,6 +82,12 @@ export default class QuizController extends Controller {
     async _loadQuizById(quizId) {
         this.currentQuiz = (await axios.get(`/quiz?qid=${quizId}`)).data;
         this.resetNavigation();
+        let question;
+        this.currentPosition = 0;
+        for (question of this.currentQuiz.questions) {
+            if (question.answers.length === 0) break;
+            this.currentPosition++;
+        }
         this.showCurrentQuestion();
     }
 
@@ -75,45 +100,41 @@ export default class QuizController extends Controller {
         const question = this.currentQuiz.questions[this.currentPosition];
         this.checkpoint();
 
+
         if (!question) {
+            this.showMsg('Quiz was successfully done.', 'info');
             return;
         }
 
-        this.questionContainerTarget.innerHTML =
-            `<form data-action="submit->quiz#submitAnswer">
-                <p data-quiz-target="hint" class="mb-4 alert alert-info" hidden></p>
-                <h5>${question.question}</h5>
-                <textarea data-quiz-target="answer" name="userAnswer" class="form-control mb-3" placeholder="Your answer"></textarea>
-                <div class="row">
-                    <div class="col-4">
-                        <button type="submit" 
-                             data-quiz-target="submitBtn"
-                             class="btn btn-success">Submit</button>
-                        <button data-action="click->quiz#showHint" class="btn btn-info">Show Hint</button>
-                    </div>
-                     <div class="navitation col-8" data-quiz-target="navigation">
-                        <div class="float-end">
-                             <button type="button" class="btn btn-primary"
-                                 data-action="click->quiz#previousQuestion:prevent">
-                                    <i class="ri-arrow-left-s-line"></i>
-                                </button>
-                            <button type="button" class="btn btn-primary"
-                                 data-action="click->quiz#nextQuestion:prevent">
-                                 <i class="ri-arrow-right-s-line"></i>
-                            </button>
-                        </div>
-                     </div>
-                </div>
-             </form>` +
-            `<div data-quiz-target="answers"></div>`;
-        this.quizContentTarget.hidden = false;
+
+        this.questionTitleTarget.innerText = question.question;
+
+        this.answerTarget.value = '';
+        this.answersTarget.innerHTML = '';
         this.hintTarget.hidden = true;
+        this.answerTarget.disabled = false;
+        this.submitBtnTarget.disabled = false;
+        this.quizContentTarget.hidden = false;
+
+
+        if (question.answers.length > 0) {
+            this.renderAnswersFor(this.getQuestion());
+            this.answerTarget.disabled = true;
+            this.submitBtnTarget.disabled = true;
+            this.renderAnswersFor(this.getQuestion());
+        } else {
+            this.answerTarget.focus();
+        }
+    }
+
+    showMsg(text, type) {
+        this.hintTarget.hidden = false
+        this.hintTarget.innerHTML = `<div class="alert alert-${type}">${text}</div>`
     }
 
     checkpoint() {
         localStorage.setItem(`quizzler`, JSON.stringify({
             quizId: this.currentQuiz.id,
-            questionPosition: this.currentPosition
         }))
     }
 
@@ -122,60 +143,74 @@ export default class QuizController extends Controller {
         const data = JSON.parse(json);
         if (data && data.quizId) {
             await this._loadQuizById(data.quizId);
-            this.currentPosition = data.questionPosition;
             this.showCurrentQuestion();
         }
     }
 
     async submitAnswer(event) {
-        event.preventDefault();
-
-        const userAnswer = event.target.userAnswer.value;
+        if (this.submitBtnTarget.disabled) {
+            return;
+        }
+        const userAnswer = this.answerTarget.value;
         const question = this.currentQuiz.questions[this.currentPosition];
 
-        console.log(question);
         if (!userAnswer) {
             return;
         }
         this.answerTarget.disabled = true;
         this.submitBtnTarget.disabled = true;
 
+        this.quizzes.forEach((quiz) => {
+            if (quiz.id === this.currentQuiz.id) {
+                quiz.answered++;
+            }
+        });
+        this.renderQuizList();
         await axios.post('/answer-to?question_id=' + question.id, {content: userAnswer})
             .then(response => {
                 question.answers.push(response.data);
                 this.renderAnswersFor(question);
+                this.nextBtnTarget.focus();
             });
-
     }
 
     nextQuestion() {
         this.currentPosition++;
         this.showCurrentQuestion();
     }
+
     previousQuestion() {
         this.currentPosition--;
         this.showCurrentQuestion();
-
-        this.renderAnswersFor(this.getQuestion());
-        this.answerTarget.disabled = true;
-        this.submitBtnTarget.disabled = true;
-        this.renderAnswersFor(this.getQuestion());
     }
 
     getQuestion() {
         return this.currentQuiz.questions[this.currentPosition];
     }
 
+    toggleAnswerCorrectness(e) {
+        console.log(e.target);
+        // todo add a call to PATCH /question/{id}/answer/{id}
+    }
+
     renderAnswersFor(question) {
+        let wasAnswered = '';
+        if (question.answers.length > 0) {
+            wasAnswered = `<small class="text-secondary">This question was answered ${question.answers.length} time(s)</small>`
+        }
+        this.answersTarget.innerHTML = wasAnswered;
+
         const answersHtml = question.answers
-            .map((answer) => `<li>${answer.content}${answer.isCorrect ? ' (correct)' : ''}</li>`)
+            .map((answer) => `<li data-action="click->quiz#toggleAnswerCorrectness" class="${answer.isCorrect ? "text-success" : "text-danger"}">`
+                + (answer.isCorrect ? `<i class="ri-check-line"></i>` : `<i class="ri-close-line"></i>`)
+                + ` ${answer.content}${answer.isCorrect ? ' (correct)' : ''}`
+                + `</li>`)
             .join('');
 
-        this.answersTarget.innerHTML = `<h5>Answers:</h5><ul>${answersHtml}</ul>`;
+        this.answersTarget.innerHTML = `${wasAnswered} <h5>Answers:</h5><ul>${answersHtml}</ul>`;
     }
 
     showHint() {
-        this.hintTarget.innerHTML = 'A hint here.'
-        this.hintTarget.hidden = false;
+        this.showMsg('A hint.', 'info');
     }
 }

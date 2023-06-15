@@ -8,7 +8,11 @@
 </head>
 <body>
 <div class="container">
-    <div data-controller="quiz">
+    <div data-controller="quiz"
+         data-action="
+            keydown.alt+4->quiz#previousQuestion:prevent
+            keydown.alt+6->quiz#nextQuestion:prevent"
+    >
 <!--        data-action="keydown->quiz#navigateQuestions"-->
 
         <div class="row">
@@ -17,8 +21,38 @@
                 <ul data-quiz-target="quizList" class="mb-3 list-group"></ul>
             </div>
             <div class="col-9">
+                <p data-quiz-target="hint" class="mb-4 alert" hidden></p>
                 <div data-quiz-target="quizContent" hidden>
-                    <div data-quiz-target="questionContainer" class="mb-3"></div>
+                    <div data-quiz-target="questionContainer" class="mb-3">
+                        <form data-action="submit->quiz#submitAnswer:prevent">
+                            <h5 data-quiz-target="questionTitle"></h5>
+                            <textarea data-quiz-target="answer" name="userAnswer" class="form-control mb-3" placeholder="Your answer"
+                                      rows="5" data-action="keydown.enter->quiz#submitAnswer:prevent"></textarea>
+                            <div class="row">
+                                <div class="col-8" data-quiz-target="navigation">
+                                    <button type="button" class="btn btn-primary"
+                                            data-quiz-target="previousBtn"
+                                            data-action="click->quiz#previousQuestion:prevent">
+                                        <i class="ri-arrow-left-s-line"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-primary"
+                                            data-quiz-target="nextBtn"
+                                            data-action="click->quiz#nextQuestion:prevent">
+                                        <i class="ri-arrow-right-s-line"></i>
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <div class="float-end">
+                                        <button type="submit"
+                                                data-quiz-target="submitBtn"
+                                                class="btn btn-success">Submit</button>
+                                        <button data-action="click->quiz#showHint:prevent" class="btn btn-info">Show Hint</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                        </form><div data-quiz-target="answers"></div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -357,16 +357,16 @@ class DatabaseRepository implements RepositoryInterface
     {
         $totals = $this
             ->getConnection()
-            ->query("SELECT quizzes.name, COUNT(questions.id) total
+            ->query("SELECT quizzes.id, quizzes.name, COUNT(questions.id) as total
                 FROM quizzes 
                 LEFT JOIN questions ON questions.quiz_id = quizzes.id
                 GROUP BY questions.quiz_id
-                ORDER BY quizzes.name DESC ")
+                ORDER BY quizzes.name DESC")
             ->fetchAll(PDO::FETCH_ASSOC);
 
         $answered = $this
             ->getConnection()
-            ->query("SELECT quizzes.name, COUNT(answers.id) total
+            ->query("SELECT quizzes.id, COUNT(answers.id) total
                 FROM quizzes 
                 LEFT JOIN questions ON questions.quiz_id = quizzes.id
                 LEFT JOIN answers ON answers.question_id = questions.id
@@ -375,13 +375,17 @@ class DatabaseRepository implements RepositoryInterface
                 GROUP BY questions.quiz_id")
             ->fetchAll(PDO::FETCH_ASSOC);
 
-        $totals = array_column($totals, null, 'name');
-        $answered = array_column($answered, null, 'name');
+        $totals = array_column($totals, null, 'id');
+        $answered = array_column($answered, null, 'id');
 
         foreach ($totals as $key => $row) {
             $totals[$key]['answered'] = $answered[$key]['total'] ?? 0;
         }
+        $done = array_filter($totals, fn(array $quiz) => $quiz['answered'] > ($quiz['total'] - 1));
+        $inProgress = array_filter($totals, fn(array $quiz) => $quiz['answered'] < $quiz['total'] && ($quiz['answered'] !== 0));
+        $notStarted = array_filter($totals, fn(array $quiz) => $quiz['answered'] === 0);
 
-        return $totals;
+
+        return [...$done, ...$inProgress, ...$notStarted];
     }
 }
