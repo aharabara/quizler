@@ -101,7 +101,7 @@ class DatabaseRepository implements RepositoryInterface
 
         if ($cascade) {
             foreach ($table->getColumns() as $column) {
-                if ($column->isRelationFiled()) {
+                if ($column->isChildRelationFiled()) {
                     $relationAttribute = $column->getRelationAttribute();
                     $nestedItems = $this->loadAllBy($relationAttribute->getClass(), [
                         $relationAttribute->getRelationKey() => $model->getId()
@@ -292,7 +292,20 @@ class DatabaseRepository implements RepositoryInterface
 
 
         foreach ($definition->getColumns() as $column) {
-            if ($column->isRelationFiled()) { /* fixme add eager/lazy loading and bidirectional setting */
+//            if ($column->isParentRelationFiled()){
+//                $parentIds =
+//                $definitionOfParent = $this->tableExtractor->extract($column->getType());
+//                $this->queryAll(
+//                    <<<SQL
+//    SELECT *
+//    FROM {$definitionOfParent->getName()}
+//    WHERE {$definitionOfParent->getIdentityColumn()} IN (:$parentIds)
+//SQL
+//);
+//            }
+
+            if ($column->isChildRelationFiled()) { /* fixme add eager/lazy loading and bidirectional setting */
+//                dump($column);
                 $relation = $column->getRelationAttribute();
                 $localKey = $relation->getLocalKey();
                 $relationKey = $relation->getRelationKey();

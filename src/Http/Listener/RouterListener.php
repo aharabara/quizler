@@ -30,6 +30,7 @@ class RouterListener implements EventSubscriberInterface
             "GET /quizzes" => [IndexController::class, 'quizzes'],
             "GET /quiz" => [IndexController::class, 'quiz'],
             "POST /answer-to" => [IndexController::class, 'answer'],
+            "POST /answer-toggle" => [IndexController::class, 'toggleAnswer'],
             default => [IndexController::class, 'debug']
         };
 

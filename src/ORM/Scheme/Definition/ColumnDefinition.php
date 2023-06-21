@@ -108,9 +108,14 @@ class ColumnDefinition
         return $this->isSearchable;
     }
 
-    public function isRelationFiled(): bool
+    public function isChildRelationFiled(): bool
     {
         return $this->isChildRelation;
+    }
+
+    public function isParentRelationFiled(): bool
+    {
+        return $this->isParentRelation;
     }
 
     public function getRelationAttribute(): ?Relation

@@ -1,12 +1,14 @@
 // assets/controllers/quiz_controller.js
 import {Controller} from '@hotwired/stimulus';
 import axios from 'axios';
+import {log} from "../decorators";
 
 export default class QuizController extends Controller {
     static targets = [
         'quizList',
         'quizContent',
         'questionContainer',
+        'stats',
         'questionTitle',
         'hint',
         'answers',
@@ -22,6 +24,7 @@ export default class QuizController extends Controller {
 
     quizzes;
 
+    @log('Fetch quizzes')
     async fetchQuizzes() {
         await this.loadLastCheckpoint();
         const response = await axios.get('/quizzes');
@@ -79,6 +82,7 @@ export default class QuizController extends Controller {
         this.checkpoint();
     }
 
+    @log(' - Load quiz by ID')
     async _loadQuizById(quizId) {
         this.currentQuiz = (await axios.get(`/quiz?qid=${quizId}`)).data;
         this.resetNavigation();
@@ -96,16 +100,22 @@ export default class QuizController extends Controller {
         this.answeredQuestions = {};
     }
 
+    @log(' - Show quizes')
     showCurrentQuestion() {
         const question = this.currentQuiz.questions[this.currentPosition];
         this.checkpoint();
 
+        this.showQuizAnswers(this.currentQuiz.questions.filter((q) => q.answers.length > 0));
 
         if (!question) {
-            this.showMsg('Quiz was successfully done.', 'info');
+            this.currentPosition--;
+            this.showMsg('Quiz was successfully done.', 'success');
             return;
         }
+        console.log(" - - Only question.")
 
+
+        this.questionContainerTarget.hidden = false;
 
         this.questionTitleTarget.innerText = question.question;
 
@@ -127,23 +137,36 @@ export default class QuizController extends Controller {
         }
     }
 
+    showQuizAnswers(questions) {
+        this.questionContainerTarget.hidden = true;
+        this.statsTarget.innerHTML = questions
+            .reverse()
+            .map((q) => `<div class="question-item">`
+                + `<b>${q.question}</b><br/>`
+                + q.answers.map((a) => `<small class="text-secondary"> - ${a.content}</small>`).join('<br/>')
+                + `</div>`
+            )
+            .join("<br/>");
+    }
+
     showMsg(text, type) {
         this.hintTarget.hidden = false
         this.hintTarget.innerHTML = `<div class="alert alert-${type}">${text}</div>`
     }
 
+    @log(' - checkpoint')
     checkpoint() {
         localStorage.setItem(`quizzler`, JSON.stringify({
             quizId: this.currentQuiz.id,
         }))
     }
 
+    @log(' - Load last checkpoint')
     async loadLastCheckpoint() {
         let json = localStorage.getItem(`quizzler`);
         const data = JSON.parse(json);
         if (data && data.quizId) {
             await this._loadQuizById(data.quizId);
-            this.showCurrentQuestion();
         }
     }
 
@@ -189,7 +212,18 @@ export default class QuizController extends Controller {
     }
 
     toggleAnswerCorrectness(e) {
-        console.log(e.target);
+        let answerId = parseInt(e.target.dataset.id);
+        axios.post('/answer-toggle?answer_id=' + answerId)
+            .then(response => {
+                if (response.status != 200) {
+                    console.log(response);
+                    return
+                }
+                let question = this.getQuestion();
+                let [chosenAnswer] = question.answers.filter((answer) => answer.id === answerId);
+                chosenAnswer.isCorrect = !chosenAnswer.isCorrect;
+                this.renderAnswersFor(question);
+            })
         // todo add a call to PATCH /question/{id}/answer/{id}
     }
 
@@ -201,7 +235,7 @@ export default class QuizController extends Controller {
         this.answersTarget.innerHTML = wasAnswered;
 
         const answersHtml = question.answers
-            .map((answer) => `<li data-action="click->quiz#toggleAnswerCorrectness" class="${answer.isCorrect ? "text-success" : "text-danger"}">`
+            .map((answer) => `<li data-id="${answer.id}" data-action="click->quiz#toggleAnswerCorrectness:self" class="${answer.isCorrect ? "text-success" : "text-danger"}">`
                 + (answer.isCorrect ? `<i class="ri-check-line"></i>` : `<i class="ri-close-line"></i>`)
                 + ` ${answer.content}${answer.isCorrect ? ' (correct)' : ''}`
                 + `</li>`)

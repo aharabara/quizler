@@ -73,6 +73,21 @@ class IndexController
         return new JsonResponse($this->serializer->normalize($answer, null,  ['groups' => ['api']]));
     }
 
+    public function toggleAnswer(Request $request): JsonResponse
+    {
+        /** @var Answer $answer */
+        $answer = $this
+            ->repository
+            ->loadBy(Answer::class, ['id' => $request->query->get('answer_id')]);
+
+        $answer->setIsCorrect(!$answer->getIsCorrect());
+        $answer->setUpdatedAt(date_create());
+
+        $this->repository->save($answer);
+
+        return new JsonResponse($this->serializer->normalize($answer, null,  ['groups' => ['api']]));
+    }
+
     public function debug(Request $request): Response
     {
         return new Response("<pre> Debug: {$request->getMethod()}\n".var_export($request, true));
