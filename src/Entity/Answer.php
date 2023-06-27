@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use App\EntityListener\AnswerListener;
 use App\Repository\AnswerRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,6 +14,7 @@ use Doctrine\ORM\Mapping\PrePersist;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
+#[ORM\EntityListeners([AnswerListener::class])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
@@ -121,6 +123,7 @@ class Answer
     {
         $this->createdAt = new DateTimeImmutable();
         $this->updatedAt = new DateTimeImmutable();
+        /* @fixme trigger question recalculation when a new answer is created. */
     }
 
     #[ORM\PreUpdate]

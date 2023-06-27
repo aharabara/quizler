@@ -18,7 +18,10 @@ export default class QuizController extends Controller {
     ];
 
     connect() {
-        this.fetchQuizzes();
+        this.fetchQuizzes().then(() => {
+            this.renderQuizList()
+        });
+        this.loadLastCheckpoint().then();
         this.currentPosition = 0;
     }
 
@@ -27,18 +30,13 @@ export default class QuizController extends Controller {
     @log('Fetch quizzes')
     async fetchQuizzes() {
         const response = await axios.get('/api/quizzes.json');
-
         this.quizzes = response.data;
-        this.renderQuizList();
-        this.loadLastCheckpoint().then();
-
     }
 
     renderQuizList() {
         this.quizListTarget.innerHTML = Object.entries(this.quizzes)
             .map(([_, quiz], index) => {
                 let type = 'bg-primary';
-                console.log(quiz);
                 if (quiz.answered > quiz.total - 1) {
                     type = 'bg-success';
                 }
@@ -141,7 +139,11 @@ export default class QuizController extends Controller {
             .reverse()
             .map((q) => `<div class="question-item">`
                 + `<b>${q.value}</b><br/>`
-                + q.answers.map((a) => `<small class="text-secondary"> - ${a.value}</small>`).join('<br/>')
+                + q.answers.map(
+                    (a) => `<small>`
+                        + `<pre style="white-space: pre-wrap" class="text-secondary">${a.value.textFromHTML()}</pre>`
+                        + `</small>`
+                ).join('<br/>')
                 + `</div>`
             )
             .join("<br/>");
@@ -198,17 +200,13 @@ export default class QuizController extends Controller {
                     .answers
                     .push(response.data);
 
-                console.log(this.currentQuiz
-                    .questions[this.currentPosition]
-                    .answers);
-
                 this.showAnsweredQuestions();
                 this.nextBtnTarget.focus();
+                this.renderQuizList()
             });
     }
 
     showAnsweredQuestions() {
-        console.log(this.currentQuiz.questions.filter((q) => q.answers.length > 0));
 
         this.showQuizAnswers(
             this.currentQuiz

@@ -1,1 +1,8 @@
-- [ ] hide next/prev buttons if there is no more questions 
+- [ ] add a quiz for graphQL
+- [ ] add possibility to analyze packages
+- [ ] add possibility to analyze symfony bundle configurations (yaml keys)
+- [ ] add possibility to add questions
+- [ ] add possibility to toggle answer correctness
+- [ ] Add possibility to ask questions from openAI by clicking hint button
+- [ ] add a question timer and add a pomodoro functionality to have more focus.
+- [ ] Add a quiz for SPL classes.
