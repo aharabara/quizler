@@ -21,7 +21,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Post(denormalizationContext: ['groups' => ['api:answer:create']]),
         new Get(normalizationContext: ['groups' => ['api:answer:list']]),
         new GetCollection(normalizationContext: ['groups' => ['api:answer:list']]),
-    ]
+    ],
+    order: ['id' => 'ASC']
 )]
 class Answer
 {

@@ -6,13 +6,13 @@
     <link href="/build/app.css" rel="stylesheet" crossorigin="anonymous">
     <title>Quiz App</title>
 </head>
-<body>
+<body data-controller="quiz"
+      data-action="
+      keydown.meta+left->quiz#previousQuestion:prevent
+      keydown.meta+right->quiz#nextQuestion:prevent
+      keydown.meta+down->quiz#askQuestion:prevent ">
 <div class="container">
-    <div data-controller="quiz"
-         data-action="
-            keydown.alt+4->quiz#previousQuestion:prevent
-            keydown.alt+6->quiz#nextQuestion:prevent"
-    >
+    <div >
 <!--        data-action="keydown->quiz#navigateQuestions"-->
 
         <div class="row">

@@ -19,10 +19,10 @@ export default class QuizController extends Controller {
 
     connect() {
         this.fetchQuizzes().then(() => {
+            this.currentPosition = 0;
             this.renderQuizList()
+            this.loadLastCheckpoint().then();
         });
-        this.loadLastCheckpoint().then();
-        this.currentPosition = 0;
     }
 
     quizzes;
@@ -69,21 +69,30 @@ export default class QuizController extends Controller {
     }
 
     async loadQuiz(event) {
-        this.quizListTarget
-            .querySelectorAll('li')
-            .forEach((el) => el.classList.remove('active'));
-
-        event.target.classList.add('active')
-
         const quizId = event.target.dataset.id;
-
         await this._loadQuizById(quizId);
         this.checkpoint();
     }
 
+    #selectItemMenuByQuizID(quizId) {
+        this.quizListTarget
+            .querySelectorAll('li')
+            .forEach((el) => {
+                el.classList.remove('active');
+                if (parseInt(el.dataset.id) === parseInt(quizId)) {
+                    el.classList.add('active');
+                }
+            });
+    }
+
     @log(' - Load quiz by ID')
     async _loadQuizById(quizId) {
-        this.currentQuiz = (await axios.get(`/api/quizzes/${quizId}.json`)).data;
+        this.#selectItemMenuByQuizID(quizId);
+        try {
+            this.currentQuiz = (await axios.get(`/api/quizzes/${quizId}.json`)).data;
+        } catch (e) {
+            alert('Cannot obtain the quiz.');
+        }
         this.resetNavigation();
         let question;
         this.currentPosition = 0;
@@ -103,7 +112,7 @@ export default class QuizController extends Controller {
         const question = this.currentQuiz.questions[this.currentPosition];
         this.checkpoint();
 
-        this.showQuizAnswers(this.currentQuiz.questions.filter((q) => q.answers.length > 0));
+        this.showAnsweredQuestions();
 
         if (!question) {
             this.currentPosition--;
@@ -126,6 +135,7 @@ export default class QuizController extends Controller {
 
 
         if (question.answers.length > 0) {
+            this.answerTarget.value = question.answers.map((a) => a.value).join("\n===========\n");
             this.answerTarget.disabled = true;
             this.submitBtnTarget.disabled = true;
         } else {
@@ -136,7 +146,6 @@ export default class QuizController extends Controller {
     showQuizAnswers(questions) {
         // this.questionContainerTarget.hidden = true;
         this.statsTarget.innerHTML = questions
-            .reverse()
             .map((q) => `<div class="question-item">`
                 + `<b>${q.value}</b><br/>`
                 + q.answers.map(
@@ -146,6 +155,7 @@ export default class QuizController extends Controller {
                 ).join('<br/>')
                 + `</div>`
             )
+            .reverse()
             .join("<br/>");
     }
 
@@ -206,6 +216,24 @@ export default class QuizController extends Controller {
             });
     }
 
+    async askQuestion() {
+        let question = prompt('Write your question');
+
+        await axios.post('/api/questions', {
+            value: question,
+            quiz: `/api/quizzes/${this.currentQuiz.id}`,
+        })
+            .then(response => {
+
+                this.currentQuiz
+                    .total++;
+                this.answerTarget.focus();
+                this.renderQuizList();
+                this.showAnsweredQuestions()
+            });
+
+    }
+
     showAnsweredQuestions() {
 
         this.showQuizAnswers(
@@ -216,11 +244,13 @@ export default class QuizController extends Controller {
     }
 
     nextQuestion() {
+        if (this.currentPosition === (this.currentQuiz.questions.length - 1)) return;
         this.currentPosition++;
         this.showCurrentQuestion();
     }
 
-    previousQuestion() {
+    previousQuestion(e) {
+        if (this.currentPosition === 0) return;
         this.currentPosition--;
         this.showCurrentQuestion();
     }

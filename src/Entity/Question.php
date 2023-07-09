@@ -5,6 +5,8 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use App\EntityListener\QuestionListener;
 use App\Repository\QuestionRepository;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,13 +16,19 @@ use Doctrine\ORM\Mapping\PrePersist;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
+#[ORM\EntityListeners([QuestionListener::class])]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\UniqueConstraint(fields: ['quiz', 'value'])]
 #[ApiResource(
     operations: [
         new GetCollection(normalizationContext: ['groups' => ['api:question:list']]),
         new Get(normalizationContext: ['groups' => ['api:question:list', 'api:question:read', 'api:answer:read']]),
-    ]
+        new Post(
+            normalizationContext: ['groups' => ['api:question:list', 'api:question:read', 'api:answer:read']],
+            denormalizationContext: ['groups' => ['api:question:create']]
+        ),
+    ],
+    order: ['id' => 'DESC'],
 )]
 class Question
 {
@@ -31,7 +39,7 @@ class Question
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['export', 'api:question:list'])]
+    #[Groups(['export', 'api:question:list', 'api:question:create'])]
     private ?string $value = null;
 
     #[ORM\Column]
@@ -48,6 +56,7 @@ class Question
 
     #[ORM\ManyToOne(inversedBy: 'questions')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['api:question:create'])]
     private ?Quiz $quiz = null;
 
     public function __construct()
