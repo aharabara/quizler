@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Graph Visualization</title>
+    <style>
+        #graph-container {
+            height: 400px;
+            width: 600px;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 8px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+    </style>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+<div id="graph-container"></div>
+
+<script>
+    // Fetch the JSON file
+    const graphData = [];
+    d3.json('data.json')
+        .then((data) => {
+            // Process the JSON data and build the graph
+            graphData.push(...processData(data));
+            buildGraph(graphData);
+        })
+        .catch((error) => {
+            console.error('Error fetching JSON file:', error);
+        });
+
+    // Process the JSON data to create the graph structure
+    function processData(data) {
+
+        const graphDataLocal = [];
+        // Create nodes from the data
+        data.forEach((nodeData) => {
+            if (graphData.filter((n) => n.id === nodeData.id).length > 0) {
+                return;
+            }
+            const node = {
+                id: nodeData.id,
+                name: nodeData.name,
+                tags: nodeData.tags,
+                parents: nodeData.parents || [],
+                children: [],
+            };
+
+            graphDataLocal.push(node);
+        });
+
+        /** @fixme debug from here, we lose connecction with the parent node. */
+
+        // Connect child nodes to their parent nodes
+        graphDataLocal.forEach((node) => {
+            node.parents.forEach((parentId) => {
+                const parent = graphData.find((n) => n.id === parentId);
+                console.log(parentId, parent)
+                if (parent) {
+                    parent.children.push(node);
+                }
+            });
+        });
+
+        return graphDataLocal;
+    }
+
+    // Build the graph using D3.js
+    function buildGraph(data) {
+        console.log(data);
+        const container = d3.select('#graph-container');
+
+        const svg = container.append('svg')
+            .attr('width', '100%')
+            .attr('height', '100%');
+
+        const links = createLinks(data);
+
+        const simulation = d3.forceSimulation(data)
+            .force('charge', d3.forceManyBody().strength(-1000))
+            .force('link', d3.forceLink(links).id((d) => d.id))
+            .force('center', d3.forceCenter(container.node().clientWidth / 2, container.node().clientHeight / 2));
+
+        const link = svg.selectAll('.link')
+            .data(links)
+            .enter().append('line')
+            .attr('class', 'link')
+            .style('stroke', '#ccc')
+            .style('stroke-width', 1);
+
+        const nodeGroup = svg.selectAll('.node-group')
+            .data(data)
+            .enter().append('g')
+            .attr('class', 'node-group');
+
+        const node = nodeGroup.append('circle')
+            .attr('class', 'node')
+            .attr('r', 10)
+            .style('fill', '#2196F3')
+            .on('mouseover', (event, d) => {
+                showTooltip(event.pageX, event.pageY, d.tags.join(', '));
+            })
+            .on('mouseout', () => {
+                hideTooltip();
+            })
+            .on('click', (event, d) => {
+                fetchAdditionalData(d);
+            });
+
+        nodeGroup.append('text')
+            .attr('class', 'node-label')
+            .attr('dx', 12)
+            .attr('dy', 4)
+            .text((d) => d.name);
+
+        const tooltip = d3.select('body').append('div')
+            .attr('class', 'tooltip')
+            .style('display', 'none');
+
+        function showTooltip(x, y, content) {
+            tooltip
+                .style('display', 'block')
+                .style('left', `${x}px`)
+                .style('top', `${y}px`)
+                .text(content);
+        }
+
+        function hideTooltip() {
+            tooltip.style('display', 'none');
+        }
+
+        simulation.on('tick', () => {
+            link
+                .attr('x1', (d) => d.source.x)
+                .attr('y1', (d) => d.source.y)
+                .attr('x2', (d) => d.target.x)
+                .attr('y2', (d) => d.target.y);
+
+            nodeGroup
+                .attr('transform', (d) => `translate(${d.x},${d.y})`);
+        });
+
+        simulation.alpha(1).restart();
+    }
+
+    // Create links between nodes using id and parentIds
+    function createLinks(data) {
+        const links = [];
+
+        data.forEach((node) => {
+            node.parents.forEach((parentId) => {
+                const parent = data.find((n) => n.id === parentId);
+                if (parent) {
+                    links.push({source: parent, target: node});
+                }
+            });
+        });
+
+        return links;
+    }
+
+    // Function to fetch additional data for a node from OpenAI API
+    function fetchAdditionalData(node) {
+        let parentTopic = '';
+        do {
+            let parents = node.parents.map((nodeId) => graphData.find((n) => n.id === nodeId));
+            parentTopic += parents.map(n => n.name).join("|") + " > " + node.name;
+
+        } while (node = parent[0])
+
+        console.log(parentTopic);
+        let topic = parentTopic;
+
+        // Send a request to the OpenAI API to fetch data for the clicked node
+        // Replace the URL and API key placeholders with your own
+        fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer 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'
+            },
+            body: JSON.stringify({
+                "model": "gpt-3.5-turbo",
+                messages: [{
+                    "role": "user", "content":
+                        `System: Answer with minified JSON structure, no additional text or formatting . Field \`id\` is a snake_case alias for the subtopic/concept name. Field \`parents\` is a  list of parent nodes referenced by ID.  Field \`tags\` should contain 3-7 words that can describe the concepts/subtopic.
+Prompt: Provide a structure with  subtopics/concepts on the topic/subtopic of "${topic}".
+Example Structure:
+\`\`\`[{"id": "initial_topic_1", "name": "Initial topic 1", "tags": ["tag1", "tag2"], "parents": []},{"id": "concept_1_1", "name": "Concept 1.1", "tags": ["tag3", "tag4"], "parents": ["initial_topic_1"]},{"id": "concept_1_1_2", "name": "Concept 1.1.1", "tags": ["tag5", "tag6"], "parents": ["initial_topic_1", "concept_1_1"]},{"id": "concept_1_1_2", "name": "Concept 1.1.2", "tags": ["tag7", "tag8"], "parents": ["initial_topic_1", "concept_1_1"]},{"id": "concept_1_2", "name": "Concept 1.2", "tags": ["tag9", "tag10"], "parents": ["initial_topic_1"]},{"id": "concept_1_2_1", "name": "Concept 1.2.1", "tags": ["tag11", "tag12"], "parents": ["initial_topic_1", "concept_1_2"]},{"id": "concept_1_2_2", "name": "Concept 1.2.2", "tags": ["tag13", "tag14"], "parents": ["initial_topic_1", "concept_1_2"]}{"id": "concept_1_2_2_1", "name": "Concept 1.2.2.1", "tags": ["tag13", "tag14"], "parents": ["initial_topic_1", "concept_1_2"]}]\`\`\``
+                }
+                ],
+                temperature: 0.7
+            })
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data);
+                const message = JSON.parse(data.choices[0].message.content.trim('`'));
+                // Process the fetched additional data and append it to the existing graph
+                graphData.push(...processData(message));
+                buildGraph(graphData);
+            })
+            .catch((error) => {
+                console.error('Error fetching additional data:', error);
+            });
+    }
+
+    // Function to append additional data to the existing graph
+    function appendAdditionalData(data) {
+        // Process the additional data and add it to the graph
+        const additionalGraphData = processData(data);
+
+        // Merge the existing data with the additional data
+        const mergedData = [...graphData, ...additionalGraphData];
+
+        // Rebuild the graph with the merged data
+        buildGraph(mergedData);
+    }
+
+</script>
+</body>
+</html>

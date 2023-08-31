@@ -7,10 +7,12 @@
     <title>Quiz App</title>
 </head>
 <body data-controller="quiz"
+      data-quiz-alert-outlet=".alert-modal"
       data-action="
       keydown.meta+left->quiz#previousQuestion:prevent
       keydown.meta+right->quiz#nextQuestion:prevent
-      keydown.meta+down->quiz#askQuestion:prevent ">
+      keydown.meta+down->quiz#askQuestion:prevent "
+>
 <div class="container">
     <div >
 <!--        data-action="keydown->quiz#navigateQuestions"-->
@@ -21,9 +23,6 @@
                 <ul data-quiz-target="quizList" style="max-height: 360px; overflow: auto" class="mb-3 list-group"></ul>
             </div>
             <div class="col-lg-9 col-md-12">
-                <div class="row">
-                    <p data-quiz-target="hint" class="mb-4 alert" hidden></p>
-                </div>
                 <div data-quiz-target="quizContent" hidden>
                     <div data-quiz-target="questionContainer" class="mb-3">
                         <form data-action="submit->quiz#submitAnswer:prevent">
@@ -48,7 +47,6 @@
                                         <button type="submit"
                                                 data-quiz-target="submitBtn"
                                                 class="btn btn-success">Submit</button>
-                                        <button data-action="click->quiz#showHint:prevent" class="btn btn-info">Show Hint</button>
                                     </div>
                                 </div>
                             </div>
@@ -61,6 +59,20 @@
             </div>
         </div>
     </div>
+    <div class="alert-modal" data-controller="alert">
+        <div class="modal-content">
+            <strong>
+                <label for="alert-input"  data-alert-target="modalMessage"></label>
+            </strong>
+            <input data-alert-target="modalInput" id="alert-input" type="text" class="form-control mt-2" style="display:none;">
+            <br/>
+            <div class="button-container mt-3 text-center">
+                <button data-alert-target="cancelBtn" class="btn btn-secondary btn-lg" data-action="click->alert#cancel">Cancel</button>
+                <button data-alert-target="submitBtn" class="btn btn-primary btn-lg" data-action="click->alert#submit:prevent">OK</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="{{ asset('build/runtime.js') }}" defer></script>

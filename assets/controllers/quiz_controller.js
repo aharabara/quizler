@@ -1,8 +1,21 @@
 // assets/controllers/quiz_controller.js
 import {Controller} from '@hotwired/stimulus';
-import axios from 'axios';
 import {log} from "../decorators";
+import QuizRepository from "../src/Repository/QuizRepository";
 
+/**
+* @property {AlertController} alertOutlet
+* @property {HTMLElement} quizListTarget
+* @property {HTMLElement} statsTarget
+* @property {HTMLElement} quizContentTarget
+* @property {HTMLElement} answerTarget
+* @property {HTMLElement} answersTarget
+* @property {HTMLElement} questionTitleTarget
+* @property {HTMLElement} questionContainerTarget
+* @property {HTMLElement} quizListTarget
+* @property {HTMLElement} element
+* @property {HTMLElement} nextBtnTarget
+* */
 export default class QuizController extends Controller {
     static targets = [
         'quizList',
@@ -10,29 +23,34 @@ export default class QuizController extends Controller {
         'questionContainer',
         'stats',
         'questionTitle',
-        'hint',
         'answers',
         'navigation',
         'answer',
         'nextBtn', 'previousBtn', 'submitBtn',
     ];
 
+
+    static outlets = [
+        'alert'
+    ];
+
+    /** @type {Quiz[]} */
+    quizzes;
+
+    /** @type {Quiz} */
+    currentQuiz;
+
     connect() {
-        this.fetchQuizzes().then(() => {
+
+        this.quizRepository = new QuizRepository();
+
+        this.quizRepository.findAll().then((quizzes) => {
+            this.quizzes = quizzes;
             this.currentPosition = 0;
             this.renderQuizList()
             this.loadLastCheckpoint().then();
         });
     }
-
-    quizzes;
-
-    @log('Fetch quizzes')
-    async fetchQuizzes() {
-        const response = await axios.get('/api/quizzes.json');
-        this.quizzes = response.data;
-    }
-
     renderQuizList() {
         this.quizListTarget.innerHTML = Object.entries(this.quizzes)
             .map(([_, quiz], index) => {
@@ -89,7 +107,7 @@ export default class QuizController extends Controller {
     async _loadQuizById(quizId) {
         this.#selectItemMenuByQuizID(quizId);
         try {
-            this.currentQuiz = (await axios.get(`/api/quizzes/${quizId}.json`)).data;
+            this.currentQuiz = await this.quizRepository.findById(quizId);
         } catch (e) {
             alert('Cannot obtain the quiz.');
         }
@@ -107,7 +125,7 @@ export default class QuizController extends Controller {
         this.currentPosition = 0;
     }
 
-    @log(' - Show quizes')
+    @log(' - Show quizzes')
     showCurrentQuestion() {
         const question = this.currentQuiz.questions[this.currentPosition];
         this.checkpoint();
@@ -128,7 +146,6 @@ export default class QuizController extends Controller {
 
         this.answerTarget.value = '';
         this.answersTarget.innerHTML = '';
-        this.hintTarget.hidden = true;
         this.answerTarget.disabled = false;
         this.submitBtnTarget.disabled = false;
         this.quizContentTarget.hidden = false;
@@ -157,11 +174,6 @@ export default class QuizController extends Controller {
             )
             .reverse()
             .join("<br/>");
-    }
-
-    showMsg(text, type) {
-        this.hintTarget.hidden = false
-        this.hintTarget.innerHTML = `<div class="alert alert-${type}">${text}</div>`
     }
 
     @log(' - checkpoint')
@@ -199,16 +211,13 @@ export default class QuizController extends Controller {
             }
         });
         // this.renderQuizList();
-        await axios.post('/api/answers', {
-            value: userAnswer,
-            question: `/api/questions/${question.id}`,
-            correct: true
-        })
-            .then(response => {
+        this.quizRepository
+            .answerQuestion(question.id, userAnswer)
+            .then(answer => {
                 this.currentQuiz
                     .questions[this.currentPosition]
                     .answers
-                    .push(response.data);
+                    .push(answer);
 
                 this.showAnsweredQuestions();
                 this.nextBtnTarget.focus();
@@ -217,16 +226,13 @@ export default class QuizController extends Controller {
     }
 
     async askQuestion() {
-        let question = prompt('Write your question');
+        let question = await this.alertOutlet.ask('Write your question');
 
-        await axios.post('/api/questions', {
-            value: question,
-            quiz: `/api/quizzes/${this.currentQuiz.id}`,
-        })
-            .then(response => {
-
-                this.currentQuiz
-                    .total++;
+        this.quizRepository
+            .createQuestion(this.currentQuiz.id, question)
+            .then(question => {
+                this.currentQuiz.total++;
+                this.currentQuiz.questions.push(question);
                 this.answerTarget.focus();
                 this.renderQuizList();
                 this.showAnsweredQuestions()
@@ -253,9 +259,5 @@ export default class QuizController extends Controller {
         if (this.currentPosition === 0) return;
         this.currentPosition--;
         this.showCurrentQuestion();
-    }
-
-    showHint() {
-        this.showMsg('A hint.', 'info');
     }
 }
