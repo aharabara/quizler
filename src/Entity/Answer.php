@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -12,6 +14,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\PrePersist;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
 #[ORM\EntityListeners([AnswerListener::class])]
@@ -20,10 +23,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new Post(denormalizationContext: ['groups' => ['api:answer:create']]),
         new Get(normalizationContext: ['groups' => ['api:answer:list']]),
-        new GetCollection(normalizationContext: ['groups' => ['api:answer:list']]),
+        new GetCollection(
+            paginationItemsPerPage: 200,
+            order: ['id' => 'ASC'],
+            normalizationContext: ['groups' => ['api:answer:list']]
+        ),
     ],
     order: ['id' => 'ASC']
 )]
+#[ApiFilter(SearchFilter::class, properties: ['question.quiz' => 'exact',])]
 class Answer
 {
     #[ORM\Id]
@@ -109,6 +117,13 @@ class Answer
     public function getQuestion(): ?Question
     {
         return $this->question;
+    }
+
+    #[SerializedName('questionText')]
+    #[Groups(['api:answer:list'])]
+    public function getQuestionText(): string
+    {
+        return $this->question->getValue();
     }
 
     public function setQuestion(?Question $question): static

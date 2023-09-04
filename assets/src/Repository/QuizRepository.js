@@ -4,6 +4,7 @@ import axios from "axios";
  * @typedef Answer
  * @property {Number} id
  * @property {String} value
+ * @property {String} questionText
  * @property {String} correct
  **/
 /**
@@ -45,11 +46,11 @@ export default class QuizRepository {
      * @return {Promise<Answer>}
      **/
     async answerQuestion(id, value) {
-        return await axios.post('/api/answers', {
+        return (await axios.post('/api/answers', {
             value: value,
             question: `/api/questions/${id}`,
             correct: true
-        })
+        })).data
     }
 
     /**
@@ -62,5 +63,14 @@ export default class QuizRepository {
             value: value,
             quiz: `/api/quizzes/${id}`,
         });
+    }
+
+    /**
+     * @param {Number} quizId
+     * @return {Promise<Answer[]>}
+     **/
+    async fetchAllAnswers(quizId) {
+        return (await axios.get(`/api/answers.json?question.quiz=${quizId}`)).data;
+
     }
 }

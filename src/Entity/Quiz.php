@@ -58,6 +58,7 @@ class Quiz
 
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: Question::class, cascade: ['persist', 'merge', 'remove'])]
     #[Groups(['export', 'api:quiz:read', 'api:question:list', 'api:question:read'])]
+    #[ORM\OrderBy(['id' => 'ASC'])]
     private Collection $questions;
 
     #[ORM\Column]

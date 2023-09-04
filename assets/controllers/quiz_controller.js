@@ -160,16 +160,14 @@ export default class QuizController extends Controller {
         }
     }
 
-    showQuizAnswers(questions) {
-        // this.questionContainerTarget.hidden = true;
-        this.statsTarget.innerHTML = questions
-            .map((q) => `<div class="question-item">`
-                + `<b>${q.value}</b><br/>`
-                + q.answers.map(
-                    (a) => `<small>`
-                        + `<pre style="white-space: pre-wrap" class="text-secondary">${a.value.textFromHTML()}</pre>`
-                        + `</small>`
-                ).join('<br/>')
+    /** @param {Answer[]} answers */
+    showQuizAnswers(answers) {
+        this.statsTarget.innerHTML = answers
+            .map((answer) => `<div class="question-item">`
+                    + `<b>${answer.questionText}</b><br/>`
+                    + `<small>`
+                        + `<pre style="white-space: pre-wrap" class="text-secondary">${answer.value.textFromHTML()}</pre>`
+                    + `</small>`
                 + `</div>`
             )
             .reverse()
@@ -220,7 +218,7 @@ export default class QuizController extends Controller {
                     .push(answer);
 
                 this.showAnsweredQuestions();
-                this.nextBtnTarget.focus();
+                this.nextBtnTarget.click();
                 this.renderQuizList()
             });
     }
@@ -240,13 +238,8 @@ export default class QuizController extends Controller {
 
     }
 
-    showAnsweredQuestions() {
-
-        this.showQuizAnswers(
-            this.currentQuiz
-                .questions
-                .filter((q) => q.answers.length > 0)
-        );
+    async showAnsweredQuestions() {
+        this.showQuizAnswers(await this.quizRepository.fetchAllAnswers(this.currentQuiz.id));
     }
 
     nextQuestion() {
