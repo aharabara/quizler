@@ -4,21 +4,19 @@ import {log} from "../decorators";
 import QuizRepository from "../src/Repository/QuizRepository";
 
 /**
-* @property {AlertController} alertOutlet
-* @property {HTMLElement} quizListTarget
-* @property {HTMLElement} statsTarget
-* @property {HTMLElement} quizContentTarget
-* @property {HTMLElement} answerTarget
-* @property {HTMLElement} answersTarget
-* @property {HTMLElement} questionTitleTarget
-* @property {HTMLElement} questionContainerTarget
-* @property {HTMLElement} quizListTarget
-* @property {HTMLElement} element
-* @property {HTMLElement} nextBtnTarget
-* */
+ * @property {AlertController} alertOutlet
+ * @property {HTMLElement} statsTarget
+ * @property {HTMLElement} quizContentTarget
+ * @property {HTMLElement} answerTarget
+ * @property {HTMLElement} answersTarget
+ * @property {HTMLElement} questionTitleTarget
+ * @property {HTMLElement} questionContainerTarget
+ * @property {HTMLElement} element
+ * @property {HTMLElement} nextBtnTarget
+ * @property {ItemListController} itemListOutlet
+ * */
 export default class QuizController extends Controller {
     static targets = [
-        'quizList',
         'quizContent',
         'questionContainer',
         'stats',
@@ -31,7 +29,8 @@ export default class QuizController extends Controller {
 
 
     static outlets = [
-        'alert'
+        'alert',
+        'item-list'
     ];
 
     /** @type {Quiz[]} */
@@ -41,71 +40,37 @@ export default class QuizController extends Controller {
     currentQuiz;
 
     connect() {
-
         this.quizRepository = new QuizRepository();
+    }
+
+    itemListOutletConnected() {
+        this.itemListOutlet.setOptions({
+            badgeResolver: (/** @type {Quiz} */ item) => `${item.answered}/${item.total}`,
+            badgeTypeResolver: (/** @type {Quiz} */ item) => {
+                if (item.answered > item.total - 1) return 'bg-success';
+                if (item.answered === 0)  return 'bg-secondary';
+                return 'bg-primary';
+            },
+            labelResolver: (/** @type {Quiz} */ item) => item.value,
+            idResolver: (/** @type {Quiz} */ item) => item.id,
+        })
 
         this.quizRepository.findAll().then((quizzes) => {
             this.quizzes = quizzes;
             this.currentPosition = 0;
-            this.renderQuizList()
+            this.itemListOutlet.setItems(this.quizzes)
             this.loadLastCheckpoint().then();
         });
-    }
-    renderQuizList() {
-        this.quizListTarget.innerHTML = Object.entries(this.quizzes)
-            .map(([_, quiz], index) => {
-                let type = 'bg-primary';
-                if (quiz.answered > quiz.total - 1) {
-                    type = 'bg-success';
-                }
-                if (quiz.answered === 0) {
-                    type = 'bg-secondary';
-                }
 
-                let active = (quiz.id === this.currentQuiz?.id) ? 'active' : '';
 
-                return `<li class="${active} list-group-item d-flex justify-content-between align-items-start" 
-                            data-action="
-                                click->quiz#loadQuiz
-                                mouseover->quiz#activateElement
-                                mouseout->quiz#deactivateElement
-                            "
-                            data-id="${quiz.id}">
-                    ${quiz.value}
-                    <span class="badge ${type} rounded-pill">${quiz.answered}/${quiz.total}</span>
-                </li>`
-            })
-            .join('');
-    }
-
-    activateElement(e) {
-        e.target.classList.add('list-group-item-primary')
-    }
-
-    deactivateElement(e) {
-        e.target.classList.remove('list-group-item-primary')
-    }
-
-    async loadQuiz(event) {
-        const quizId = event.target.dataset.id;
-        await this._loadQuizById(quizId);
-        this.checkpoint();
-    }
-
-    #selectItemMenuByQuizID(quizId) {
-        this.quizListTarget
-            .querySelectorAll('li')
-            .forEach((el) => {
-                el.classList.remove('active');
-                if (parseInt(el.dataset.id) === parseInt(quizId)) {
-                    el.classList.add('active');
-                }
-            });
+        this.itemListOutlet.onSelection(async (item) => {
+            await this._loadQuizById(item.id);
+            this.checkpoint();
+        });
     }
 
     @log(' - Load quiz by ID')
     async _loadQuizById(quizId) {
-        this.#selectItemMenuByQuizID(quizId);
         try {
             this.currentQuiz = await this.quizRepository.findById(quizId);
         } catch (e) {
@@ -134,7 +99,8 @@ export default class QuizController extends Controller {
 
         if (!question) {
             this.currentPosition--;
-            this.showMsg('Quiz was successfully done.', 'success');
+            console.log('Quiz was successfully done.');
+            // this.showMsg('Quiz was successfully done.', 'success');
             return;
         }
         console.log(" - - Only question.")
@@ -164,10 +130,10 @@ export default class QuizController extends Controller {
     showQuizAnswers(answers) {
         this.statsTarget.innerHTML = answers
             .map((answer) => `<div class="question-item">`
-                    + `<b>${answer.questionText}</b><br/>`
-                    + `<small>`
-                        + `<pre style="white-space: pre-wrap" class="text-secondary">${answer.value.textFromHTML()}</pre>`
-                    + `</small>`
+                + `<b>${answer.questionText}</b><br/>`
+                + `<small>`
+                + `<pre style="white-space: pre-wrap" class="text-secondary">${answer.value.textFromHTML()}</pre>`
+                + `</small>`
                 + `</div>`
             )
             .reverse()
@@ -186,7 +152,7 @@ export default class QuizController extends Controller {
         let json = localStorage.getItem(`quizzler`);
         const data = JSON.parse(json);
         if (data && data.quizId) {
-            await this._loadQuizById(data.quizId);
+            this.itemListOutlet.selectItem(`${data.quizId}`.toInt())
         }
     }
 
@@ -219,7 +185,7 @@ export default class QuizController extends Controller {
 
                 this.showAnsweredQuestions();
                 this.nextBtnTarget.click();
-                this.renderQuizList()
+                this.itemListOutlet.setItems(this.quizzes)
             });
     }
 
@@ -232,7 +198,7 @@ export default class QuizController extends Controller {
                 this.currentQuiz.total++;
                 this.currentQuiz.questions.push(question);
                 this.answerTarget.focus();
-                this.renderQuizList();
+                this.itemListOutlet.setItems(this.quizzes)
                 this.showAnsweredQuestions()
             });
 

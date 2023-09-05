@@ -6,3 +6,7 @@ String.prototype.textFromHTML = function () {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
+String.prototype.toInt = function () {
+    return parseInt(this);
+}

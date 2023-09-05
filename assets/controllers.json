@@ -2,6 +2,7 @@
     "controllers": [],
     "entrypoints": {
         "quiz": "controllers/quiz_controller.js",
-        "alert": "controllers/alert_controller.js"
+        "alert": "controllers/alert_controller.js",
+        "item-list": "controllers/item_list_controller.js"
     }
 }

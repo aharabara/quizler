@@ -5,7 +5,7 @@
 - [ ] implement answers pagination
 - [ ] implement answers search
 - [ ] split main quiz controller into quiz-list, quiz-form and quiz-history controller
-  - [ ] quiz-list
+  - [x] quiz-list
   - [ ] quiz-form
   - [ ] quiz-history
 
