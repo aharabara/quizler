@@ -8,12 +8,12 @@ import QuizRepository from "../src/Repository/QuizRepository";
  * @property {HTMLElement} statsTarget
  * @property {HTMLElement} quizContentTarget
  * @property {HTMLElement} answerTarget
- * @property {HTMLElement} answersTarget
  * @property {HTMLElement} questionTitleTarget
  * @property {HTMLElement} questionContainerTarget
  * @property {HTMLElement} element
  * @property {HTMLElement} nextBtnTarget
  * @property {ItemListController} itemListOutlet
+ * @property {TemplatedListController} templatedListOutlet
  * */
 export default class QuizController extends Controller {
     static targets = [
@@ -30,7 +30,8 @@ export default class QuizController extends Controller {
 
     static outlets = [
         'alert',
-        'item-list'
+        'item-list',
+        'templated-list'
     ];
 
     /** @type {Quiz[]} */
@@ -62,11 +63,7 @@ export default class QuizController extends Controller {
             this.loadLastCheckpoint().then();
         });
 
-
-        this.itemListOutlet.onSelection(async (item) => {
-            await this._loadQuizById(item.id);
-            this.checkpoint();
-        });
+        this.itemListOutlet.onSelection(this.onQuizSelection);
     }
 
     @log(' - Load quiz by ID')
@@ -111,7 +108,6 @@ export default class QuizController extends Controller {
         this.questionTitleTarget.innerText = question.value;
 
         this.answerTarget.value = '';
-        this.answersTarget.innerHTML = '';
         this.answerTarget.disabled = false;
         this.submitBtnTarget.disabled = false;
         this.quizContentTarget.hidden = false;
@@ -125,19 +121,11 @@ export default class QuizController extends Controller {
             this.answerTarget.focus();
         }
     }
-
-    /** @param {Answer[]} answers */
-    showQuizAnswers(answers) {
-        this.statsTarget.innerHTML = answers
-            .map((answer) => `<div class="question-item">`
-                + `<b>${answer.questionText}</b><br/>`
-                + `<small>`
-                + `<pre style="white-space: pre-wrap" class="text-secondary">${answer.value.textFromHTML()}</pre>`
-                + `</small>`
-                + `</div>`
-            )
-            .reverse()
-            .join("<br/>");
+    prepareAnswers(answers) {
+        return answers.map((item) => {
+            item.value = item.value.textFromHTML();
+            return item;
+        });
     }
 
     @log(' - checkpoint')
@@ -205,7 +193,11 @@ export default class QuizController extends Controller {
     }
 
     async showAnsweredQuestions() {
-        this.showQuizAnswers(await this.quizRepository.fetchAllAnswers(this.currentQuiz.id));
+        let answers = this.prepareAnswers(
+            await this.quizRepository.fetchAllAnswers(this.currentQuiz.id)
+        );
+
+        this.templatedListOutlet.setItems(answers);
     }
 
     nextQuestion() {
@@ -218,5 +210,10 @@ export default class QuizController extends Controller {
         if (this.currentPosition === 0) return;
         this.currentPosition--;
         this.showCurrentQuestion();
+    }
+
+    async onQuizSelection(item) {
+        await this._loadQuizById(item.id);
+        this.checkpoint();
     }
 }

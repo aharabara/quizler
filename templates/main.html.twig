@@ -7,8 +7,9 @@
     <title>Quiz App</title>
 </head>
 <body data-controller="quiz"
-      data-quiz-alert-outlet=".alert-modal"
-      data-quiz-item-list-outlet=".quizList"
+      data-quiz-alert-outlet="#alert-modal"
+      data-quiz-item-list-outlet="#quiz-list"
+      data-quiz-templated-list-outlet="#answer-list"
       data-action="
       keydown.meta+left->quiz#previousQuestion:prevent
       keydown.meta+right->quiz#nextQuestion:prevent
@@ -21,8 +22,8 @@
         <div class="row">
             <h1 class="mt-3">Quiz App</h1>
             <div class="col-lg-3 col-md-12">
-                <ul data-controller="item-list"
-                    style="max-height: 360px; overflow: auto" class="quizList mb-3 list-group"></ul>
+                <ul data-controller="item-list" id="quiz-list"
+                    style="max-height: 360px; overflow: auto" class=" mb-3 list-group"></ul>
             </div>
             <div class="col-lg-9 col-md-12">
                 <div data-quiz-target="quizContent" hidden>
@@ -53,7 +54,19 @@
                                 </div>
                             </div>
                             <br>
-                        </form><div data-quiz-target="answers"></div>
+                        </form>
+
+                        <div data-controller="templated-list" id="answer-list">
+                            <p class="text-center"><strong>Loading...</strong></p>
+                            <div data-templated-list-target="template" style="display: none">
+                                <div class="question-item">
+                                    <b>{item.questionText}</b>
+                                    <br/>
+                                    <pre style="white-space: pre-wrap; font-size: small" class="text-secondary">{item.value}</pre>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 <div data-quiz-target="stats" class="mb-3"></div>
@@ -61,7 +74,9 @@
             </div>
         </div>
     </div>
-    <div class="alert-modal" data-controller="alert">
+
+    {# Alert component #}
+    <div id="alert-modal" class="alert-modal" data-controller="alert">
         <div class="modal-content">
             <strong>
                 <label for="alert-input"  data-alert-target="modalMessage"></label>
