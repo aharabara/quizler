@@ -5,33 +5,21 @@ import QuizRepository from "../src/Repository/QuizRepository";
 
 /**
  * @property {AlertController} alertOutlet
- * @property {HTMLElement} statsTarget
- * @property {HTMLElement} quizContentTarget
- * @property {HTMLElement} answerTarget
- * @property {HTMLElement} questionTitleTarget
- * @property {HTMLElement} questionContainerTarget
  * @property {HTMLElement} element
- * @property {HTMLElement} nextBtnTarget
  * @property {ItemListController} itemListOutlet
  * @property {TemplatedListController} templatedListOutlet
+ * @property {QuizFormController} quizFormOutlet
  * */
 export default class QuizController extends Controller {
     static targets = [
-        'quizContent',
-        'questionContainer',
-        'stats',
-        'questionTitle',
-        'answers',
-        'navigation',
-        'answer',
-        'nextBtn', 'previousBtn', 'submitBtn',
     ];
 
 
     static outlets = [
         'alert',
         'item-list',
-        'templated-list'
+        'templated-list',
+        'quiz-form'
     ];
 
     /** @type {Quiz[]} */
@@ -63,7 +51,29 @@ export default class QuizController extends Controller {
             this.loadLastCheckpoint().then();
         });
 
-        this.itemListOutlet.onSelection(this.onQuizSelection);
+        this.itemListOutlet.onSelection(this.onQuizSelection.bind(this));
+    }
+
+    quizFormConnected(){
+        const that = this;
+        this.quizFormOutlet.onAnswerSubmit((answer) => {
+            that.currentQuiz
+                .questions[that.currentPosition]
+                .answers
+                .push(answer);
+
+            that.itemListOutlet.setItems(that.quizzes)
+
+            that.showAnsweredQuestions().then(r => null);
+
+            that.quizzes.forEach((quiz) => {
+                if (quiz.id === that.currentQuiz.id) {
+                    quiz.answered++;
+                }
+            });
+            this.nextQuestion();
+
+        });
     }
 
     @log(' - Load quiz by ID')
@@ -71,7 +81,9 @@ export default class QuizController extends Controller {
         try {
             this.currentQuiz = await this.quizRepository.findById(quizId);
         } catch (e) {
-            alert('Cannot obtain the quiz.');
+            // replace with a toast
+            this.alertOutlet.alert('Quiz cannot be loaded.')
+            return;
         }
         this.resetNavigation();
         let question;
@@ -90,37 +102,20 @@ export default class QuizController extends Controller {
     @log(' - Show quizzes')
     showCurrentQuestion() {
         const question = this.currentQuiz.questions[this.currentPosition];
-        this.checkpoint();
-
-        this.showAnsweredQuestions();
 
         if (!question) {
-            this.currentPosition--;
+            this.previousQuestion();
             console.log('Quiz was successfully done.');
             // this.showMsg('Quiz was successfully done.', 'success');
             return;
         }
-        console.log(" - - Only question.")
 
+        this.quizFormOutlet.showCurrentQuestion(question)
+        this.showAnsweredQuestions().then(r => null);
 
-        this.questionContainerTarget.hidden = false;
-
-        this.questionTitleTarget.innerText = question.value;
-
-        this.answerTarget.value = '';
-        this.answerTarget.disabled = false;
-        this.submitBtnTarget.disabled = false;
-        this.quizContentTarget.hidden = false;
-
-
-        if (question.answers.length > 0) {
-            this.answerTarget.value = question.answers.map((a) => a.value).join("\n===========\n");
-            this.answerTarget.disabled = true;
-            this.submitBtnTarget.disabled = true;
-        } else {
-            this.answerTarget.focus();
-        }
+        this.checkpoint();
     }
+
     prepareAnswers(answers) {
         return answers.map((item) => {
             item.value = item.value.textFromHTML();
@@ -144,39 +139,6 @@ export default class QuizController extends Controller {
         }
     }
 
-    async submitAnswer(event) {
-        if (this.submitBtnTarget.disabled) {
-            return;
-        }
-        const userAnswer = this.answerTarget.value;
-        const question = this.currentQuiz.questions[this.currentPosition];
-
-        if (!userAnswer) {
-            return;
-        }
-        this.answerTarget.disabled = true;
-        this.submitBtnTarget.disabled = true;
-
-        this.quizzes.forEach((quiz) => {
-            if (quiz.id === this.currentQuiz.id) {
-                quiz.answered++;
-            }
-        });
-        // this.renderQuizList();
-        this.quizRepository
-            .answerQuestion(question.id, userAnswer)
-            .then(answer => {
-                this.currentQuiz
-                    .questions[this.currentPosition]
-                    .answers
-                    .push(answer);
-
-                this.showAnsweredQuestions();
-                this.nextBtnTarget.click();
-                this.itemListOutlet.setItems(this.quizzes)
-            });
-    }
-
     async askQuestion() {
         let question = await this.alertOutlet.ask('Write your question');
 
@@ -185,7 +147,6 @@ export default class QuizController extends Controller {
             .then(question => {
                 this.currentQuiz.total++;
                 this.currentQuiz.questions.push(question);
-                this.answerTarget.focus();
                 this.itemListOutlet.setItems(this.quizzes)
                 this.showAnsweredQuestions()
             });
@@ -200,20 +161,20 @@ export default class QuizController extends Controller {
         this.templatedListOutlet.setItems(answers);
     }
 
+    async onQuizSelection(item) {
+        await this._loadQuizById(item.id);
+        this.checkpoint();
+    }
+
     nextQuestion() {
         if (this.currentPosition === (this.currentQuiz.questions.length - 1)) return;
         this.currentPosition++;
         this.showCurrentQuestion();
     }
 
-    previousQuestion(e) {
+    previousQuestion() {
         if (this.currentPosition === 0) return;
         this.currentPosition--;
         this.showCurrentQuestion();
-    }
-
-    async onQuizSelection(item) {
-        await this._loadQuizById(item.id);
-        this.checkpoint();
     }
 }

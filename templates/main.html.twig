@@ -10,67 +10,62 @@
       data-quiz-alert-outlet="#alert-modal"
       data-quiz-item-list-outlet="#quiz-list"
       data-quiz-templated-list-outlet="#answer-list"
+      data-quiz-quiz-form-outlet="#answer-form"
       data-action="
       keydown.meta+left->quiz#previousQuestion:prevent
       keydown.meta+right->quiz#nextQuestion:prevent
       keydown.meta+down->quiz#askQuestion:prevent "
 >
 <div class="container">
-    <div >
-<!--        data-action="keydown->quiz#navigateQuestions"-->
-
         <div class="row">
             <h1 class="mt-3">Quiz App</h1>
             <div class="col-lg-3 col-md-12">
+                {# quiz list #}
                 <ul data-controller="item-list" id="quiz-list"
-                    style="max-height: 360px; overflow: auto" class=" mb-3 list-group"></ul>
+                    style="max-height: 375px; overflow: auto" class=" mb-3 list-group"></ul>
+
+                {# help #}
+                <p class="text-secondary">
+                    <code>cmd + left</code> - previous question <br/>
+                    <code>cmd + right</code> - next question <br/>
+                    <code>cmd + down</code> - ask question <br/>
+                </p>
             </div>
+
             <div class="col-lg-9 col-md-12">
-                <div data-quiz-target="quizContent" hidden>
-                    <div data-quiz-target="questionContainer" class="mb-3">
-                        <form data-action="submit->quiz#submitAnswer:prevent">
-                            <h5 data-quiz-target="questionTitle"></h5>
-                            <textarea data-quiz-target="answer" name="userAnswer" class="form-control mb-3" placeholder="Your answer"
-                                      rows="5" data-action="keydown.enter->quiz#submitAnswer:prevent"></textarea>
-                            <div class="row">
-                                <div class="col-8" data-quiz-target="navigation">
-                                    <button type="button" class="btn btn-primary"
-                                            data-quiz-target="previousBtn"
-                                            data-action="click->quiz#previousQuestion:prevent">
-                                        <i class="ri-arrow-left-s-line"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-primary"
-                                            data-quiz-target="nextBtn"
-                                            data-action="click->quiz#nextQuestion:prevent">
-                                        <i class="ri-arrow-right-s-line"></i>
-                                    </button>
-                                </div>
-                                <div class="col-4">
-                                    <div class="float-end">
-                                        <button type="submit"
-                                                data-quiz-target="submitBtn"
-                                                class="btn btn-success">Submit</button>
+                {# quiz list #}
+                <div data-controller="quiz-form" id="answer-form">
+                    <div data-quiz-form-target="quizContent" hidden>
+                        <div data-quiz-form-target="questionContainer" class="mb-3">
+                            <form data-action="submit->quiz-form#submitAnswer:prevent">
+                                <h5 data-quiz-form-target="questionTitle"></h5>
+                                <textarea data-quiz-form-target="answer" name="userAnswer" class="form-control mb-3" placeholder="Your answer"
+                                          rows="5" data-action="keydown.enter->quiz-form#submitAnswer:prevent"></textarea>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="float-end">
+                                            <button type="submit"
+                                                    data-quiz-form-target="submitBtn"
+                                                    class="btn btn-success">Submit</button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <br>
-                        </form>
-
-                        <div data-controller="templated-list" id="answer-list">
-                            <p class="text-center"><strong>Loading...</strong></p>
-                            <div data-templated-list-target="template" style="display: none">
-                                <div class="question-item">
-                                    <b>{item.questionText}</b>
-                                    <br/>
-                                    <pre style="white-space: pre-wrap; font-size: small" class="text-secondary">{item.value}</pre>
-                                </div>
-                            </div>
+                                <br>
+                            </form>
                         </div>
-
                     </div>
                 </div>
-                <div data-quiz-target="stats" class="mb-3"></div>
-
+                {# answer list#}
+                <div data-controller="templated-list" id="answer-list">
+                    <p class="text-center"><strong>Loading...</strong></p>
+                    <div data-templated-list-target="template" style="display: none">
+                        <div class="question-item">
+                            <b>{item.questionText}</b>
+                            <br/>
+                            <pre style="white-space: pre-wrap; font-size: small" class="text-secondary">{item.value}</pre>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -90,9 +85,7 @@
         </div>
     </div>
 
-</div>
-
-<script src="{{ asset('build/runtime.js') }}" defer></script>
-<script src="{{ asset('build/app.js') }}" defer></script>
+    <script src="{{ asset('build/runtime.js') }}" defer></script>
+    <script src="{{ asset('build/app.js') }}" defer></script>
 </body>
 </html>

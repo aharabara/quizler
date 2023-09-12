@@ -1,4 +1,8 @@
 import axios from "axios";
+/**
+ * @typedef IRI
+ * @extends String
+ **/
 
 /**
  * @typedef Answer
@@ -10,6 +14,7 @@ import axios from "axios";
 /**
  * @typedef Question
  * @property {Number} id
+ * @property {IRI} quiz
  * @property {String} value
  * @property {Answer[]} answers
  **/

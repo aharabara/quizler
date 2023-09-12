@@ -4,6 +4,7 @@
         "quiz": "controllers/quiz_controller.js",
         "alert": "controllers/alert_controller.js",
         "item-list": "controllers/item_list_controller.js",
-        "templated-list": "controllers/templated_list_controller.js"
+        "templated-list": "controllers/templated_list_controller.js",
+        "quiz-form": "controllers/quiz_form_controller.js"
     }
 }
