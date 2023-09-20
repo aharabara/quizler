@@ -10,7 +10,7 @@
   - [x] quiz-list
   - [x] quiz-form
 - [ ] Add an `overlay` component to handle loading.
-- [ ] Add toasts.
+- [ ] Add toasts. (a toast on code copy )
 - [ ] Refactor 
 
 - [ ] add possibility to toggle answer correctness

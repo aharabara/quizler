@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
         new Get(normalizationContext: ['groups' => ['api:answer:list']]),
         new GetCollection(
             paginationItemsPerPage: 200,
-            order: ['id' => 'ASC'],
+            order: ['id' => 'DESC'],
             normalizationContext: ['groups' => ['api:answer:list']]
         ),
     ],

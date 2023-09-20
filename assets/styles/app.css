@@ -21,3 +21,17 @@
     border-radius: 10px;
     border: 1px solid #888;
 }
+
+.question-item{
+    padding: 10px 10px 0 10px;
+    background: aliceblue;
+    margin-bottom: 7px;
+    border-radius: 3px;
+    border: 1px solid gainsboro;
+}
+
+.question-item pre {
+    color: #a9b7c6;
+    background: #282b2e;
+    padding: 10px 15px;
+}

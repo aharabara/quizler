@@ -14,7 +14,7 @@
       data-action="
       keydown.meta+left->quiz#previousQuestion:prevent
       keydown.meta+right->quiz#nextQuestion:prevent
-      keydown.meta+down->quiz#askQuestion:prevent "
+      keydown.meta+down->quiz#askQuestion:prevent"
 >
 <div class="container">
         <div class="row">
@@ -62,7 +62,7 @@
                         <div class="question-item">
                             <b>{item.questionText}</b>
                             <br/>
-                            <pre style="white-space: pre-wrap; font-size: small" class="text-secondary">{item.value}</pre>
+                            <div style="font-size: small">{item.value.markdowned}</div>
                         </div>
                     </div>
                 </div>

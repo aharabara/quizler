@@ -37,7 +37,7 @@ export default class QuizFormController extends Controller {
         this.#currentQuestion = question;
         this.questionContainerTarget.hidden = false;
 
-        this.questionTitleTarget.innerText = question.value;
+        this.questionTitleTarget.innerHTML = question.value.markdowned;
 
         this.answerTarget.value = '';
         this.answerTarget.disabled = false;

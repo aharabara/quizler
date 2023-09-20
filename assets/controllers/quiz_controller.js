@@ -54,7 +54,7 @@ export default class QuizController extends Controller {
         this.itemListOutlet.onSelection(this.onQuizSelection.bind(this));
     }
 
-    quizFormConnected(){
+    quizFormOutletConnected(){
         const that = this;
         this.quizFormOutlet.onAnswerSubmit((answer) => {
             that.currentQuiz
@@ -116,13 +116,6 @@ export default class QuizController extends Controller {
         this.checkpoint();
     }
 
-    prepareAnswers(answers) {
-        return answers.map((item) => {
-            item.value = item.value.textFromHTML();
-            return item;
-        });
-    }
-
     @log(' - checkpoint')
     checkpoint() {
         localStorage.setItem(`quizzler`, JSON.stringify({
@@ -154,11 +147,8 @@ export default class QuizController extends Controller {
     }
 
     async showAnsweredQuestions() {
-        let answers = this.prepareAnswers(
-            await this.quizRepository.fetchAllAnswers(this.currentQuiz.id)
-        );
-
-        this.templatedListOutlet.setItems(answers);
+        this.templatedListOutlet
+            .setItems(await this.quizRepository.fetchAllAnswers(this.currentQuiz.id));
     }
 
     async onQuizSelection(item) {
@@ -170,6 +160,7 @@ export default class QuizController extends Controller {
         if (this.currentPosition === (this.currentQuiz.questions.length - 1)) return;
         this.currentPosition++;
         this.showCurrentQuestion();
+
     }
 
     previousQuestion() {
