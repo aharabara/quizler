@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(
-            order: ['total' => 'DESC', 'answered' => 'DESC'],
+            order: ['value' => 'ASC'],
             normalizationContext: ['groups' => ['api:quiz:list']]
         ),
         new Get(normalizationContext: ['groups' => [

@@ -39,6 +39,16 @@ class GenerateFromCommand extends Command
     }
 
     /**
+     * @param string $value
+     * @param string $needle
+     * @return string
+     */
+    public function getStrAfter(string $value, string $needle): string
+    {
+        return substr($value, strpos($value, $needle) + strlen($needle));
+    }
+
+    /**
      * @param mixed $alias
      * @return Quiz
      */
@@ -49,10 +59,10 @@ class GenerateFromCommand extends Command
         $yaml = implode("\n", array_slice(explode("\n", $result), 4));
         $data = (new YamlEncoder())->decode($yaml, 'yaml');
 
-        $bundleName = ucwords(str_replace(["_", '.',], ' ', $alias));
+        $bundleName = strtolower(str_replace(["_", '.',], ' ', $alias));
 
         $quiz = new Quiz();
-        $quiz->setValue("$bundleName bundle configuration");
+        $quiz->setValue("$bundleName-bundle-configuration");
         $quiz->setVersion(2);
         foreach ($this->toDotNotation($data) as $configKey => $value) {
             $quiz->addQuestion(
@@ -107,7 +117,7 @@ class GenerateFromCommand extends Command
             $io->writeln("- $class");
             $classInfo = $reflector->reflectClass($class);
 
-            $shortName = $this->getShortenedName($classInfo);
+            $shortName = $classInfo->getName();
             $quiz->addQuestion(
                 (new \App\Entity\Question())
                     ->setValue(
@@ -119,6 +129,52 @@ class GenerateFromCommand extends Command
                 $quiz->addQuestion(
                     (new \App\Entity\Question())
                         ->setValue("What for is `{$shortName}::{$constant}` constant used for?")
+                );
+            }
+        }
+        return $quiz;
+    }
+
+
+    public function generateTypescriptPackageQuiz(string $folder, OutputInterface $output, InputInterface $input)
+    {
+        $packageName = $this->getStrAfter($folder, 'node_modules/');
+
+        $modulesFolder = dirname($folder, 2);
+        $rootFolder = __DIR__ . '/../../';
+
+        // switch to place where composer should run its commands
+        chdir($rootFolder);
+        $output->writeln("Processing '$folder' from '$rootFolder'.");
+
+        $cmd = "tsc ./bin/ts-scan.ts && node ./bin/ts-scan.js $folder";
+        $output->writeln("#> {$cmd}");
+        $response = `$cmd`;
+        $files = json_decode($response, true);
+
+        if ($files === null) {
+            throw new \RuntimeException("Error: Cannot parse JSON response. Response: $response");
+        }
+
+        $quizName = $this->getTestName($folder);
+
+        $quiz = new \App\Entity\Quiz();
+        $quiz->setValue($quizName);
+        $quiz->setVersion(2);
+
+        $io = new SymfonyStyle($input, $output);
+
+
+        $io->writeln("<info>Processing classes:</info>");
+        foreach ($files as $file => $classes) {
+            $prefix = str_replace(".d.ts", "", $this->getStrAfter($file, 'node_modules/'));
+            $classes = array_unique(array_keys($classes));
+            foreach ($classes as $class) {
+                $fqcn = "{$prefix}::{$class}";
+                if (str_contains(strtolower($fqcn), "test")) continue;
+                $io->writeln("- $fqcn");
+                $quiz->addQuestion(
+                    (new \App\Entity\Question())->setValue("What problem `$fqcn` class/type solves? How it solves this problem?")
                 );
             }
         }
@@ -164,21 +220,30 @@ class GenerateFromCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $classInfo = (new BetterReflection());
+        $alias = $input->getArgument('folderOrAlias');
 
         $isConfigQuiz = $input->getOption('config');
-        if (!$isConfigQuiz) {
-            $folder = realpath($input->getArgument('folderOrAlias'));
-            $quiz = $this->generatePackageQuiz($folder, $output, $input);
+        if ($isConfigQuiz) {
+            $this->generateConfigurationQuiz($alias);
         } else {
-            $alias = $input->getArgument('folderOrAlias');
-            $quiz = $this->generateConfigurationQuiz($alias);
+            $folder = realpath($alias);
+            $quiz = match (true) {
+                str_contains($alias, 'vendor') => $this->generatePackageQuiz($folder, $output, $input),
+                str_contains($alias, 'node_modules') => $this->generateTypescriptPackageQuiz($folder, $output, $input),
+                default => throw new \RuntimeException("Quizzes generation for '$alias' foolder are note supported.")
+            };
         }
 
         if ($input->getOption(self::OPTION_OVERWRITE)) {
-            $oldQuiz = $this->repository->findOneBy(['name' => $quiz->getValue()]);
-            $this->em->remove($oldQuiz);
+            $oldQuiz = $this->repository->findOneBy(['value' => $quiz->getValue()]);
+            if ($oldQuiz) {
+                $output->writeln("Removing old quiz.");
+                $this->em->remove($oldQuiz);
+                $this->em->flush();
+            }
         }
 
+        $output->writeln("Saving.");
         $this->em->persist($quiz);
         $this->em->flush();
 
@@ -192,12 +257,12 @@ class GenerateFromCommand extends Command
 
     protected function getShortenedName(ReflectionClass $classInfo): string
     {
-        return implode("\\", array_slice(explode("\\", $classInfo->getName()), -2, 2));
+        return implode("\\", array_slice(explode("\\", $classInfo->getName()), -3, 3));
     }
 
     protected function getTestName(string $folder): string
     {
-        return implode('-', array_slice(explode(DIRECTORY_SEPARATOR, $folder), -2, 2));
+        return implode('-', array_slice(explode(DIRECTORY_SEPARATOR, str_replace('-', '_', $folder)), -2, 2));
     }
 
 }
