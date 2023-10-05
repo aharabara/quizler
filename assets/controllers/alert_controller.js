@@ -42,6 +42,26 @@ export default class AlertController extends Controller {
         });
     }
 
+    confirm(message) {
+        this.cancelBtnTarget.style.display = 'inline';
+        this.modalInputTarget.style.display = 'none';
+        this.submitBtnTarget.style.display = 'inline';
+
+        /* fixme rewrite element displaying to class based stuff.  */
+        return new Promise((resolve, reject) => {
+            this.modalMessageTarget.innerText = message;
+            this.resolvePromise = () => {
+                resolve(true);
+                this.hideModal();
+            };
+            this.rejectPromise = () => {
+                resolve(false);
+                this.hideModal();
+            };
+            this.showModal();
+        });
+    }
+
     ask(message) {
         this.cancelBtnTarget.style.display = 'inline';
         this.submitBtnTarget.style.display = 'inline';

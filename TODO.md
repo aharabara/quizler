@@ -12,6 +12,8 @@
 - [ ] Add an `overlay` component to handle loading.
 - [ ] Add toasts. (a toast on code copy )
 - [ ] Refactor 
+- [x] Quiz delete 
+- [x] Quizzes for typescript 
 
 - [ ] add possibility to toggle answer correctness
 
