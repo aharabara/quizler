@@ -136,7 +136,8 @@ export default class QuizController extends Controller {
     }
 
     async askQuestion() {
-        let question = await this.alertOutlet.ask('Write your question');
+        let question = await this.alertOutlet
+            .ask('What is your question?', `This question is going to be added at the end of the \`${this.currentQuiz.value}\` quiz.`);
 
         this.quizRepository
             .createQuestion(this.currentQuiz.id, question)
@@ -161,7 +162,7 @@ export default class QuizController extends Controller {
     async onQuizDelete(item) {
         const quizName = await this
             .alertOutlet
-            .ask(`Are you sure you want to delete item ${item.value}? Please write quiz name to confirm.`);
+            .ask(`Do you want to delete \`${item.value}\`?`, 'Introduce **quiz name** to confirm.');
 
         if (quizName === item.value) {
             await this.quizRepository.deleteQuiz(item.id);
@@ -174,7 +175,7 @@ export default class QuizController extends Controller {
 
         } else {
             await this.alertOutlet
-                .alert(`Wrong quiz name. Expected: '${item.value}', got '${quizName}.'`);
+                .alert(`Wrong quiz name.`, `Expected: \`${item.value}\`, got \`${quizName}.\``);
         }
     }
 
