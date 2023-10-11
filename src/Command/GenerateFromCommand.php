@@ -110,8 +110,11 @@ class GenerateFromCommand extends Command
 
 
         $io->writeln("<info>Processing classes:</info>");
+        $folder = str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $folder);
         foreach ($classes as $class => $file) {
+            $file = str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $file);
             if (!str_contains($file, $folder)) {
+                dd($file, $folder);
                 continue;
             }
             $io->writeln("- $class");
