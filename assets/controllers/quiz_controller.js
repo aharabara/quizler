@@ -34,6 +34,7 @@ export default class QuizController extends Controller {
 
     itemListOutletConnected() {
         this.itemListOutlet.setOptions({
+            deletable: true,
             badgeResolver: (/** @type {Quiz} */ item) => `${item.answered}/${item.total}`,
             badgeTypeResolver: (/** @type {Quiz} */ item) => {
                 if (item.answered > item.total - 1) return 'bg-success';
@@ -43,15 +44,17 @@ export default class QuizController extends Controller {
             labelResolver: (/** @type {Quiz} */ item) => item.value,
             idResolver: (/** @type {Quiz} */ item) => item.id,
         })
-
-        this.quizRepository.findAll().then((quizzes) => {
-            this.quizzes = quizzes;
-            this.currentPosition = 0;
-            this.itemListOutlet.setItems(this.quizzes)
-            this.loadLastCheckpoint().then();
-        });
+        this.loadQuizzes().then();
 
         this.itemListOutlet.onSelection(this.onQuizSelection.bind(this));
+        this.itemListOutlet.onDelete(this.onQuizDelete.bind(this));
+    }
+
+    async loadQuizzes() {
+        this.quizzes = await this.quizRepository.findAll();
+        this.currentPosition = 0;
+        this.itemListOutlet.setItems(this.quizzes)
+        this.loadLastCheckpoint().then();
     }
 
     quizFormOutletConnected(){
@@ -133,7 +136,8 @@ export default class QuizController extends Controller {
     }
 
     async askQuestion() {
-        let question = await this.alertOutlet.ask('Write your question');
+        let question = await this.alertOutlet
+            .ask('What is your question?', `This question is going to be added at the end of the \`${this.currentQuiz.value}\` quiz.`);
 
         this.quizRepository
             .createQuestion(this.currentQuiz.id, question)
@@ -154,6 +158,25 @@ export default class QuizController extends Controller {
     async onQuizSelection(item) {
         await this._loadQuizById(item.id);
         this.checkpoint();
+    }
+    async onQuizDelete(item) {
+        const quizName = await this
+            .alertOutlet
+            .ask(`Do you want to delete \`${item.value}\`?`, 'Introduce **quiz name** to confirm.');
+
+        if (quizName === item.value) {
+            await this.quizRepository.deleteQuiz(item.id);
+            await this.loadQuizzes();
+            const firstQuiz = this.quizzes.at(0);
+            this.itemListOutlet.selectItem(firstQuiz.id);
+            this.checkpoint();
+            await this.alertOutlet
+                .alert(`Quiz '${item.value}' deleted successfully.`);
+
+        } else {
+            await this.alertOutlet
+                .alert(`Wrong quiz name.`, `Expected: \`${item.value}\`, got \`${quizName}.\``);
+        }
     }
 
     nextQuestion() {

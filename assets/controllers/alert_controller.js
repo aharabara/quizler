@@ -2,6 +2,7 @@ import {Controller} from "@hotwired/stimulus";
 
 /**
  * @property {HTMLElement} modalMessageTarget
+ * @property {HTMLElement} modalDescriptionTarget
  * @property {HTMLElement} submitBtnTarget
  * @property {HTMLElement} modalInputTarget
  * @property {HTMLElement} cancelBtnTarget
@@ -13,6 +14,7 @@ export default class AlertController extends Controller {
     static targets = [
         'modalElement',
         'modalMessage',
+        'modalDescription',
         'modalInput',
         'cancelBtn',
         'submitBtn',
@@ -24,15 +26,14 @@ export default class AlertController extends Controller {
     initialize() {
     }
 
-    alert(message) {
+    alert(message, description = '') {
         this.cancelBtnTarget.style.display = 'none';
         this.modalInputTarget.style.display = 'none';
         this.submitBtnTarget.style.display = 'inline';
 
         /* fixme rewrite element displaying to class based stuff.  */
         return new Promise((resolve) => {
-            this.modalMessageTarget.innerText = message;
-
+            this.setModalDetails(message, description);
             this.resolvePromise = () => {
                 resolve();
                 this.hideModal();
@@ -42,15 +43,39 @@ export default class AlertController extends Controller {
         });
     }
 
-    ask(message) {
+    confirm(message, description = '') {
+        this.cancelBtnTarget.style.display = 'inline';
+        this.modalInputTarget.style.display = 'none';
+        this.submitBtnTarget.style.display = 'inline';
+
+        /* fixme rewrite element displaying to class based stuff.  */
+        return new Promise((resolve, reject) => {
+            this.setModalDetails(message, description);
+            this.resolvePromise = () => {
+                resolve(true);
+                this.hideModal();
+            };
+            this.rejectPromise = () => {
+                resolve(false);
+                this.hideModal();
+            };
+            this.showModal();
+        });
+    }
+
+    setModalDetails(message, description) {
+        this.modalMessageTarget.innerHTML = message.markdowned;
+        this.modalDescriptionTarget.innerHTML = description.markdowned;
+    }
+
+    ask(message, description = '') {
         this.cancelBtnTarget.style.display = 'inline';
         this.submitBtnTarget.style.display = 'inline';
         this.modalInputTarget.style.display = 'block';
         this.modalInputTarget.value = '';
 
         return new Promise((resolve, reject) => {
-            this.modalMessageTarget.textContent = message;
-
+            this.setModalDetails(message, description);
             this.resolvePromise = () => {
                 resolve(this.modalInputTarget.value);
                 this.hideModal();

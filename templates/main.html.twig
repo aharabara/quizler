@@ -21,11 +21,11 @@
             <h1 class="mt-3">Quiz App</h1>
             <div class="col-lg-3 col-md-12">
                 {# quiz list #}
-                <ul data-controller="item-list" id="quiz-list"
-                    style="max-height: 375px; overflow: auto" class=" mb-3 list-group"></ul>
+                <ul data-controller="item-list" id="quiz-list" class=" mb-3 list-group"></ul>
 
                 {# help #}
                 <p class="text-secondary">
+                    <code>right click</code> on quiz name - delete quiz <br/>
                     <code>cmd + left</code> - previous question <br/>
                     <code>cmd + right</code> - next question <br/>
                     <code>cmd + down</code> - ask question <br/>
@@ -76,9 +76,9 @@
             <strong>
                 <label for="alert-input"  data-alert-target="modalMessage"></label>
             </strong>
-            <input data-alert-target="modalInput" id="alert-input" type="text" class="form-control mt-2" style="display:none;">
-            <br/>
-            <div class="button-container mt-3 text-center">
+            <div data-alert-target="modalDescription"></div>
+            <input data-alert-target="modalInput" id="alert-input" type="text" class="form-control mb-3" style="display:none;">
+            <div class="button-container  text-center">
                 <button data-alert-target="cancelBtn" class="btn btn-secondary btn-lg" data-action="click->alert#cancel">Cancel</button>
                 <button data-alert-target="submitBtn" class="btn btn-primary btn-lg" data-action="click->alert#submit:prevent">OK</button>
             </div>

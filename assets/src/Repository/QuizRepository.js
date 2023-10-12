@@ -78,4 +78,12 @@ export default class QuizRepository {
         return (await axios.get(`/api/answers.json?question.quiz=${quizId}`)).data;
 
     }
+
+    /**
+     * @param {Number} quizId
+     * @return {Promise<Boolean>}
+     **/
+    async deleteQuiz(quizId) {
+        return (await axios.delete(`/api/quizzes/${quizId}.json`)).status === 204;
+    }
 }

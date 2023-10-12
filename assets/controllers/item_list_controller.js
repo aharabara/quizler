@@ -5,6 +5,7 @@ import {Controller} from '@hotwired/stimulus';
  *  @property {Function} labelResolver
  *  @property {Function} badgeTypeResolver
  *  @property {Function} idResolver
+ *  @property {Boolean} deletable
  **/
 /**
  * @property {AlertController} alertOutlet
@@ -14,6 +15,15 @@ import {Controller} from '@hotwired/stimulus';
  * @property {HTMLElement[]} itemTargets
  * */
 export default class ItemListController extends Controller {
+    static get EVENT_SELECT_ITEM() {
+        return 'list.select-item';
+    };
+
+    static get EVENT_DELETE_ITEM() {
+        return 'list.delete-item';
+    };
+
+
     static targets = [
         'item',
     ];
@@ -24,8 +34,8 @@ export default class ItemListController extends Controller {
     /** @type {Object} selected*/
     #selected;
 
-    /** @type {Function[]} */
-    #onSelectionCallbacks = [];
+    /** @type {Object.<String, Function[]>} */
+    #listeners = {};
 
     /** @type {ItemListOptions} */
     #options;
@@ -46,9 +56,16 @@ export default class ItemListController extends Controller {
      *  @return ItemListController
      **/
     onSelection(callback) {
-        this.#onSelectionCallbacks.push(callback);
+        this.addEventListener(ItemListController.EVENT_SELECT_ITEM, callback);
 
         return this;
+    }
+
+    addEventListener(event, callback) {
+        if (!this.#listeners[event]) {
+            this.#listeners[event] = [];
+        }
+        this.#listeners[event].push(callback);
     }
 
     onItemClick(e) {
@@ -63,11 +80,21 @@ export default class ItemListController extends Controller {
 
         /** @var {HTMLElement} */
         const target = this.findItemElementById(itemId);
+        if (!target) {
+            console.log(`Cannot find item list element by ID ${itemId}.`)
+            return;
+        }
         target.classList.add('active');
 
 
         this.#selected = this.findItemById(itemId);
-        this.#onSelectionCallbacks.map((callback) => callback(this.#selected));
+        this.getEventListeners(ItemListController.EVENT_SELECT_ITEM)
+            .map((callback) => callback(this.#selected));
+    }
+
+    /** @param {String} event*/
+    getEventListeners(event) {
+        return this.#listeners[event];
     }
 
     /** @param {Number} itemId */
@@ -101,6 +128,10 @@ export default class ItemListController extends Controller {
                 let itemText = this.#options.labelResolver(item);
                 let badgeType = this.#options.badgeTypeResolver(item);
                 let id = this.#options.idResolver(item);
+                let actions = '';
+                if (this.#options.deletable) {
+                    actions += `contextmenu->${controller}#deleteItem:prevent`;
+                }
 
                 return `<li class="${active} list-group-item d-flex justify-content-between align-items-start"
                             data-item-list-target="item"
@@ -108,6 +139,7 @@ export default class ItemListController extends Controller {
                                 click->${controller}#onItemClick:self
                                 mouseover->${controller}#activateItem
                                 mouseout->${controller}#deactivateItem
+                                ${actions}
                             "
                             data-id="${id}">
                     ${itemText}
@@ -115,6 +147,22 @@ export default class ItemListController extends Controller {
                 </li>`
             })
             .join('');
+    }
+
+    deleteItem(e) {
+        let itemId = e.target.dataset.id.toInt();
+        let item = this.findItemById(itemId);
+        if (!item) {
+            throw Error(`Cannot find the item by id ${itemId}.`);
+        }
+        this.getEventListeners(ItemListController.EVENT_DELETE_ITEM).map((callback) => callback(item))
+    }
+
+    /** @param {Function} callback*/
+    onDelete(callback) {
+        this.addEventListener(ItemListController.EVENT_DELETE_ITEM, callback);
+
+        return this;
     }
 
     activateItem(e) {
@@ -131,6 +179,7 @@ export default class ItemListController extends Controller {
         options.badgeTypeResolver ??= (item) => '';
         options.labelResolver ??= (item) => item.value;
         options.idResolver ??= (item) => item.id;
+        options.deletable ??= false;
 
         this.#options = options;
     }
