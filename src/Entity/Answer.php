@@ -21,12 +21,12 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
-        new Post(denormalizationContext: ['groups' => ['api:answer:create']]),
-        new Get(normalizationContext: ['groups' => ['api:answer:list']]),
+        new Post(denormalizationContext: ['groups' => [self::GROUP_CREATE]]),
+        new Get(normalizationContext: ['groups' => [self::GROUP_LIST, self::GROUP_READ]]),
         new GetCollection(
             paginationItemsPerPage: 200,
             order: ['id' => 'DESC'],
-            normalizationContext: ['groups' => ['api:answer:list']]
+            normalizationContext: ['groups' => [self::GROUP_LIST]]
         ),
     ],
     order: ['id' => 'ASC']
@@ -34,32 +34,42 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 #[ApiFilter(SearchFilter::class, properties: ['question.quiz' => 'exact',])]
 class Answer
 {
+    const GROUP_READ = 'answer:read';
+    const GROUP_LIST = 'answer:list';
+    const GROUP_CREATE = 'answer:create';
+    const GROUP_EXPORT_EXTRA = 'export_extra';
+    const EXPORT = 'export';
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['export_extra', 'api:answer:list'])]
+    #[Groups([self::GROUP_EXPORT_EXTRA, self::GROUP_LIST, self::GROUP_READ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 2048, nullable: true)]
-    #[Groups(['export', 'api:answer:list', 'api:answer:create'])]
+    #[Groups([self::EXPORT, self::GROUP_LIST, self::GROUP_CREATE, self::GROUP_READ])]
     private ?string $value = null;
 
     #[ORM\Column]
-    #[Groups(['export', 'api:answer:list', 'api:answer:create'])]
+    #[Groups([self::EXPORT, self::GROUP_LIST, self::GROUP_CREATE, self::GROUP_READ])]
     private ?bool $correct = null;
 
     #[ORM\Column]
-    #[Groups(['export_extra', 'api:answer:list'])]
+    #[Groups([self::GROUP_EXPORT_EXTRA, self::GROUP_LIST, self::GROUP_READ])]
     private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    #[Groups(['export_extra', 'api:answer:list'])]
+    #[Groups([self::GROUP_EXPORT_EXTRA, self::GROUP_LIST, self::GROUP_READ])]
     private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'answers')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['api:answer:create'])]
+    #[Groups([self::GROUP_CREATE, self::GROUP_READ])]
     private ?Question $question = null;
+
+    #[ORM\ManyToOne(inversedBy: 'answers')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups([self::GROUP_EXPORT_EXTRA, self::GROUP_LIST, self::GROUP_READ, self::GROUP_CREATE])]
+    private ?User $author = null;
 
     public function getId(): ?int
     {
@@ -120,7 +130,7 @@ class Answer
     }
 
     #[SerializedName('questionText')]
-    #[Groups(['api:answer:list'])]
+    #[Groups([self::GROUP_LIST])]
     public function getQuestionText(): string
     {
         return $this->question->getValue();
@@ -146,5 +156,17 @@ class Answer
     public function beforeUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): static
+    {
+        $this->author = $author;
+
+        return $this;
     }
 }

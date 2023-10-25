@@ -11,8 +11,7 @@ import QuizRepository from "../src/Repository/QuizRepository";
  * @property {QuizFormController} quizFormOutlet
  * */
 export default class QuizController extends Controller {
-    static targets = [
-    ];
+    static targets = [];
 
 
     static outlets = [
@@ -38,7 +37,7 @@ export default class QuizController extends Controller {
             badgeResolver: (/** @type {Quiz} */ item) => `${item.answered}/${item.total}`,
             badgeTypeResolver: (/** @type {Quiz} */ item) => {
                 if (item.answered > item.total - 1) return 'bg-success';
-                if (item.answered === 0)  return 'bg-secondary';
+                if (item.answered === 0) return 'bg-secondary';
                 return 'bg-primary';
             },
             labelResolver: (/** @type {Quiz} */ item) => item.value,
@@ -57,7 +56,7 @@ export default class QuizController extends Controller {
         this.loadLastCheckpoint().then();
     }
 
-    quizFormOutletConnected(){
+    quizFormOutletConnected() {
         const that = this;
         this.quizFormOutlet.onAnswerSubmit((answer) => {
             that.currentQuiz
@@ -89,12 +88,7 @@ export default class QuizController extends Controller {
             return;
         }
         this.resetNavigation();
-        let question;
-        this.currentPosition = 0;
-        for (question of this.currentQuiz.questions) {
-            if (question.answers.length === 0) break;
-            this.currentPosition++;
-        }
+        this.currentPosition = this.currentQuiz.answered;
         this.showCurrentQuestion();
     }
 
@@ -135,18 +129,38 @@ export default class QuizController extends Controller {
         }
     }
 
-    async askQuestion() {
-        let question = await this.alertOutlet
-            .ask('What is your question?', `This question is going to be added at the end of the \`${this.currentQuiz.value}\` quiz.`);
+    async askQuestion(e) {
+        await this.doAskQuestion();
+    }
 
-        this.quizRepository
-            .createQuestion(this.currentQuiz.id, question)
-            .then(question => {
-                this.currentQuiz.total++;
-                this.currentQuiz.questions.push(question);
-                this.itemListOutlet.setItems(this.quizzes)
-                this.showAnsweredQuestions()
-            });
+    async doAskQuestion(presetValue = '') {
+        let description = `This question is going to be added at the end of the \`${this.currentQuiz.value}\` quiz.`;
+        if (presetValue){
+            description = `\`Something went wrong\``;
+        }
+
+        let questionText = await this.alertOutlet
+            .ask(
+                'What is your question?',
+                description,
+                presetValue
+            );
+
+        try {
+            let question = await this.quizRepository.createQuestion(this.currentQuiz.id, questionText)
+            this.currentQuiz.total++;
+            this.currentQuiz.questions.push(question);
+            this.itemListOutlet.setItems(this.quizzes)
+            await this.showAnsweredQuestions()
+        } catch (/** @type {AxiosError} */ e) {
+            let response  = e.response;
+            if (response.status === 422) {
+                let violations = response.data.violations;
+                // fixme dispatch toast events from here.
+                console.log(violations);
+            }
+            await this.doAskQuestion(questionText);
+        }
 
     }
 
@@ -159,6 +173,7 @@ export default class QuizController extends Controller {
         await this._loadQuizById(item.id);
         this.checkpoint();
     }
+
     async onQuizDelete(item) {
         const quizName = await this
             .alertOutlet

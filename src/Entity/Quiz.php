@@ -20,15 +20,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new GetCollection(
             order: ['value' => 'ASC'],
-            normalizationContext: ['groups' => ['api:quiz:list']]
+            normalizationContext: ['groups' => [self::GROUP_LIST]]
         ),
         new Get(normalizationContext: ['groups' => [
-            'api:quiz:list',
-            'api:quiz:read',
-            'api:question:list',
-            'api:question:read',
-            'api:answer:list',
-            ]
+            self::GROUP_LIST,
+            self::GROUP_READ,
+            Question::GROUP_LIST,
+            Question::GROUP_READ
+        ]
         ]),
         new Delete()
     ]
@@ -36,39 +35,41 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class Quiz
 {
 
+    const GROUP_LIST = 'api:quiz:list';
+    const GROUP_READ = 'quiz:read';
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['export_extra', 'api:quiz:list'])]
+    #[Groups(['export_extra', self::GROUP_LIST])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['export', 'api:quiz:list'])]
+    #[Groups(['export', self::GROUP_LIST])]
     private ?string $value = null;
 
     #[ORM\Column]
-    #[Groups(['export', 'api:quiz:list'])]
+    #[Groups(['export', self::GROUP_LIST])]
     private ?int $version = null;
 
     #[ORM\Column]
-    #[Groups(['api:quiz:list'])]
+    #[Groups([self::GROUP_LIST])]
     private ?int $answered = null;
 
     #[ORM\Column]
-    #[Groups(['api:quiz:list'])]
+    #[Groups([self::GROUP_LIST])]
     private ?int $total = null;
 
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: Question::class, cascade: ['persist', 'merge', 'remove'])]
-    #[Groups(['export', 'api:quiz:read', 'api:question:list', 'api:question:read'])]
+    #[Groups(['export', self::GROUP_READ, Question::GROUP_LIST, Question::GROUP_READ])]
     #[ORM\OrderBy(['id' => 'ASC'])]
     private Collection $questions;
 
     #[ORM\Column]
-    #[Groups(['export_extra', 'api:quiz:list'])]
+    #[Groups(['export_extra', self::GROUP_LIST])]
     private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    #[Groups(['export_extra', 'api:quiz:list'])]
+    #[Groups(['export_extra', self::GROUP_LIST])]
     private ?DateTimeImmutable $updatedAt = null;
 
     public function __construct()

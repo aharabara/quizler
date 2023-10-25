@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\PrePersist;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
 #[ORM\EntityListeners([QuestionListener::class])]
@@ -21,43 +22,55 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\UniqueConstraint(fields: ['quiz', 'value'])]
 #[ApiResource(
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['api:question:list']]),
-        new Get(normalizationContext: ['groups' => ['api:question:list', 'api:question:read', 'api:answer:read']]),
+        new GetCollection(normalizationContext: ['groups' => [self::GROUP_LIST]]),
+        new Get(normalizationContext: ['groups' => [self::GROUP_LIST, self::GROUP_READ]]),
         new Post(
-            normalizationContext: ['groups' => ['api:question:list', 'api:question:read', 'api:answer:read']],
-            denormalizationContext: ['groups' => ['api:question:create']]
+            normalizationContext: ['groups' => [self::GROUP_LIST, self::GROUP_READ]],
+            denormalizationContext: ['groups' => [self::QUESTION_CREATE]]
         ),
     ],
     order: ['id' => 'DESC'],
 )]
 class Question
 {
+    const GROUP_LIST = 'question:list';
+    const GROUP_READ = 'question:read';
+    const QUESTION_CREATE = 'question:create';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['export_extra', 'api:question:list'])]
+    #[Groups(['export_extra', self::GROUP_LIST])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['export', 'api:question:list', 'api:question:create'])]
+    #[Groups(['export', self::GROUP_LIST, self::QUESTION_CREATE])]
+    #[Assert\NotBlank(), Assert\NotNull()]
     private ?string $value = null;
 
     #[ORM\Column]
-    #[Groups(['export_extra', 'api:question:list'])]
+    #[Groups(['export_extra', self::GROUP_LIST])]
     private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    #[Groups(['export_extra', 'api:question:list'])]
+    #[Groups(['export_extra', self::GROUP_LIST])]
     private ?DateTimeImmutable $updatedAt = null;
 
-    #[ORM\OneToMany(mappedBy: 'question', targetEntity: Answer::class, cascade: ['persist', 'merge', 'remove'], fetch: 'LAZY')]
-    #[Groups(['export', 'api:question:read'])]
+    #[ORM\OneToMany(mappedBy: 'question', targetEntity: Answer::class, cascade: ['persist', 'merge', 'remove'], fetch: 'EXTRA_LAZY')]
+    #[Groups(['export', self::GROUP_READ])]
     private Collection $answers;
 
     #[ORM\ManyToOne(inversedBy: 'questions')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['api:question:create'])]
+    #[Groups([self::QUESTION_CREATE])]
+    #[Assert\NotNull()]
     private ?Quiz $quiz = null;
+
+    #[ORM\ManyToOne(inversedBy: 'questions')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "Question author should be specified.")]
+    #[Groups([self::QUESTION_CREATE])]
+    private ?User $author = null;
 
     public function __construct()
     {
@@ -159,5 +172,17 @@ class Question
     public function beforeUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): static
+    {
+        $this->author = $author;
+
+        return $this;
     }
 }

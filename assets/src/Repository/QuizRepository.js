@@ -54,6 +54,7 @@ export default class QuizRepository {
         return (await axios.post('/api/answers', {
             value: value,
             question: `/api/questions/${id}`,
+            author : this.getCurrentUserIRI(),
             correct: true
         })).data
     }
@@ -64,10 +65,17 @@ export default class QuizRepository {
      * @return {Promise<Question>}
      **/
     async createQuestion(id, value) {
+        /** @todo use a @notifyAboutViolationsOnError decorator */
         return await axios.post('/api/questions', {
             value: value,
+            author : this.getCurrentUserIRI(),
             quiz: `/api/quizzes/${id}`,
         });
+    }
+
+    getCurrentUserIRI() {
+        // todo implement
+        return "/api/users/1";
     }
 
     /**

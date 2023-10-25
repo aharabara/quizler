@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/aharabara/quizler#readme",
   "devDependencies": {
+    "@hotwired/turbo": "^7.0.1",
+    "@symfony/ux-turbo": "file:vendor/symfony/ux-turbo/assets",
     "@symfony/webpack-encore": "^4.3.0",
     "webpack-notifier": "^1.15.0"
   },
