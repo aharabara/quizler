@@ -1,65 +1,33 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <div data-controller="quiz"
-         data-quiz-alert-outlet="#alert-modal"
-         data-quiz-item-list-outlet="#quiz-list"
-         data-quiz-templated-list-outlet="#answer-list"
-         data-quiz-quiz-form-outlet="#answer-form"
-         data-action="
-      keydown.alt+left->quiz#previousQuestion:prevent
-      keydown.alt+right->quiz#nextQuestion:prevent
-      keydown.alt+down->quiz#askQuestion:prevent"
-    >
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12 mt-3 mb-3 ">
-                    <h1 class="d-inline">Quiz App</h1>
-                    <div class="d-inline" style="float: right">
-                        <a href="{{ path('app_logout') }}" class="btn btn-secondary">Logout ⏏</a>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-3 col-md-12">
-                    {{ render(path('app_quiz_list', {quiz : currentQuiz.id})) }}
-                    {# help #}
-                    <p class="text-secondary border-top border-secondary answers mt-3 pt-3">
-                        <code>right click</code> on quiz name - delete quiz <br/>
-                        <code>ctrl + left</code> - previous question <br/>
-                        <code>ctrl + right</code> - next question <br/>
-                        <code>ctrl + down</code> - ask question <br/>
-                    </p>
-
-                </div>
-
-                <div class="col-lg-9 col-md-12">
-                    <turbo-frame id="main-section">
-                        {# @todo move to a template #}
-                        {% for flash in app.flashes('danger') %}
-                            <div class="alert alert-danger d-flex align-items-center" role="alert">
-                                ⚠ &nbsp;<div> {{ flash }}</div>
-                            </div>
-                        {% endfor %}
-                        {% for flash in app.flashes('success') %}
-                            <div class="alert alert-success d-flex align-items-center" role="alert">
-                                ✓ &nbsp;<div> {{ flash }}</div>
-                            </div>
-                        {% endfor %}
-
-                        {% include 'frames/_form-answer.html.twig' with {question : currentQuestion, answer : currentAnswer} %}
-                        <div class="border-top border-secondary answers mt-4 pt-4">
-                            <turbo-frame id="answer-list" src="{{ path('app_quiz_questions', {quiz: currentQuiz.id, question: previousQuestion.id ?? currentQuestion.id}) }}">
-                                <p class="text-center text-secondary">
-                                    Loading...
-                                </p>
-                            </turbo-frame>
-                        </div>
-                    </turbo-frame>
-                    {# answer list #}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 mt-3 mb-3 ">
+                <h1 class="d-inline">Quiz App</h1>
+                <div class="d-inline" style="float: right">
+                    <a href="{{ path('app_logout') }}" class="btn btn-secondary">Logout ⏏</a>
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-12">
+                {{ render(path('app_quiz_list', {quiz : currentQuiz.id})) }}
+            </div>
 
-        {% include 'frames/_modal-prompt.html.twig' %}
+            <div class="col-lg-9 col-md-12">
+                <turbo-frame id="main-section">
+                    {% include 'frames/_flashes.html.twig' %}
+                    {% include 'frames/_form-answer.html.twig' with {question : currentQuestion, answer : currentAnswer} %}
+                    <div class="border-top border-secondary answers mt-4 pt-4">
+                        <turbo-frame id="answer-list" src="{{ path('app_quiz_questions', {quiz: currentQuiz.id, question: previousQuestion.id ?? currentQuestion.id}) }}">
+                            <p class="text-center text-secondary">
+                                Loading...
+                            </p>
+                        </turbo-frame>
+                    </div>
+                </turbo-frame>
+                {# answer list #}
+            </div>
+        </div>
     </div>
 {% endblock %}

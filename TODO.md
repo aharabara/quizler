@@ -19,9 +19,11 @@
     - [x] list of answers
     - [x] lazy load answers
     - [x] answer form
+    - [ ] add possibility to create questions
 - [ ] turbo improvements
-  - [ ] answer search
   - [x] add possibility to toggle answer correctness
+  - [ ] order questions by (id, desc)
+  - [ ] answer search
 - [ ] introduce @turboFrame block that renders content manually through render call if it is not turbo context
 - [ ] Replace alerts with toasts to not shake the page with alerts.
 
