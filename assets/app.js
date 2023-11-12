@@ -1,9 +1,9 @@
-import {app} from './bootstrap.js';
+// import {app} from './bootstrap.js';
 
 import "./core-extensions";
 import "./global-listeners";
 
-window.Stimulus = app;
+// window.Stimulus = app;
 
 import "highlight.js/styles/androidstudio.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
