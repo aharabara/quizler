@@ -10,15 +10,25 @@
   - [x] quiz-list
   - [x] quiz-form
 - [ ] Add an `overlay` component to handle loading.
-- [ ] Add toasts. (a toast on code copy )
-- [ ] Refactor 
 - [x] Quiz delete 
 - [x] Quizzes for typescript 
 
-- [ ] add possibility to toggle answer correctness
+- [ ] Refactor
+  - [ ] move to turbo
+    - [x] list of quizzes
+    - [x] list of answers
+    - [x] lazy load answers
+    - [ ] answer form
+- [ ] turbo improvements
+  - [ ] answer search
+  - [ ] add possibility to toggle answer correctness
+- [ ] introduce @turboFrame block that renders content manually through render call if it is not turbo context
+- [ ] Add toasts. (a toast on code copy )
 
 - [ ] add a quiz for graphQL
 - [ ] Add possibility to ask questions from openAI by clicking hint button
 - [ ] add a question timer and add a pomodoro functionality to have more focus.
 - [ ] Add a quiz for SPL classes.
 
+
+- [ ] Add possibility to self-register

@@ -15,83 +15,40 @@
                 <div class="col-md-12 mt-3 mb-3 ">
                     <h1 class="d-inline">Quiz App</h1>
                     <div class="d-inline" style="float: right">
-                        <a href="{{ path('app_logout') }}" class="btn btn-secondary">Logout</a>
+                        <a href="{{ path('app_logout') }}" class="btn btn-secondary">Logout ⏏</a>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-lg-3 col-md-12">
-                    {# quiz list #}
-                    <ul data-controller="item-list" id="quiz-list" class=" mb-3 list-group"></ul>
-
+                    {{ render(path('app_quiz_list', {quiz : currentQuiz.id, quizListPage : app.request.query.get('quizListPage', 1)})) }}
                     {# help #}
-                    <p class="text-secondary">
+                    <p class="text-secondary border-top border-secondary answers mt-3 pt-3">
                         <code>right click</code> on quiz name - delete quiz <br/>
                         <code>ctrl + left</code> - previous question <br/>
                         <code>ctrl + right</code> - next question <br/>
                         <code>ctrl + down</code> - ask question <br/>
                     </p>
+
                 </div>
 
                 <div class="col-lg-9 col-md-12">
-                    {# quiz list #}
-                    <div data-controller="quiz-form" id="answer-form">
-                        <div data-quiz-form-target="quizContent" hidden>
-                            <div data-quiz-form-target="questionContainer" class="mb-3">
-                                <form data-action="submit->quiz-form#submitAnswer:prevent">
-                                    <h5 data-quiz-form-target="questionTitle"></h5>
-                                    <textarea data-quiz-form-target="answer" name="userAnswer" class="form-control mb-3"
-                                              placeholder="Your answer"
-                                              rows="5"
-                                              data-action="keydown.enter->quiz-form#submitAnswer:prevent"></textarea>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="float-end">
-                                                <button type="submit"
-                                                        data-quiz-form-target="submitBtn"
-                                                        class="btn btn-success">Submit
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <br>
-                                </form>
-                            </div>
+                    <turbo-frame id="main-section">
+                        {# quiz list #}
+                        {% include 'frames/_form-answer.html.twig' with {question : currentQuestion} %}
+                        <div class="border-top border-secondary answers mt-4 pt-4">
+                            <turbo-frame id="answer-list" src="{{ path('app_quiz_questions', {quiz: currentQuiz.id}) }}">
+                                <p class="text-center text-secondary">
+                                    Loading...
+                                </p>
+                            </turbo-frame>
                         </div>
-                    </div>
+                    </turbo-frame>
                     {# answer list #}
-                    <div data-controller="templated-list" id="answer-list">
-                        <p class="text-center"><strong>Loading...</strong></p>
-                        <div data-templated-list-target="template" style="display: none">
-                            <div class="question-item">
-                                <b>{item.questionText}</b>
-                                <br/>
-                                <div style="font-size: small">{item.value.markdowned}</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
 
-        {# Alert component #}
-        <div id="alert-modal" class="alert-modal" data-controller="alert">
-            <div class="modal-content">
-                <strong>
-                    <label for="alert-input" data-alert-target="modalMessage"></label>
-                </strong>
-                <div data-alert-target="modalDescription"></div>
-                <input data-alert-target="modalInput" id="alert-input" type="text" class="form-control mb-3"
-                       style="display:none;">
-                <div class="button-container  text-center">
-                    <button data-alert-target="cancelBtn" class="btn btn-secondary btn-lg"
-                            data-action="click->alert#cancel">Cancel
-                    </button>
-                    <button data-alert-target="submitBtn" class="btn btn-primary btn-lg"
-                            data-action="click->alert#submit:prevent">OK
-                    </button>
-                </div>
-            </div>
-        </div>
+        {% include 'frames/_modal-prompt.html.twig' %}
     </div>
 {% endblock %}

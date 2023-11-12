@@ -1,0 +1,16 @@
+<turbo-frame id="quiz-form">
+    <form>
+        <h5>{{ question.value | markdown_to_html }}</h5>
+        <textarea name="userAnswer"
+                  class="form-control mb-3"
+                  placeholder="Your answer"
+                  rows="5">{{ question.answers | join("\n---\n") }}</textarea>
+        <div class="row">
+            <div class="col-12">
+                <div class="float-end">
+                    <button type="submit" class="btn btn-success">Submit ⏎</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</turbo-frame>

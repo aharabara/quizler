@@ -1,0 +1,18 @@
+<div id="alert-modal" class="alert-modal" data-controller="alert">
+    <div class="modal-content">
+        <strong>
+            <label for="alert-input" data-alert-target="modalMessage"></label>
+        </strong>
+        <div data-alert-target="modalDescription"></div>
+        <input data-alert-target="modalInput" id="alert-input" type="text" class="form-control mb-3"
+               style="display:none;">
+        <div class="button-container  text-center">
+            <button data-alert-target="cancelBtn" class="btn btn-secondary btn-lg"
+                    data-action="click->alert#cancel">Cancel
+            </button>
+            <button data-alert-target="submitBtn" class="btn btn-primary btn-lg"
+                    data-action="click->alert#submit:prevent">OK
+            </button>
+        </div>
+    </div>
+</div>

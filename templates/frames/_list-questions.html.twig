@@ -1,0 +1,46 @@
+<turbo-frame id="{{ page == 1 ? 'answer-list' : "answer-list__page_" ~ page }}">
+    {% if( page > 1) %}
+        <p class="text-center text-secondary mb-3 mt-3"> --- Page: {{ page }} --- </p>
+    {% endif %}
+    <div class="accordion" id="answer-list-accordion">
+        {% for question in questions %}
+            {% if (not question.answers.isEmpty()) %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="questions-heading-{{ question.id }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#questions-{{ question.id }}" aria-expanded="false" aria-controls="questions-{{ question.id }}">
+                            {{ question.value }}
+                        </button>
+                    </h2>
+                    <div id="questions-{{ question.id }}" class="accordion-collapse collapse" aria-labelledby="questions-heading-{{ question.id }}" data-bs-parent="#answer-list-accordion">
+                        <div class="accordion-body">
+                            <div style="font-size: small">{{ question.answers | join("<br/>") | markdown_to_html }}</div>
+                            <div class="text-end">
+                                <a href="{{ path('app_quiz',  {quiz : currentQuiz.id, question: question.id}) }}"
+                                   onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+                                   class="btn btn-warning text-end"
+                                   data-turbo-frame="quiz-form"
+                                   data-turbo-action="replace"> ✎ Edit</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {# next page #}
+        {% if(page < totalPages) %}
+            <turbo-frame id="answer-list__page_{{ page + 1 }}" loading="lazy" src="{{ path('app_quiz_questions', {quiz : currentQuiz.id, questionsPage: page + 1}) }}" >
+                <p class="text-center text-secondary mb-5 mt-5">
+                    Loading...
+                </p>
+            </turbo-frame>
+        {% else %}
+            {% if(questions is empty) %}
+                <p class="text-center text-secondary mb-5 mt-3">No answers yet</p>
+            {% else %}
+                <p class="text-center text-secondary mb-5 mt-5"> >>> End <<< </p>
+            {% endif %}
+        {% endif %}
+
+    </div>
+</turbo-frame>
