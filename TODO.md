@@ -14,16 +14,16 @@
 - [x] Quizzes for typescript 
 
 - [ ] Refactor
-  - [ ] move to turbo
+  - [x] move to turbo
     - [x] list of quizzes
     - [x] list of answers
     - [x] lazy load answers
-    - [ ] answer form
+    - [x] answer form
 - [ ] turbo improvements
   - [ ] answer search
-  - [ ] add possibility to toggle answer correctness
+  - [x] add possibility to toggle answer correctness
 - [ ] introduce @turboFrame block that renders content manually through render call if it is not turbo context
-- [ ] Add toasts. (a toast on code copy )
+- [ ] Replace alerts with toasts to not shake the page with alerts.
 
 - [ ] add a quiz for graphQL
 - [ ] Add possibility to ask questions from openAI by clicking hint button

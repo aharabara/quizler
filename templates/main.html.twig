@@ -21,7 +21,7 @@
             </div>
             <div class="row">
                 <div class="col-lg-3 col-md-12">
-                    {{ render(path('app_quiz_list', {quiz : currentQuiz.id, quizListPage : app.request.query.get('quizListPage', 1)})) }}
+                    {{ render(path('app_quiz_list', {quiz : currentQuiz.id})) }}
                     {# help #}
                     <p class="text-secondary border-top border-secondary answers mt-3 pt-3">
                         <code>right click</code> on quiz name - delete quiz <br/>
@@ -34,10 +34,21 @@
 
                 <div class="col-lg-9 col-md-12">
                     <turbo-frame id="main-section">
-                        {# quiz list #}
-                        {% include 'frames/_form-answer.html.twig' with {question : currentQuestion} %}
+                        {# @todo move to a template #}
+                        {% for flash in app.flashes('danger') %}
+                            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                ⚠ &nbsp;<div> {{ flash }}</div>
+                            </div>
+                        {% endfor %}
+                        {% for flash in app.flashes('success') %}
+                            <div class="alert alert-success d-flex align-items-center" role="alert">
+                                ✓ &nbsp;<div> {{ flash }}</div>
+                            </div>
+                        {% endfor %}
+
+                        {% include 'frames/_form-answer.html.twig' with {question : currentQuestion, answer : currentAnswer} %}
                         <div class="border-top border-secondary answers mt-4 pt-4">
-                            <turbo-frame id="answer-list" src="{{ path('app_quiz_questions', {quiz: currentQuiz.id}) }}">
+                            <turbo-frame id="answer-list" src="{{ path('app_quiz_questions', {quiz: currentQuiz.id, question: previousQuestion.id ?? currentQuestion.id}) }}">
                                 <p class="text-center text-secondary">
                                     Loading...
                                 </p>

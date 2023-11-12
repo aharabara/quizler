@@ -1,10 +1,12 @@
 <turbo-frame id="quiz-form">
-    <form>
+    <form action="{{ path('app_quiz_question_answer', {quiz:question.quiz.id, question: question.id, answer : answer.id}) }}" method="post"
+          data-turbo-frame="main-section"
+    >
         <h5>{{ question.value | markdown_to_html }}</h5>
-        <textarea name="userAnswer"
+        <textarea name="answer"
                   class="form-control mb-3"
                   placeholder="Your answer"
-                  rows="5">{{ question.answers | join("\n---\n") }}</textarea>
+                  rows="5">{{ answer.value }}</textarea>
         <div class="row">
             <div class="col-12">
                 <div class="float-end">
