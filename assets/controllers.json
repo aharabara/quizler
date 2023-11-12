@@ -1,5 +1,16 @@
 {
-    "controllers": [],
+    "controllers": {
+        "@symfony/ux-turbo": {
+            "turbo-core": {
+                "enabled": true,
+                "fetch": "eager"
+            },
+            "mercure-turbo-stream": {
+                "enabled": false,
+                "fetch": "eager"
+            }
+        }
+    },
     "entrypoints": {
         "quiz": "controllers/quiz_controller.js",
         "alert": "controllers/alert_controller.js",

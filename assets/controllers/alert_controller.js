@@ -68,11 +68,11 @@ export default class AlertController extends Controller {
         this.modalDescriptionTarget.innerHTML = description.markdowned;
     }
 
-    ask(message, description = '') {
+    ask(message, description = '', answer = '') {
         this.cancelBtnTarget.style.display = 'inline';
         this.submitBtnTarget.style.display = 'inline';
         this.modalInputTarget.style.display = 'block';
-        this.modalInputTarget.value = '';
+        this.modalInputTarget.value = answer;
 
         return new Promise((resolve, reject) => {
             this.setModalDetails(message, description);

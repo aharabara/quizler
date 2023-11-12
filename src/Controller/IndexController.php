@@ -2,65 +2,73 @@
 
 namespace App\Controller;
 
-use App\Repository\QuizRepository;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class IndexController extends AbstractController
 {
-    #[Route('/', name: 'app_quiz')]
-    public function index(QuizRepository $repository): Response
+    #[Route('/', name: 'app_home')]
+    public function index(Security $security): Response
     {
-        return $this->render('main.html.twig');
+        /* fixme probably not required and can be replaced with security.yaml config */
+        if ($security->getUser() !== null) {
+            return $this->redirectToRoute('app_quiz');
+        }
+        return $this->render('public/login.html.twig');
     }
 
-    #[Route('/interview', name: 'app_interview')]
-    public function interview(QuizRepository $repository): Response
+    #[Route('/logout', name: 'app_logout')]
+    public function logout(Security $security): Response
     {
-        return $this->render('interview.html.twig');
+        if ($security->getUser() !== null) {
+            $security->logout(false);
+        }
+
+        return $this->redirectToRoute('app_home');
     }
-    #[Route('/data.json', name: 'app_interviewwdas')]
-    public function data(QuizRepository $repository): Response
+
+    #[Route('/login', name: 'app_login')]
+    public function login(AuthenticationUtils $authenticationUtils
+    ): Response
     {
-        return $this->json(
-            json_decode('[
-    {"id": "symfony_validator", "name": "Symfony validator", "tags": ["validation", "Symfony", "forms"], "parents": []},
-    {"id": "validation_constraints", "name": "Validation constraints", "tags": ["constraints", "validation rules"], "parents": ["symfony_validator"]},
-    {"id": "custom_constraints", "name": "Custom constraints", "tags": ["custom validation", "constraint classes"], "parents": ["symfony_validator"]},
-    {"id": "validation_groups", "name": "Validation groups", "tags": ["grouped validation", "validation scenarios"], "parents": ["symfony_validator"]},
-    {"id": "validation_messages", "name": "Validation messages", "tags": ["error messages", "validation feedback"], "parents": ["symfony_validator"]},
-    {"id": "validation_events", "name": "Validation events", "tags": ["event listeners", "pre/post validation"], "parents": ["symfony_validator"]}
-]')
-//            [
-//            [
-//                "id" => 1,
-//                "name" => "AI"
-//            ],
-//            [
-//                "id" => 2,
-//                "name" => "Machine Learning",
-//                "parents" => [1]
-//            ],
-//            [
-//                "id" => 3,
-//                "name" => "Supervised Learning",
-//                "tags" => ["regression", "classification", "labelled data", "training set"],
-//                "parents" => [2]
-//            ],
-//            [
-//                "id" => 4,
-//                "name" => "Unsupervised Learning",
-//                "tags" => ["clustering", "dimensionality reduction", "unlabelled data"],
-//                "parents" => [2]
-//            ],
-//            [
-//                "id" => 5,
-//                "name" => "Reinforcement Learning",
-//                "tags" => ["agent", "environment", "reward", "policy"],
-//                "parents" => [2]
-//            ],
-//        ]
-        );
+        $formBuilder = $this->createFormBuilder(options: [
+            'action' => $this->generateUrl('app_login'),
+            'csrf_token_id' => 'authenticate'
+        ]);
+
+        $formBuilder->add('username', TextType::class, [
+            'constraints' => [
+                new NotBlank(),
+            ]
+        ]);
+        $formBuilder->add('password', PasswordType::class);
+        $formBuilder->add('submit', SubmitType::class, [
+            'label' => 'Login',
+            'attr' => [
+                'data-turbo-submits-with' => 'Wait a sec...'
+            ]
+        ]);
+
+        $form = $formBuilder->getForm();
+
+        $authenticationException = $authenticationUtils->getLastAuthenticationError();
+        if ($authenticationException) {
+            $form->addError(new FormError($authenticationException->getMessageKey()));
+            $form->setData(['username' => $authenticationUtils->getLastUsername()]);
+        }
+
+        return $this->render('public/login/frames/sign-in.html.twig', [
+            'form' => $form
+        ]);
     }
 }

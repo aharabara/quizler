@@ -25,5 +25,9 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener }
 
+
+    security.authentication.success_handler:
+        class: App\Security\AuthenticationSuccessHandler
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

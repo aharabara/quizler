@@ -1,12 +1,9 @@
-import { Application } from "@hotwired/stimulus"
-import { definitionsFromContext } from "@hotwired/stimulus-webpack-helpers"
+import {app} from './bootstrap.js';
 
 import "./core-extensions";
 import "./global-listeners";
 
-window.Stimulus = Application.start()
-const context = require.context("./controllers", true, /\.js$/)
-Stimulus.load(definitionsFromContext(context))
+window.Stimulus = app;
 
 import "highlight.js/styles/androidstudio.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";

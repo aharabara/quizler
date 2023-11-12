@@ -1,0 +1,23 @@
+# config/api_platform/resources.yaml
+resources:
+  App\Entity\User:
+    paginationType: 'page'
+    paginationItemsPerPage: 50
+    graphQlOperations:
+      # users() : Collection<User>
+      ApiPlatform\Metadata\GraphQl\QueryCollection:
+        normalizationContext:
+        groups: 'users:list'
+      # user(id: "/api/users/{id}"): User
+      ApiPlatform\Metadata\GraphQl\Query:
+        normalizationContext:
+        groups: 'users:list'
+    operations:
+      # GET /api/users.json
+      ApiPlatform\Metadata\GetCollection:
+        normalizationContext:
+          groups: ['user:list']
+      # GET /api/users/{id}.json
+      ApiPlatform\Metadata\Get:
+        normalizationContext:
+          groups: ['user:read']
