@@ -3,6 +3,7 @@
 - User system
 - Auth form
 - Migration to Hotwired Turbo.
+- Introduction of JWT for API access.
 
 
 ### Log time ago
