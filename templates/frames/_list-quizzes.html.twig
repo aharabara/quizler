@@ -1,0 +1,22 @@
+<turbo-frame id="quiz-list">
+    <div id="quiz-list" class=" mb-3 list-group">
+        {% for item in quizzes %}
+                <a href="{{ path('app_quiz', {quiz : item.id}) }}"
+                   class="{{ currentQuiz.id == item.id ? 'active' : '' }} list-group-item list-group-item-action"
+                   data-turbo-frame="root-element"
+                   data-turbo-action="advance"
+                >
+                    <small>{{ item.value }}</small>
+                    <span class="{{ item.answered == item.total ? 'bg-success' : 'bg-secondary' }}
+                    badge rounded-pill float-end">{{ item.answered }}/{{ item.total }}</span>
+                </a>
+        {% endfor %}
+    </div>
+    <div class="text-center">
+        <a class="btn btn-primary {{ not hasPreviousPage ? 'disabled' : '' }}"
+           href="{{ path('app_quiz_list',  {quiz : currentQuiz.id, quizListPage: page - 1}) }}">&#x2190;</a>
+        <a class="btn btn-primary {{ not hasNextPage ? 'disabled' : '' }}"
+           href="{{ path('app_quiz_list',  {quiz : currentQuiz.id, quizListPage: page + 1}) }}"
+        >&#x2192;</a>
+    </div>
+</turbo-frame>

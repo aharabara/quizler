@@ -1,0 +1,68 @@
+<turbo-frame id="{{ page == 1 ? 'answer-list' : "answer-list__page_" ~ page }}">
+    {% if( page > 1) %}
+        <p class="text-center text-secondary mb-3 mt-3"> --- Page: {{ page }} --- </p>
+    {% endif %}
+    <div class="accordion" id="answer-list-accordion">
+        {% for question in questions %}
+            {% if (not question.answers.isEmpty()) %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="questions-heading-{{ question.id }}">
+                        <button class="accordion-button {{ currentQuestion.id == question.id ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#questions-{{ question.id }}" aria-expanded="false" aria-controls="questions-{{ question.id }}">
+                            {{ question.value }}
+                        </button>
+                    </h2>
+                    <div id="questions-{{ question.id }}" class="accordion-collapse collapse {{ currentQuestion.id == question.id ? 'show' : '' }}" aria-labelledby="questions-heading-{{ question.id }}" data-bs-parent="#answer-list-accordion">
+                        <div class="accordion-body">
+                            <div class="text-end mb-2">
+                                <a href="{{ path('app_quiz',  {quiz: question.quiz.id, question: question.id}) }}"
+                                   onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+                                   class="btn btn-sm btn-success"
+                                   data-turbo-action="advance"
+                                   data-turbo-frame="quiz-form"> + Add answer</a>
+                            </div>
+                            {% for answer in question.answers %}
+                                <div class="answer border-start border-3 ps-3 pb-2 mb-2 {{ answer.correct ? 'border-success' : 'border-danger'}}">
+                                    {{ answer | markdown_to_html }}
+                                    <div class="actions text-end">
+                                        <a href="{{ path('app_quiz_answer_toggle',  {quiz: question.quiz.id, question: question.id, questionsPage: page, answer: answer.id}) }}"
+                                           class="btn btn-sm {{ answer.correct ? 'btn-danger' : 'btn-success'}}"
+                                           data-turbo-method="post"
+                                           data-turbo-frame="{{ page == 1 ? 'answer-list' : "answer-list__page_" ~ page }}"
+                                        >{{ answer.correct ? 'Mark as incorrect' : 'Mark as correct'}}</a>
+                                        <a href="{{ path('app_quiz',  {quiz: question.quiz.id, question: question.id, answer: answer.id}) }}"
+                                           onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+                                           class="btn btn-sm btn-warning"
+                                           data-turbo-frame="quiz-form"
+                                           data-turbo-action="advance"
+                                        > ✎ </a>
+                                        <a href="{{ path('app_quiz_delete', {quiz: question.quiz.id, question: question.id, answer: answer.id, questionsPage: page,}) }}"
+                                           class="btn btn-sm btn-danger"
+                                           data-turbo-frame="{{ page == 1 ? 'answer-list' : "answer-list__page_" ~ page }}"
+                                           data-turbo-confirm="Are you sure you want to delete this answer?"
+                                           data-turbo-method="delete"> × </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {# next page #}
+        {% if(page < totalPages) %}
+            <turbo-frame id="answer-list__page_{{ page + 1 }}" loading="lazy" src="{{ path('app_quiz_questions', {quiz : currentQuiz.id, questionsPage: page + 1, question: currentQuestion.id}) }}" >
+                <p class="text-center text-secondary mb-5 mt-5">
+                    Loading...
+                </p>
+            </turbo-frame>
+        {% else %}
+            {% if(questions is empty) %}
+                <p class="text-center text-secondary mb-5 mt-3">No answers yet</p>
+            {% else %}
+                <p class="text-center text-secondary mb-5 mt-5"> >>> End <<< </p>
+            {% endif %}
+        {% endif %}
+
+    </div>
+</turbo-frame>

@@ -2,66 +2,267 @@
 
 namespace App\Controller;
 
+use App\Entity\Answer;
+use App\Entity\Question;
+use App\Entity\Quiz;
+use App\Repository\AnswerRepository;
+use App\Repository\QuestionRepository;
 use App\Repository\QuizRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route("/app")]
 class HomeController extends AbstractController
 {
-    #[Route('/', name: 'app_quiz')]
-    public function index(QuizRepository $repository): Response
+    public function __construct(
+        protected QuizRepository         $quizRepository,
+        protected QuestionRepository     $questionRepository,
+        protected AnswerRepository       $answerRepository,
+        protected EntityManagerInterface $entityManager,
+        protected Security               $security,
+    )
     {
-        return $this->render('main.html.twig');
     }
 
-    #[Route('/interview', name: 'app_interview')]
-    public function interview(QuizRepository $repository): Response
+    #[Route('/quiz/{quiz}', name: 'app_quiz', defaults: ['quiz' => null])]
+    public function index(Request $request, ?Quiz $quiz): Response
     {
-        return $this->render('interview.html.twig');
+        $questionId = $request->query->getInt('question');
+        $answerId = $request->query->getInt('answer');
+        $previousQuestionId = $request->query->getInt('previousQuestion');
+
+        $previousQuestion = $previousQuestionId
+            ? $this->getQuizQuestionById($quiz, $previousQuestionId)
+            : new Question() /* as null object*/
+        ;
+
+        $quiz ??= $this->getFirstQuiz();
+        if ($answerId !== 0) {
+            $answer = $this->answerRepository->find($answerId);
+            $question = $answer->getQuestion();
+        } else {
+            $answer = new Answer();
+            $question = $this->getQuizQuestionById($quiz, $questionId)
+                ?? $this->getFirstUnansweredQuizQuestion($quiz)
+                ?? $this->getLastQuizQuestion($quiz);
+        }
+
+        return $this->render('main.html.twig', [
+            'currentQuiz' => $quiz,
+            'previousQuestion' => $previousQuestion,
+            'currentQuestion' => $question,
+            'currentAnswer' => $answer
+        ]);
     }
-    #[Route('/data.json', name: 'app_interviewwdas')]
-    public function data(QuizRepository $repository): Response
+
+
+    #[Route(
+        path: '/quiz/{quiz}/question/{question}/answer/{answer}',
+        name: 'app_quiz_question_answer',
+        defaults: ['answer' => null],
+        methods: ['POST']
+    )]
+    public function answer(Request $request, Question $question, ?Answer $answer, ValidatorInterface $validator): Response
     {
-        return $this->json(
-            json_decode('[
-    {"id": "symfony_validator", "name": "Symfony validator", "tags": ["validation", "Symfony", "forms"], "parents": []},
-    {"id": "validation_constraints", "name": "Validation constraints", "tags": ["constraints", "validation rules"], "parents": ["symfony_validator"]},
-    {"id": "custom_constraints", "name": "Custom constraints", "tags": ["custom validation", "constraint classes"], "parents": ["symfony_validator"]},
-    {"id": "validation_groups", "name": "Validation groups", "tags": ["grouped validation", "validation scenarios"], "parents": ["symfony_validator"]},
-    {"id": "validation_messages", "name": "Validation messages", "tags": ["error messages", "validation feedback"], "parents": ["symfony_validator"]},
-    {"id": "validation_events", "name": "Validation events", "tags": ["event listeners", "pre/post validation"], "parents": ["symfony_validator"]}
-]')
-//            [
-//            [
-//                "id" => 1,
-//                "name" => "AI"
-//            ],
-//            [
-//                "id" => 2,
-//                "name" => "Machine Learning",
-//                "parents" => [1]
-//            ],
-//            [
-//                "id" => 3,
-//                "name" => "Supervised Learning",
-//                "tags" => ["regression", "classification", "labelled data", "training set"],
-//                "parents" => [2]
-//            ],
-//            [
-//                "id" => 4,
-//                "name" => "Unsupervised Learning",
-//                "tags" => ["clustering", "dimensionality reduction", "unlabelled data"],
-//                "parents" => [2]
-//            ],
-//            [
-//                "id" => 5,
-//                "name" => "Reinforcement Learning",
-//                "tags" => ["agent", "environment", "reward", "policy"],
-//                "parents" => [2]
-//            ],
-//        ]
+        if (empty($answer)) {
+            $answer = (new Answer())
+                ->setAuthor($this->security->getUser())
+                ->setQuestion($question)
+                ->setCorrect(true)
+                ->setCreatedAt(new \DateTimeImmutable());
+        }
+
+        $answer = $answer->setValue($request->request->get('answer'));
+
+        $violations = $validator->validate($answer);
+        if ($violations->count() > 0) {
+            foreach ($violations as $violation) {
+                $this->addFlash('danger', $violation->getMessage());
+            }
+            return new RedirectResponse(
+                $this->generateUrl('app_quiz', [
+                    'quiz' => $request->attributes->get('quiz'),
+                    'question' => $request->attributes->get('question'),
+                    'answer' => $answer->getId()
+                ]),
+                Response::HTTP_SEE_OTHER
+            );
+
+        }
+        $this->addFlash('success', 'Answer added.');
+        $this->entityManager->persist($answer);
+        $this->entityManager->flush();
+
+        return new RedirectResponse(
+            $this->generateUrl('app_quiz', [
+                'quiz' => $request->attributes->get('quiz'),
+                'previousQuestion' => $request->attributes->get('question'),
+            ]),
+            Response::HTTP_SEE_OTHER
         );
+    }
+
+
+    #[Route('/quizzes/{quiz}/list', name: 'app_quiz_list')]
+    public function quizzes(Request $request, ?Quiz $quiz): Response
+    {
+        $quiz ??= $this->getFirstQuiz();
+        $session = $request->getSession();
+
+        $page = max($request->query->get('quizListPage', $session->get('app.quiz-list.page', 1)), 1);
+
+        $session->set('app.quiz-list.page', $page);
+
+        $perPage = 10;
+
+        $queryBuilder = $this->quizRepository
+            ->createQueryBuilder('q')
+            ->setMaxResults($perPage)
+            ->orderBy('q.answered', 'DESC')
+            ->setFirstResult(($page - 1) * $perPage);
+
+        $paginator = new Paginator($queryBuilder);
+
+        return $this->render('frames/_list-quizzes.html.twig', [
+            'quizzes' => $paginator->getIterator()->getArrayCopy(),
+            'currentQuiz' => $quiz,
+            'hasNextPage' => ($paginator->count() - $perPage * $page) > 0,
+            'hasPreviousPage' => $page > 1,
+            'page' => $page
+        ]);
+    }
+
+    #[Route('/answers/{answer}/', name: 'app_quiz_delete', methods: ['DELETE'])]
+    public function deleteAnswer(Request $request, ?Answer $answer): Response
+    {
+        $this->entityManager->remove($answer);
+        $this->entityManager->flush($answer);
+
+        return $this->forward(
+            'App\Controller\HomeController::questions',
+            path: [
+                'quiz' => $answer->getQuestion()->getQuiz()->getId(),
+            ],
+            query: [
+                'question' => $answer->getQuestion()->getId(),
+                'questionsPage' => $request->request->getInt('questionsPage')
+            ]);
+    }
+
+    #[Route('/answers/{answer}/', name: 'app_quiz_answer_toggle', methods: ['POST'])]
+    public function toggleAnswerValidity(Request $request, ?Answer $answer): Response
+    {
+        $answer->setCorrect(!$answer->isCorrect());
+
+        $this->entityManager->persist($answer);
+        $this->entityManager->flush($answer);
+
+        return new RedirectResponse(
+            $this->generateUrl('app_quiz_questions', [
+                'quiz' => $request->request->get('quiz'),
+                'question' => $request->request->get('question'),
+                'questionsPage' => $request->request->get('questionsPage'),
+            ]),
+            Response::HTTP_SEE_OTHER
+        );
+    }
+
+    #[Route('/{quiz}/question', name: 'app_quiz_questions')]
+    public function questions(Request $request, Quiz $quiz): Response
+    {
+        /*@todo extract paginator logic to a separate class*/
+        $queryBuilder = $this->questionRepository->createQueryBuilder('q');
+        $page = max(1, $request->query->getInt('questionsPage', 1));
+        $perPage = 20;
+
+        // @todo extract to repository
+        $queryBuilder
+            ->leftJoin(Answer::class, 'a', Join::WITH, 'q.id = a.question')
+            ->where('q.quiz = :quiz')
+            ->andWhere('a.id IS NOT NULL')
+            ->setParameter('quiz', $quiz)
+            ->setMaxResults($perPage)
+            ->setFirstResult(($page - 1) * $perPage);
+
+        $currentQuestion = new Question(); // assume null object
+        if ($request->query->has('question')) {
+            $currentQuestion = $this->questionRepository->find($request->query->getInt('question'));
+        }
+
+        $paginator = new Paginator($queryBuilder);
+
+        return $this->render('frames/_list-questions.html.twig', [
+            'page' => $page,
+            'currentQuiz' => $quiz,
+            'currentQuestion' => $currentQuestion,
+            'questions' => $paginator->getIterator()->getArrayCopy(),
+            'totalPages' => round($paginator->count() / $perPage, PHP_ROUND_HALF_UP)
+        ]);
+    }
+
+    // @todo move to question repository, name findOrFirst
+    private function getFirstUnansweredQuizQuestion(Quiz $quiz)
+    {
+        $result = $this->questionRepository
+            ->createQueryBuilder('q')
+            ->leftJoin(Answer::class, 'a', Join::WITH, 'q.id = a.question')
+            ->where('q.quiz = :quizId')
+            ->andWhere('a.id IS NULL')
+            ->orderBy('q.id')
+            ->setParameter('quizId', $quiz->getId())
+            ->getQuery()
+            ->setMaxResults(1)
+            ->getResult();
+
+        return $result[0] ?? null;
+    }
+
+    public function getQuizQuestionById(Quiz $quiz, ?int $questionId): ?Question
+    {
+        $result = $this->questionRepository
+            ->createQueryBuilder('q')
+            ->orderBy('q.id')
+            ->where('q.quiz = :quizId')
+            ->andWhere('q.id = :id')
+            ->setParameter('quizId', $quiz->getId())
+            ->setParameter('id', $questionId)
+            ->getQuery()
+            ->setMaxResults(1)
+            ->getResult();
+
+        return $result[0] ?? null;
+    }
+
+    public function getLastQuizQuestion(Quiz $quiz): ?Question
+    {
+        $result = $this->questionRepository
+            ->createQueryBuilder('q')
+            ->orderBy('q.id', 'DESC')
+            ->where('q.quiz = :quizId')
+            ->setParameter('quizId', $quiz->getId())
+            ->getQuery()
+            ->setMaxResults(1)
+            ->getResult();
+
+        return $result[0] ?? null;
+    }
+
+    public function getFirstQuiz(): ?Quiz
+    {
+        // @todo get from user available quizzes
+        return $this->quizRepository
+            ->createQueryBuilder('q')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getSingleResult();
     }
 }

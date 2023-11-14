@@ -56,7 +56,7 @@ class Question
     #[Groups(['export_extra', self::GROUP_LIST])]
     private ?DateTimeImmutable $updatedAt = null;
 
-    #[ORM\OneToMany(mappedBy: 'question', targetEntity: Answer::class, cascade: ['persist', 'merge', 'remove'], fetch: 'EXTRA_LAZY')]
+    #[ORM\OneToMany(mappedBy: 'question', targetEntity: Answer::class, cascade: ['persist', 'merge', 'remove'], fetch: 'LAZY')]
     #[Groups(['export', self::GROUP_READ])]
     private Collection $answers;
 

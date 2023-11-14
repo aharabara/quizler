@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\PrePersist;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
 #[ORM\EntityListeners([AnswerListener::class])]
@@ -47,11 +48,13 @@ class Answer
 
     #[ORM\Column(length: 2048, nullable: true)]
     #[Groups([self::EXPORT, self::GROUP_LIST, self::GROUP_CREATE, self::GROUP_READ])]
+    #[Assert\NotNull()]
+    #[Assert\NotBlank()]
     private ?string $value = null;
 
     #[ORM\Column]
     #[Groups([self::EXPORT, self::GROUP_LIST, self::GROUP_CREATE, self::GROUP_READ])]
-    private ?bool $correct = null;
+    private bool $correct = true;
 
     #[ORM\Column]
     #[Groups([self::GROUP_EXPORT_EXTRA, self::GROUP_LIST, self::GROUP_READ])]
@@ -64,11 +67,13 @@ class Answer
     #[ORM\ManyToOne(inversedBy: 'answers')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([self::GROUP_CREATE, self::GROUP_READ])]
+    #[Assert\NotNull()]
     private ?Question $question = null;
 
     #[ORM\ManyToOne(inversedBy: 'answers')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([self::GROUP_EXPORT_EXTRA, self::GROUP_LIST, self::GROUP_READ, self::GROUP_CREATE])]
+    #[Assert\NotNull()]
     private ?User $author = null;
 
     public function getId(): ?int
@@ -168,5 +173,10 @@ class Answer
         $this->author = $author;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return "{$this->value}";
     }
 }
