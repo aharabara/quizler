@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route("/app")]
@@ -44,8 +45,8 @@ class HomeController extends AbstractController
             : new Question() /* as null object*/
         ;
 
-        $quiz = $quiz ?? $this->getFirstQuiz();
-        if (!empty($answerId)) {
+        $quiz ??= $this->getFirstQuiz();
+        if ($answerId !== 0) {
             $answer = $this->answerRepository->find($answerId);
             $question = $answer->getQuestion();
         } else {
@@ -114,7 +115,7 @@ class HomeController extends AbstractController
     #[Route('/quizzes/{quiz}/list', name: 'app_quiz_list')]
     public function quizzes(Request $request, ?Quiz $quiz): Response
     {
-        $currentQuiz = $quiz ?? $this->getFirstQuiz();
+        $quiz ??= $this->getFirstQuiz();
         $session = $request->getSession();
 
         $page = max($request->query->get('quizListPage', $session->get('app.quiz-list.page', 1)), 1);
@@ -133,7 +134,7 @@ class HomeController extends AbstractController
 
         return $this->render('frames/_list-quizzes.html.twig', [
             'quizzes' => $paginator->getIterator()->getArrayCopy(),
-            'currentQuiz' => $currentQuiz,
+            'currentQuiz' => $quiz,
             'hasNextPage' => ($paginator->count() - $perPage * $page) > 0,
             'hasPreviousPage' => $page > 1,
             'page' => $page
