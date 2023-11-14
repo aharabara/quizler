@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route("/app")]
@@ -114,7 +115,7 @@ class HomeController extends AbstractController
     #[Route('/quizzes/{quiz}/list', name: 'app_quiz_list')]
     public function quizzes(Request $request, ?Quiz $quiz): Response
     {
-        $quiz = $quiz ?? $this->getFirstQuiz();
+        $quiz ??= $this->getFirstQuiz();
         $session = $request->getSession();
 
         $page = max($request->query->get('quizListPage', $session->get('app.quiz-list.page', 1)), 1);
