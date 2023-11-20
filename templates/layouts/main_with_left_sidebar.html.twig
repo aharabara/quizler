@@ -1,0 +1,14 @@
+{% extends 'layouts/main.html.twig' %}
+
+{% block container %}
+    <div class="col-lg-3 col-md-12">
+        {% block sidebar %}{% endblock %}
+    </div>
+
+    <div class="col-lg-9 col-md-12">
+        <turbo-frame id="page-content">
+            {% include 'layouts/frames/_flashes.html.twig' %}
+            {% block content %}{% endblock %}
+        </turbo-frame>
+    </div>
+{% endblock %}

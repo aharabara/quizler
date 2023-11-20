@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ app.request.locale ?? app.request.defaultLocale }}">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
@@ -13,7 +13,7 @@
         {% endblock %}
     </head>
     <body>
-        <turbo-frame id="root-element">
+        <turbo-frame id="page">
             {% block body %}{% endblock %}
         </turbo-frame>
     </body>

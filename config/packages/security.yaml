@@ -30,10 +30,10 @@ security:
             provider: app_user_provider
             form_login:
                 # "app_login" is the name of the route created previously
-                login_path: app_home
+                login_path: app_sign_in
                 check_path: app_login
                 post_only: true
-                default_target_path: app_quiz
+                default_target_path: app_home
                 username_parameter : "form[username]"
                 password_parameter : "form[password]"
                 csrf_parameter: 'form[_token]'
