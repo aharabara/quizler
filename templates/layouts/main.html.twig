@@ -1,0 +1,28 @@
+{% extends 'layouts/base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 mt-3 mb-3 ">
+                <h1 class="d-inline">{% block title %}{% endblock %}</h1>
+                <div class="d-inline" style="float: right">
+                    {% if(app.request.attributes.get('_route') == 'app_home') %}
+                    {% else %}
+                        <a href="{{ path('app_home') }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-outline-success">
+                            <i class="ri-home-line"></i> Home
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            {% block container %}
+                <div class="col-md-12">
+                    <turbo-frame id="page-content">
+                        {% include 'layouts/frames/_flashes.html.twig' %}
+                        {% block content %}{% endblock %}
+                    </turbo-frame>
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}

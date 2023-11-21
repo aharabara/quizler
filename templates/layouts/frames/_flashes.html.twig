@@ -1,10 +1,10 @@
 {% for flash in app.flashes('danger') %}
     <div class="alert alert-danger d-flex align-items-center" role="alert">
-        ⚠ &nbsp;<div> {{ flash }}</div>
+        <i class="ri-error-warning-line"></i> &nbsp;<div> {{ flash }}</div>
     </div>
 {% endfor %}
 {% for flash in app.flashes('success') %}
     <div class="alert alert-success d-flex align-items-center" role="alert">
-        ✓ &nbsp;<div> {{ flash }}</div>
+        <i class="ri-checkbox-circle-fill"></i>&nbsp;<div> {{ flash }}</div>
     </div>
 {% endfor %}

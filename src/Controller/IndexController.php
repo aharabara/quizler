@@ -15,14 +15,15 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class IndexController extends AbstractController
 {
-    #[Route('/', name: 'app_home')]
+
+    #[Route('/', name: 'app_sign_in')]
     public function index(Security $security): Response
     {
         /* fixme probably not required and can be replaced with security.yaml config */
         if ($security->getUser() !== null) {
-            return $this->redirectToRoute('app_quiz');
+            return $this->redirectToRoute('app_home');
         }
-        return $this->render('public/login.html.twig');
+        return $this->render('auth/login.html.twig');
     }
 
     #[Route('/logout', name: 'app_logout')]
@@ -32,7 +33,7 @@ class IndexController extends AbstractController
             $security->logout(false);
         }
 
-        return $this->redirectToRoute('app_home');
+        return $this->redirectToRoute('app_sign_in');
     }
 
     #[Route('/login', name: 'app_login')]
@@ -65,7 +66,7 @@ class IndexController extends AbstractController
             $form->setData(['username' => $authenticationUtils->getLastUsername()]);
         }
 
-        return $this->render('public/login/frames/sign-in.html.twig', [
+        return $this->render('auth/login/frames/sign-in.html.twig', [
             'form' => $form
         ]);
     }

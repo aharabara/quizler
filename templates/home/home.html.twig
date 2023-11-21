@@ -1,0 +1,31 @@
+{% extends 'layouts/main.html.twig' %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12 mt-5">
+            <h2 class="text-center">Welcome!</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4 d-grid gap-2">
+            <div class="border-top border-2 mt-2 mb-4"></div>
+            <a href="{{ path('app_quiz', {'quiz': null}) }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-primary">
+                <i class="ri-arrow-right-circle-line"></i>
+                Go to quizzes
+            </a>
+            <a href="{{ path('app_quiz', {'quiz': null}) }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-success disabled">
+                <i class="ri-add-circle-fill"></i>
+                Create quiz
+            </a>
+            <a href="{{ path('app_quiz', {'quiz': null}) }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-info disabled">
+                <i class="ri-survey-line"></i>
+                Create interview
+            </a>
+            <div class="border-top border-2 mt-4 mb-4"></div>
+            <a href="{{ path('app_logout') }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-secondary">
+                <i class="ri-logout-box-line"></i>
+                Logout
+            </a>
+        </div>
+    </div>
+{% endblock %}

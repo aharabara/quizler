@@ -17,7 +17,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route("/app")]
@@ -31,6 +30,12 @@ class HomeController extends AbstractController
         protected Security               $security,
     )
     {
+    }
+
+    #[Route('/', name: 'app_home')]
+    public function home(): Response
+    {
+        return $this->render('home/home.html.twig', []);
     }
 
     #[Route('/quiz/{quiz}', name: 'app_quiz', defaults: ['quiz' => null])]
@@ -56,7 +61,7 @@ class HomeController extends AbstractController
                 ?? $this->getLastQuizQuestion($quiz);
         }
 
-        return $this->render('main.html.twig', [
+        return $this->render('quizzes/quizzes.html.twig', [
             'currentQuiz' => $quiz,
             'previousQuestion' => $previousQuestion,
             'currentQuestion' => $question,
@@ -132,7 +137,7 @@ class HomeController extends AbstractController
 
         $paginator = new Paginator($queryBuilder);
 
-        return $this->render('frames/_list-quizzes.html.twig', [
+        return $this->render('quizzes/frames/_list-quizzes.html.twig', [
             'quizzes' => $paginator->getIterator()->getArrayCopy(),
             'currentQuiz' => $quiz,
             'hasNextPage' => ($paginator->count() - $perPage * $page) > 0,
@@ -200,7 +205,7 @@ class HomeController extends AbstractController
 
         $paginator = new Paginator($queryBuilder);
 
-        return $this->render('frames/_list-questions.html.twig', [
+        return $this->render('quizzes/frames/_list-questions.html.twig', [
             'page' => $page,
             'currentQuiz' => $quiz,
             'currentQuestion' => $currentQuestion,

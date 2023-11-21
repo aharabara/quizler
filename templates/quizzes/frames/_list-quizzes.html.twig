@@ -1,9 +1,9 @@
-<turbo-frame id="quiz-list">
+<turbo-frame id="sidebar">
     <div id="quiz-list" class=" mb-3 list-group">
         {% for item in quizzes %}
                 <a href="{{ path('app_quiz', {quiz : item.id}) }}"
                    class="{{ currentQuiz.id == item.id ? 'active' : '' }} list-group-item list-group-item-action"
-                   data-turbo-frame="root-element"
+                   data-turbo-frame="page"
                    data-turbo-action="advance"
                 >
                     <small>{{ item.value }}</small>
@@ -14,9 +14,13 @@
     </div>
     <div class="text-center">
         <a class="btn btn-primary {{ not hasPreviousPage ? 'disabled' : '' }}"
-           href="{{ path('app_quiz_list',  {quiz : currentQuiz.id, quizListPage: page - 1}) }}">&#x2190;</a>
+           href="{{ path('app_quiz_list',  {quiz : currentQuiz.id, quizListPage: page - 1}) }}">
+            <i class="ri-arrow-left-fill"></i>
+        </a>
         <a class="btn btn-primary {{ not hasNextPage ? 'disabled' : '' }}"
            href="{{ path('app_quiz_list',  {quiz : currentQuiz.id, quizListPage: page + 1}) }}"
-        >&#x2192;</a>
+        >
+            <i class="ri-arrow-right-fill"></i>
+        </a>
     </div>
 </turbo-frame>
