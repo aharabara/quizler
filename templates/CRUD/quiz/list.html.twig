@@ -1,0 +1,48 @@
+{% extends 'layouts/main.html.twig' %}
+
+{% block content %}
+    <div class="d-flex justify-content-between mb-4 mt-3">
+        {% include '/components/pagination.html.twig' with {page: page, perPage: perPage, totalPages: totalPages, route: 'quiz_list'} %}
+
+        <div class="actions">
+            <a class="btn btn-success" href="{{ path('quiz_create') }}" data-turbo-action="advance">
+                <i class="ri-add-fill"></i>
+                Add new
+            </a>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Stats</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in list %}
+                <tr>
+                    <td>{{ item.value }}</td>
+                    <td>{{ item.answered }} / {{ item.total }}</td>
+                    <td>
+                        <a href="{{ path('app_quiz', {quiz : item.id}) }}" class="btn btn-success"
+                           data-turbo-frame="content" data-turbo-action="advance">
+                            <i class="ri-question-answer-fill"></i>
+                        </a>
+                        <a href="{{ path('quiz_edit', {quiz : item.id}) }}" class="btn btn-warning"
+                           data-turbo-frame="content" data-turbo-action="advance">
+                            <i class="ri-pencil-fill"></i>
+                        </a>
+                        <a href="{{ path('quiz_delete', {quiz : item.id}) }}" class="btn btn-danger"
+                           data-turbo-frame="content" data-turbo-action="advance"
+                           data-turbo-method="DELETE"
+                           data-turbo-confirm="Are you sure you want to delete this quiz?"
+                        >
+                            <i class="ri-delete-bin-2-fill"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

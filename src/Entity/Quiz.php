@@ -43,9 +43,13 @@ class Quiz
     #[Groups(['export_extra', self::GROUP_LIST])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column(length: 255)]
     #[Groups(['export', self::GROUP_LIST])]
     private ?string $value = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['export', self::GROUP_LIST])]
+    private ?string $source = null;
 
     #[ORM\Column]
     #[Groups(['export', self::GROUP_LIST])]
@@ -204,5 +208,15 @@ class Quiz
             /* @var Question $question */
             $this->answered += $question->getAnswers()->filter(fn(Answer $answer) => $answer->isCorrect())->count();
         }
+    }
+
+    public function getSource(): ?string
+    {
+        return $this->source;
+    }
+
+    public function setSource(?string $source): void
+    {
+        $this->source = $source;
     }
 }

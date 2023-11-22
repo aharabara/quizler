@@ -5,12 +5,18 @@
             <div class="col-md-12 mt-3 mb-3 ">
                 <h1 class="d-inline">{% block title %}{% endblock %}</h1>
                 <div class="d-inline" style="float: right">
-                    {% if(app.request.attributes.get('_route') == 'app_home') %}
-                    {% else %}
-                        <a href="{{ path('app_home') }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-outline-success">
-                            <i class="ri-home-line"></i> Home
+                    {% if(app.request.attributes.get('_route') != 'app_home') %}
+                        <a href="#" onclick="history.back()" data-turbo-frame="page"
+{#                           data-turbo-action="replace"#}
+                           class="btn btn-outline-success">
+                            <i class="ri-arrow-left-fill"></i> Back
                         </a>
+                    {% else %}
                     {% endif %}
+                    <a href="#" onclick="toggleTheme" id="themeSwitch" data-turbo="false"
+                       class="btn btn-outline-info">
+                        <i class="ri-moon-clear-line"></i>
+                    </a>
                 </div>
             </div>
         </div>
