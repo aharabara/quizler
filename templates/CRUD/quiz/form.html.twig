@@ -1,0 +1,15 @@
+{% extends 'layouts/main.html.twig' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            {% if (quiz.id) %}
+                <h1>Edit "{{ quiz.value }}"</h1>
+            {% else %}
+                <h1>Create quiz</h1>
+            {% endif %}
+            {{ form(form) }}
+        </div>
+    </div>
+{% endblock %}

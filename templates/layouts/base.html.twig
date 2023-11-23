@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="{{ app.request.locale ?? app.request.defaultLocale }}">
+<html lang="{{ app.request.locale ?? app.request.defaultLocale }}" data-bs-theme="dark">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
         {% endblock %}
@@ -16,6 +15,20 @@
         <turbo-frame id="page">
             {% block body %}{% endblock %}
         </turbo-frame>
+
+        {# @todo move to app.js and store theme in the localStorage or pass it to backend(user settings?) #}
+        <script>
+            document
+                .querySelector('#themeSwitch')
+                .addEventListener('click', function (e) {
+                    let html = document.querySelector('html');
+                    html.setAttribute('data-bs-theme', html.getAttribute('data-bs-theme') === 'light' ? 'dark' : 'light');
+
+                    e.preventDefault();
+                    return false;
+                })
+
+        </script>
     </body>
 </html>
 

@@ -38,7 +38,8 @@ class HomeController extends AbstractController
         return $this->render('home/home.html.twig', []);
     }
 
-    #[Route('/quiz/{quiz}', name: 'app_quiz', defaults: ['quiz' => null])]
+    /** @todo refactor the routes. */
+    #[Route('/quizzler/{quiz}', name: 'app_quiz', defaults: ['quiz' => null])]
     public function index(Request $request, ?Quiz $quiz): Response
     {
         $questionId = $request->query->getInt('question');
@@ -71,7 +72,7 @@ class HomeController extends AbstractController
 
 
     #[Route(
-        path: '/quiz/{quiz}/question/{question}/answer/{answer}',
+        path: '/quizzler/{quiz}/question/{question}/answer/{answer}',
         name: 'app_quiz_question_answer',
         defaults: ['answer' => null],
         methods: ['POST']
@@ -146,7 +147,7 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/answers/{answer}/', name: 'app_quiz_delete', methods: ['DELETE'])]
+    #[Route('/quizzler/answers/{answer}/', name: 'app_quiz_delete', methods: ['DELETE'])]
     public function deleteAnswer(Request $request, ?Answer $answer): Response
     {
         $this->entityManager->remove($answer);
@@ -163,7 +164,7 @@ class HomeController extends AbstractController
             ]);
     }
 
-    #[Route('/answers/{answer}/', name: 'app_quiz_answer_toggle', methods: ['POST'])]
+    #[Route('/quizzler/answers/{answer}/', name: 'app_quiz_answer_toggle', methods: ['POST'])]
     public function toggleAnswerValidity(Request $request, ?Answer $answer): Response
     {
         $answer->setCorrect(!$answer->isCorrect());
@@ -181,7 +182,7 @@ class HomeController extends AbstractController
         );
     }
 
-    #[Route('/{quiz}/question', name: 'app_quiz_questions')]
+    #[Route('/quizzler/{quiz}/question', name: 'app_quiz_questions')]
     public function questions(Request $request, Quiz $quiz): Response
     {
         /*@todo extract paginator logic to a separate class*/

@@ -4,6 +4,7 @@
 
 **Added**
 - Create a home page with navigation.
+- QR-1: Add possibility to create/edit/delete quizzes.
 
 **Changed**
 
