@@ -6,13 +6,13 @@
 
         <div class="actions d-flex">
             <form>
-                <label>
+                <label class="input-group">
                     <input type="search" class="form-control" name="search" value="{{ app.request.get('search') }}"
                            placeholder="Type quiz name">
+                    <button class="btn btn-outline-secondary" data-turbo-action="advance" type="submit">
+                        <i class="ri-search-2-line"></i>
+                    </button>
                 </label>
-                <button class="btn btn-outline-secondary" data-turbo-action="advance">
-                    <i class="ri-search-2-line"></i>
-                </button>
             </form>
 
             <div class="border border-start border-1 ms-3 me-3"></div>
@@ -33,7 +33,7 @@
         <tbody>
         {% for item in list %}
             <tr>
-                <td scope="col">{{ item.value }}</td>
+                <td>{{ item.value }}</td>
                 <td>{{ item.answered }} / {{ item.total }}</td>
                 <td class="action-column">
                     <a href="{{ path('app_quiz', {quiz : item.id}) }}" class="btn btn-success"
