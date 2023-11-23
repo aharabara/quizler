@@ -1,7 +1,7 @@
-{% extends 'layouts/main.html.twig' %}
+{% extends 'layouts/base.html.twig' %}
 {% block content %}
     <div class="row">
-        <div class="col-md-12 mt-5">
+        <div class="col-md-12">
             <h2 class="text-center">Welcome!</h2>
         </div>
     </div>
@@ -20,11 +20,6 @@
             <a href="{{ path('app_quiz', {'quiz': null}) }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-info disabled">
                 <i class="ri-survey-line"></i>
                 Create interview
-            </a>
-            <div class="border-top border-2 mt-4 mb-4"></div>
-            <a href="{{ path('app_logout') }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-secondary">
-                <i class="ri-logout-box-line"></i>
-                Logout
             </a>
         </div>
     </div>
