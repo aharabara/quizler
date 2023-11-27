@@ -1,0 +1,30 @@
+{% if (app.user) %}
+    {% if(app.request.attributes.get('_route') != 'app_home') %}
+        <a href="#" onclick="history.back()" data-turbo-frame="page" title="Back"
+           class="btn btn-outline-success">
+            <i class="ri-arrow-left-line"></i>
+        </a>
+        <a href="{{ path('app_home') }}" data-turbo-frame="page" data-turbo-action="advance" title="Home"
+           class="btn btn-outline-success">
+            <i class="ri-home-line"></i>
+        </a>
+    {% endif %}
+{% endif %}
+
+<a href="#" data-turbo="false" title="Change theme"
+   data-action="click->application#changeTheme"
+   class="btn btn-outline-info">
+    <i class="ri-moon-clear-line"></i>
+</a>
+
+{% if (app.user) %}
+    <a href="{{ path('app_logout') }}" data-turbo-frame="page" data-turbo-action="advance"
+       title="Logout"
+       class="btn btn-outline-secondary">
+        <i class="ri-logout-box-line"></i>
+    </a>
+{% else %}
+{#    <a href="#" title="" class="btn btn-info">#}
+{#        Join?#}
+{#    </a>#}
+{% endif %}

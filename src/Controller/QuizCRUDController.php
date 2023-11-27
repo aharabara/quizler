@@ -35,7 +35,7 @@ class QuizCRUDController extends AbstractController
         ]);
 
         if ($this->handleForm($form, $request)) {
-            return $this->redirectToRoute('quiz_edit', ['quiz' => $quiz->getId()]);
+            return $this->redirectToRoute('quiz_list', ['search' => $quiz->getValue()]);
         }
 
         return $this->render(
@@ -51,12 +51,20 @@ class QuizCRUDController extends AbstractController
     {
         $perPage = max($request->query->getInt('perPage', 1), 10);
         $page = max($request->query->getInt('page', 1), 1);
+        $search = $request->query->get('search');
 
         $queryBuilder = $this
             ->quizRepository
             ->createQueryBuilder('quiz')
+            ->orderBy('quiz.id', 'DESC')
             ->setMaxResults($perPage)
             ->setFirstResult(($page - 1) * $perPage);
+
+        if(!empty($search)) {
+            $queryBuilder
+                ->where('quiz.value LIKE :search')
+                ->setParameter('search', "%{$search}%");
+        }
 
         $paginator = new Paginator($queryBuilder);
 

@@ -1,48 +1,68 @@
-{% extends 'layouts/main.html.twig' %}
+{% extends 'layouts/base.html.twig' %}
 
 {% block content %}
-    <div class="d-flex justify-content-between mb-4 mt-3">
+    <div class="d-flex justify-content-between mb-4">
         {% include '/components/pagination.html.twig' with {page: page, perPage: perPage, totalPages: totalPages, route: 'quiz_list'} %}
 
-        <div class="actions">
+        <div class="actions d-flex">
+            <form>
+                <label class="input-group">
+                    <input type="search" class="form-control" name="search" value="{{ app.request.get('search') }}"
+                           placeholder="Type quiz name">
+                    <button class="btn btn-outline-secondary" data-turbo-action="advance" type="submit">
+                        <i class="ri-search-2-line"></i>
+                    </button>
+                </label>
+            </form>
+
+            <div class="border border-start border-1 ms-3 me-3"></div>
             <a class="btn btn-success" href="{{ path('quiz_create') }}" data-turbo-action="advance">
                 <i class="ri-add-fill"></i>
-                Add new
             </a>
+
         </div>
     </div>
-    <table class="table">
+    <table class="table table-striped table-hover">
         <thead>
-            <tr>
-                <th>Title</th>
-                <th>Stats</th>
-                <th>Actions</th>
-            </tr>
+        <tr>
+            <th>Title</th>
+            <th class="">Stats</th>
+            <th class="action-column">Actions</th>
+        </tr>
         </thead>
         <tbody>
-            {% for item in list %}
-                <tr>
-                    <td>{{ item.value }}</td>
-                    <td>{{ item.answered }} / {{ item.total }}</td>
-                    <td>
-                        <a href="{{ path('app_quiz', {quiz : item.id}) }}" class="btn btn-success"
-                           data-turbo-frame="content" data-turbo-action="advance">
-                            <i class="ri-question-answer-fill"></i>
-                        </a>
-                        <a href="{{ path('quiz_edit', {quiz : item.id}) }}" class="btn btn-warning"
-                           data-turbo-frame="content" data-turbo-action="advance">
-                            <i class="ri-pencil-fill"></i>
-                        </a>
-                        <a href="{{ path('quiz_delete', {quiz : item.id}) }}" class="btn btn-danger"
-                           data-turbo-frame="content" data-turbo-action="advance"
-                           data-turbo-method="DELETE"
-                           data-turbo-confirm="Are you sure you want to delete this quiz?"
-                        >
-                            <i class="ri-delete-bin-2-fill"></i>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
+        {% for item in list %}
+            <tr>
+                <td>{{ item.value }}</td>
+                <td>{{ item.answered }} / {{ item.total }}</td>
+                <td class="action-column">
+                    <a href="{{ path('app_quiz', {quiz : item.id}) }}" class="btn btn-success"
+                       data-turbo-frame="content" data-turbo-action="advance">
+                        <i class="ri-question-answer-fill"></i>
+                    </a>
+                    <a href="{{ path('quiz_edit', {quiz : item.id}) }}" class="btn btn-warning"
+                       data-turbo-frame="content" data-turbo-action="advance">
+                        <i class="ri-pencil-fill"></i>
+                    </a>
+                    <a href="{{ path('quiz_delete', {quiz : item.id}) }}" class="btn btn-danger"
+                       data-turbo-frame="content" data-turbo-action="advance"
+                       data-turbo-method="DELETE"
+                       data-turbo-confirm="Are you sure you want to delete this quiz?"
+                    >
+                        <i class="ri-delete-bin-2-fill"></i>
+                    </a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3" class="text-center">
+                    {% if app.request.get('search') is not empty %}
+                        Result for search by <code>'{{ app.request.get('search') }}'</code>.
+                    {% endif %}
+                    No items to display.
+                </td>
+            </tr>
+        {% endfor %}
         </tbody>
     </table>
 {% endblock %}

@@ -11,5 +11,7 @@
             }
         }
     },
-    "entrypoints": []
+    "entrypoints": {
+        "application" : "./controllers/application_controller.js"
+    }
 }
