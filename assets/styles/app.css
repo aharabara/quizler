@@ -1,10 +1,16 @@
 .table{
     .action-column{
-        width: 170px;
+        width: 200px;
         text-align: center;
     }
 }
 
+.markdown-compact p{
+    margin-bottom: 0;
+}
+.answers .answer-item{
+    background: rgba(0,0,0,0.1);
+}
 
 .alert-modal {
     display: none;

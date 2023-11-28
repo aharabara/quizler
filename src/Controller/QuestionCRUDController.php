@@ -2,9 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Question;
 use App\Entity\Quiz;
-use App\Form\QuizType;
-use App\Repository\QuizRepository;
+use App\Form\QuestionType;
+use App\Repository\QuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,62 +14,58 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route("/app/quiz")]
-class QuizCRUDController extends AbstractController
+#[Route("/app/quiz/{quiz}/question")]
+class QuestionCRUDController extends AbstractController
 {
-    public function __construct(protected EntityManagerInterface $entityManager, protected QuizRepository $quizRepository)
+    public function __construct(protected EntityManagerInterface $entityManager, protected QuestionRepository $questionRepository)
     {
     }
 
-    #[Route("/create", name: "quiz_create", methods: ['POST', 'GET'])]
-    #[Route("/{quiz}/edit", name: "quiz_edit", methods: ['POST', 'GET'])]
-    public function createQuiz(Request $request, Quiz $quiz = null): Response
+    #[Route("/create", name: "question_create", methods: ['POST', 'GET'])]
+    #[Route("/{answer}/edit", name: "question_edit", methods: ['POST', 'GET'])]
+    public function createQuiz(Request $request, Quiz $quiz, Question $question = null): Response
     {
 
-        $quiz ??= (new Quiz())
-            ->setVersion(1);
+        $question ??= (new Question())
+            ->setQuiz($quiz)
+            ->setAuthor($this->getUser());
 
-        $form = $this->createForm(QuizType::class, $quiz, [
+        $form = $this->createForm(QuestionType::class, $question, [
             'attr' => [
                 'data-turbo-action' => 'advance'
             ]
         ]);
 
         if ($this->handleForm($form, $request)) {
-            if (!$request->attributes->get('_route') === 'quiz_create') {
-                $this->addFlash('success', "Quiz '{$quiz->getValue()}' was created.");
-            } else {
-                $this->addFlash('success', "Quiz '{$quiz->getValue()}' was updated.");
-            }
-
-            return $this->redirectToRoute('go_through_quiz', ['quiz' => $quiz->getId()]);
+            return $this->redirectToRoute('question_list', ['search' => $question->getValue()]);
         }
 
         return $this->render(
             'CRUD/quiz/form.html.twig',
             [
                 'form' => $form,
-                'quiz' => $quiz
+                'quiz' => $quiz,
+                'question' => $question
             ]);
     }
 
-    #[Route("/list", name: "quiz_list", methods: ['GET'])]
-    public function listQuizzes(Request $request): Response
+    #[Route("/list", name: "question_list", methods: ['GET'])]
+    public function listQuestions(Request $request): Response
     {
         $perPage = max($request->query->getInt('perPage', 1), 10);
         $page = max($request->query->getInt('page', 1), 1);
         $search = $request->query->get('search');
 
         $queryBuilder = $this
-            ->quizRepository
-            ->createQueryBuilder('quiz')
-            ->orderBy('quiz.id', 'DESC')
+            ->questionRepository
+            ->createQueryBuilder('question')
+            ->orderBy('question.id', 'DESC')
             ->setMaxResults($perPage)
             ->setFirstResult(($page - 1) * $perPage);
 
-        if (!empty($search)) {
+        if(!empty($search)) {
             $queryBuilder
-                ->where('quiz.value LIKE :search')
+                ->where('question.value LIKE :search')
                 ->setParameter('search', "%{$search}%");
         }
 
@@ -84,17 +81,17 @@ class QuizCRUDController extends AbstractController
             ]);
     }
 
-    #[Route("/{quiz}/delete", name: "quiz_delete", methods: ['DELETE'])]
-    public function deleteQuiz(Quiz $quiz): Response
+    #[Route("/{question}/delete", name: "question_delete", methods: ['DELETE'])]
+    public function deleteQuestion(Question $question): Response
     {
-        $id = $quiz->getId();
+        $id = $question->getId();
 
-        $this->entityManager->remove($quiz);
+        $this->entityManager->remove($question);
         $this->entityManager->flush();
 
-        $this->addFlash('success', "Quiz '{$quiz->getValue()}' with ID:{$id} was deleted.");
+        $this->addFlash('success', "Question '{$question->getValue()}' with ID:{$id} was deleted.");
 
-        return $this->redirectToRoute('quiz_list', status: Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('question_list', status: Response::HTTP_SEE_OTHER);
     }
 
     public function handleForm(FormInterface $form, Request $request): bool
@@ -105,6 +102,7 @@ class QuizCRUDController extends AbstractController
             /** @var Quiz $quiz */
             $this->entityManager->persist($quiz = $form->getData());
             $this->entityManager->flush();
+            $this->addFlash('success', "Quiz '{$quiz->getValue()}' was created.");
 
             return true;
         }

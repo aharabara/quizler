@@ -36,7 +36,7 @@
                 <td>{{ item.value }}</td>
                 <td>{{ item.answered }} / {{ item.total }}</td>
                 <td class="action-column">
-                    <a href="{{ path('app_quiz', {quiz : item.id}) }}" class="btn btn-success"
+                    <a href="{{ path('go_through_quiz', {quiz : item.id}) }}" class="btn btn-success"
                        data-turbo-frame="content" data-turbo-action="advance">
                         <i class="ri-question-answer-fill"></i>
                     </a>

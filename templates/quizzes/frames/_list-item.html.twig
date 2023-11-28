@@ -1,0 +1,9 @@
+<a id="question-{{ item.id }}" href="{{ path('go_through_quiz', app.request.query | merge({quiz: currentQuestion.quiz.id, question: item.id})) ~ '#question-' ~ item.id }}"
+   data-turbo-action="advance"
+   data-turbo-frame="page-content"
+   class="list-group-item list-group-item-action {{ currentQuestion.id == item.id ? 'list-group-item-primary' : (item.answers.count() > 0 ? 'list-group-item-success' : '') }}">
+    <div class="w-100">
+        <div class="markdown-compact">{{ item.value | markdown_to_html }}</div>
+        <small class="text-muted float-end">{{ item.answers.count() }} answers</small>
+    </div>
+</a>

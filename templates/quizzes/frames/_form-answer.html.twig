@@ -1,22 +1,29 @@
 <turbo-frame id="quiz-form">
-    <form action="{{ path('app_quiz_question_answer', {quiz:question.quiz.id, question: question.id, answer : answer.id}) }}" method="post"
-          data-turbo-frame="page-content"
-    >
-        <h5>{{ question.value | markdown_to_html }}</h5>
-        <textarea name="answer"
-                  class="form-control mb-3"
-                  placeholder="Your answer"
-                  rows="5">{{ answer.value }}</textarea>
-        <div class="row">
-            <div class="col-12">
-                <div class="float-end">
-                    {% if (answer.id) %}
-                        <button type="submit" class="btn btn-warning"><i class="ri-pencil-fill"></i> Update</button>
-                    {% else %}
-                        <button type="submit" class="btn btn-success"><i class="ri-add-circle-fill"></i> Submit</button>
-                    {% endif %}
+    {% if not question.id %}
+        <h5>Ask more!</h5>
+        <p class="text-center text-muted">
+            There is no questions selected
+        </p>
+    {% else %}
+        <form action="{{ path('app_quiz_question_answer', app.request.query.all | merge({question: question.id, answer : answer.id})) }}" method="post"
+              data-turbo-frame="page-content"
+        >
+            <h5>{{ question.value | markdown_to_html }}</h5>
+            <textarea name="answer"
+                      class="form-control mb-3"
+                      placeholder="Your answer"
+                      rows="5">{{ answer.value }}</textarea>
+            <div class="row">
+                <div class="col-12">
+                    <div class="float-end">
+                        {% if (answer.id) %}
+                            <button type="submit" class="btn btn-warning"><i class="ri-pencil-fill"></i> Update</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-success"><i class="ri-add-circle-fill"></i> Submit</button>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </div>
-    </form>
+        </form>
+    {% endif %}
 </turbo-frame>

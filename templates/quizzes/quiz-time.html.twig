@@ -1,0 +1,52 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block title %}Quizzes{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6">
+            <turbo-frame id="question-list">
+                <a class="float-end text-secondary"
+                   href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({withAnswers : not app.request.query.get('withAnswers')})) }}"
+                   data-turbo-action="advance">
+                    {% if app.request.query.getBoolean('withAnswers') %}
+                        <i class="ri-eye-close-line"></i>
+                        Show answered
+                    {% else %}
+                        <i class="ri-eye-line"></i>
+                        Hide answered
+                    {% endif %}
+                </a>
+                <h5>Quiz questions</h5>
+                <div class="ask-form mb-3">
+                    {{ form_start(form, {attr : {'data-turbo-frame': 'page-content', 'data-turbo-stream' : "true" }}) }}
+                    <div class="d-flex justify-content-between">
+                        <div class="w-100">
+                            {{ form_widget(form.value) }}
+                            {{ form_errors(form.value) }}
+                        </div>
+                        {{ form_row(form.submit, {label : '+', row_attr : {class: 'ms-2'}}) }}
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+                <div>
+                    {% include 'quizzes/frames/_list-questions.html.twig' with {questions: questions, currentQuestion: currentQuestion} %}
+                </div>
+            </turbo-frame>
+        </div>
+        <div class="col-md-6">
+            {% include 'quizzes/frames/_form-answer.html.twig' with {question : currentQuestion, answer : currentAnswer} %}
+            <div class="border-top border-secondary answers mt-4 pt-4">
+                {% for answer in currentQuestion.answers %}
+                    <div class="border-start border-3 border-success ps-3 pb-2 mb-2 answer-item">
+                        <small class="text-muted">
+                            <b>{{ answer.author.username }}</b> answered it on {{ answer.createdAt.format('Y-m-d') }}
+                            <a href="#answer-{{ answer.id }}" data-turbo="false">#{{ answer.id }}</a>
+                        </small>
+                        <div class="mt-2">{{ answer.value | markdown_to_html }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
