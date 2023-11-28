@@ -5,6 +5,8 @@
 **Added**
 - Create a home page with navigation.
 - QR-1: Add possibility to create/edit/delete quizzes.
+- QR-13: Added possibility to add questions.
+- QR-22: Added possibility to add answers.
 
 **Changed**
 
