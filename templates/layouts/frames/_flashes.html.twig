@@ -4,6 +4,11 @@
         <i class="ri-error-warning-line"></i> &nbsp;<div> {{ flash }}</div>
     </div>
 {% endfor %}
+{% for flash in app.flashes('warning') %}
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="ri-error-warning-line"></i> &nbsp;<div> {{ flash }}</div>
+    </div>
+{% endfor %}
 {% for flash in app.flashes('success') %}
     <div class="alert alert-success d-flex align-items-center" role="alert">
         <i class="ri-checkbox-circle-fill"></i>&nbsp;<div> {{ flash }}</div>

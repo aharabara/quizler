@@ -82,9 +82,9 @@ class Question
         return $this->id;
     }
 
-    public function getValue(): ?string
+    public function getValue(): string
     {
-        return $this->value;
+        return "$this->value";
     }
 
     public function setValue(string $value): static
@@ -184,5 +184,10 @@ class Question
         $this->author = $author;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return "$this->id";
     }
 }

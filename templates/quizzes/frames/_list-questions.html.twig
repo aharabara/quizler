@@ -1,5 +1,8 @@
 <ul class="list-group" style="overflow: scroll; height: calc(100vh - 15rem) ">
     {% for item in questions %}
-        {%  include 'quizzes/frames/_list-questions__item.html.twig' %}
+        {%  include 'quizzes/frames/_list-questions__item.html.twig' with {
+            active: currentQuestion.id == item.id,
+            item: item
+        } %}
     {% endfor %}
 </ul>

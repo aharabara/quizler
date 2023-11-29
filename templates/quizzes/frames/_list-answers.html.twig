@@ -1,4 +1,4 @@
-{% for answer in currentQuestion.answers %}
+{% for answer in question.answers %}
     {%  include 'quizzes/frames/_list-answers__item.html.twig' %}
 {% else %}
     <p class="text-center text-muted">No answers yet</p>

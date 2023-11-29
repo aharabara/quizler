@@ -48,6 +48,9 @@ class QuizTimeController extends AbstractController
     }
 
 
+//    #[ViewRepresentation('turbo', 'template-path')]
+//    #[ViewRepresentation('turbo-stream', 'template-path')]
+//    #[ViewRepresentation('html', 'template-path')]
     #[Route('/{quiz}/question/{question}', name: 'go_through_quiz', defaults: ['question' => null])]
     public function index(Request $request, Quiz $quiz, ?Question $question = null): Response
     {

@@ -3,9 +3,9 @@
 {% block meta_title %}Quizzler? - Questions{% endblock %}
 {% block title %}
     {% if (question.id) %}
-        Edit question
+        Edit answer
     {% else %}
-        Create question
+        Create answer
     {% endif %}
 {% endblock %}
 
@@ -13,10 +13,11 @@
     <div class="row">
         <div class="d-sm-none d-lg-block col-lg-2"></div>
         <div class="col-lg-8">
-            <h5>Edit question from <code>{{question.quiz.value }}</code> quiz</h5>
-            {% include 'CRUD/question/frames/_form.html.twig' %}
+            <h5>Edit answer for <code>{{answer.question.value }}</code> question.</h5>
+            {% include 'CRUD/answer/frames/_form.html.twig' %}
             <div class="list-answers mt-5">
-                {% include 'quizzes/frames/_list-answers.html.twig' %}
+                {# @todo list user vote here. #}
+                // Ranking here
             </div>
         </div>
     </div>

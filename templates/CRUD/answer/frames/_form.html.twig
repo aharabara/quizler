@@ -1,0 +1,17 @@
+<turbo-frame id="answer-form">
+    {{ form_start(form, {attr: {
+        "data-turbo-frame" : "page-content",
+        "data-turbo-action" : "advance",
+    }}) }}
+        <h5>{{ question.value | markdown_to_html }}</h5>
+    {{ form_widget(form.value, {attr: {class: "mb-3", placeholder: "Your answer...", rows: 5}}) }}
+        <div class="row">
+            <div class="col-12">
+                <div class="float-end">
+                    {{ form_widget(form.submit) }}
+                </div>
+            </div>
+        </div>
+    {{ form_end(form) }}
+    </form>
+</turbo-frame>
