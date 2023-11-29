@@ -1,0 +1,16 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block meta_title %}Quizzler? - Questions{% endblock %}
+{% block title %}
+    {% if (question.id) %}Edit "{{ question.value }}" question
+    {% else %}Create question{% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            {% include 'CRUD/question/frames/_form.html.twig' %}
+        </div>
+    </div>
+{% endblock %}

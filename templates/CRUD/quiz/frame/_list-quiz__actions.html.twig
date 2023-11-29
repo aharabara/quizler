@@ -1,0 +1,13 @@
+<form>
+    <label class="input-group">
+        <input type="search" class="form-control" name="search" value="{{ app.request.get('search') }}"
+               placeholder="Type quiz name">
+        <button class="btn btn-outline-secondary" data-turbo-action="advance" type="submit">
+            <i class="ri-search-2-line"></i>
+        </button>
+    </label>
+</form>
+<div class="border border-start border-1 ms-3 me-3"></div>
+<a class="btn btn-success" href="{{ path('quiz_create') }}" data-turbo-action="advance">
+    <i class="ri-add-fill"></i>
+</a>

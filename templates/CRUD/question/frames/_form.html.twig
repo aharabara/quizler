@@ -1,0 +1,9 @@
+{{ form_start(form, {attr : {'data-turbo-frame': 'page-content', 'data-turbo-stream' : "true" }}) }}
+<div class="d-flex justify-content-between">
+    <div class="w-100">
+        {{ form_widget(form.value) }}
+        {{ form_errors(form.value) }}
+    </div>
+    {{ form_row(form.submit, {label : '+', row_attr : {class: 'ms-2'}}) }}
+</div>
+{{ form_end(form) }}

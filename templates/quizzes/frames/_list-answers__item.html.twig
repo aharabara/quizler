@@ -1,0 +1,7 @@
+<div class="border-start border-3 border-success ps-3 pb-2 mb-2 answer-item">
+    <small class="text-muted">
+        <b>{{ answer.author.username }}</b> answered it on {{ answer.createdAt.format('Y-m-d') }}
+        <a href="#answer-{{ answer.id }}" data-turbo="false">#{{ answer.id }}</a>
+    </small>
+    <div class="mt-2">{{ answer.value | markdown_to_html }}</div>
+</div>

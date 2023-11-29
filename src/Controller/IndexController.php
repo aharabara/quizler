@@ -66,7 +66,7 @@ class IndexController extends AbstractController
             $form->setData(['username' => $authenticationUtils->getLastUsername()]);
         }
 
-        return $this->render('auth/login/frames/sign-in.html.twig', [
+        return $this->render('auth/frames/sign-in.html.twig', [
             'form' => $form
         ]);
     }

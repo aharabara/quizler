@@ -8,8 +8,21 @@
 .markdown-compact p{
     margin-bottom: 0;
 }
-.answers .answer-item{
+.list-answers .answer-item{
     background: rgba(0,0,0,0.1);
+}
+.list-questions .actions a{
+    text-decoration: none;
+}
+
+a.text-hover-primary:hover{
+    color: rgba(var(--bs-link-color-rgb),var(--bs-link-opacity,1)) !important;
+}
+a.text-hover-success:hover{
+    color: rgba(var(--bs-success-rgb),var(--bs-link-opacity,1)) !important;
+}
+a.text-hover-danger:hover{
+    color: rgba(var(--bs-danger-rgb),var(--bs-link-opacity,1)) !important;
 }
 
 .alert-modal {

@@ -1,22 +1,17 @@
 {% extends 'layouts/base.html.twig' %}
+
+{% block meta_title %}Quizzler? - Home{% endblock %}
+{% block title %}Have fun!{% endblock %}
+
 {% block content %}
-    <div class="row">
-        <div class="col-md-12">
-            <h2 class="text-center">Welcome!</h2>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-lg-3 col-md-2 col-sm-1"></div>
-        <div class="col-lg-6 col-md-8 col-sm-10 d-grid gap-2">
-            <div class="border-top border-2 mt-2 mb-4"></div>
-            <a href="{{ path('quiz_list') }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-success">
-                <i class="ri-list-ordered"></i>
-                Quizzes
-            </a>
-            <a href="#" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-info disabled">
-                <i class="ri-survey-line"></i>
-                Create interview
-            </a>
-        </div>
+    <div class="d-flex align-items-stretch">
+        <a href="{{ path('quiz_list') }}" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-success flex-fill m-2  pt-5 pb-5">
+            <i class="ri-list-ordered"></i>
+            Quizzes
+        </a>
+        <a href="#" data-turbo-frame="page" data-turbo-action="advance" class="btn btn-info disabled flex-fill m-2 pt-5 pb-5">
+            <i class="ri-survey-line"></i>
+            Create interview
+        </a>
     </div>
 {% endblock %}
