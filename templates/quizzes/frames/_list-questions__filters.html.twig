@@ -2,10 +2,8 @@
    href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({withAnswers : not app.request.query.get('withAnswers')})) }}"
    data-turbo-action="advance">
     {% if app.request.query.getBoolean('withAnswers') %}
-        <i class="ri-eye-close-line"></i>
-        Show answered
+            <i class="ri-eye-line"></i> Hide answered
     {% else %}
-        <i class="ri-eye-line"></i>
-        Hide answered
+        <i class="ri-eye-close-line"></i> Show answered
     {% endif %}
 </a>

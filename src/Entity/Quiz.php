@@ -219,4 +219,9 @@ class Quiz
     {
         $this->source = $source;
     }
+
+    public function __toString(): string
+    {
+        return "$this->id";
+    }
 }

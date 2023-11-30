@@ -1,23 +1,33 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\CRUD;
 
 use App\Entity\Quiz;
 use App\Form\QuizType;
+use App\Repository\AnswerRepository;
+use App\Repository\QuestionRepository;
 use App\Repository\QuizRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route("/app/quiz")]
-class QuizCRUDController extends AbstractController
+class QuizCRUDController extends CRUDController
 {
-    public function __construct(protected EntityManagerInterface $entityManager, protected QuizRepository $quizRepository)
+    public function __construct(
+        protected QuizRepository         $quizRepository,
+        protected QuestionRepository     $questionRepository,
+        protected AnswerRepository       $answerRepository,
+        protected EntityManagerInterface $entityManager,
+        protected Security               $security,
+    )
     {
+        parent::__construct($this->entityManager);
     }
 
     #[Route("/create", name: "quiz_create", methods: ['POST', 'GET'])]
@@ -96,20 +106,4 @@ class QuizCRUDController extends AbstractController
 
         return $this->redirectToRoute('quiz_list', status: Response::HTTP_SEE_OTHER);
     }
-
-    public function handleForm(FormInterface $form, Request $request): bool
-    {
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            /** @var Quiz $quiz */
-            $this->entityManager->persist($quiz = $form->getData());
-            $this->entityManager->flush();
-
-            return true;
-        }
-
-        return false;
-    }
-
 }

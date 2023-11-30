@@ -8,7 +8,7 @@
             <h5>Quiz questions</h5>
 
             <div class="form-questions mb-3">
-                {% include 'CRUD/question/frames/_form.html.twig' with {question: currentQuestion} %}
+                {{ render_inline(path('question_create', {quiz : currentQuiz})) }}
             </div>
 
             <div class="list-questions--filters d-flex justify-content-end">
@@ -28,12 +28,12 @@
                     <h5>Ask more!</h5>
                     <p class="text-center text-muted">There is no questions selected</p>
                 {% else %}
-                    {% include 'quizzes/frames/_form-answer.html.twig' with {question : currentQuestion, answer : currentAnswer} %}
+                    {{ render_inline(path('answer_create', {question: currentQuestion.id})) }}
                 {% endif %}
             </div>
 
             <div class="list-answers mt-4">
-                {% include 'quizzes/frames/_list-answers.html.twig' %}
+                {% include 'quizzes/frames/_list-answers.html.twig' with {question : currentQuestion} %}
             </div>
         </div>
     </div>
