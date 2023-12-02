@@ -7,4 +7,5 @@ enum RepresentationType: string
     case TURBO = 'turbo';
     case HTML = 'html';
     case FORM_SUBMITTED = 'form_submitted';
+    case REDIRECT = 'redirect';
 }
