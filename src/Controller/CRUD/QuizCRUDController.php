@@ -34,18 +34,18 @@ class QuizCRUDController extends CRUDController
     #[Route("/{quiz}/edit", name: "quiz_edit", methods: ['POST', 'GET'])]
     public function createQuiz(Request $request, Quiz $quiz = null): Response
     {
-
         $quiz ??= (new Quiz())
             ->setVersion(1);
 
         $form = $this->createForm(QuizType::class, $quiz, [
+            'action' => $request->getRequestUri(),
             'attr' => [
                 'data-turbo-action' => 'advance'
             ]
         ]);
 
         if ($this->handleForm($form, $request)) {
-            if (!$request->attributes->get('_route') === 'quiz_create') {
+            if (!$this->currentRouteIs($request, 'quiz_create')) {
                 $this->addFlash('success', "Quiz '{$quiz->getValue()}' was created.");
             } else {
                 $this->addFlash('success', "Quiz '{$quiz->getValue()}' was updated.");

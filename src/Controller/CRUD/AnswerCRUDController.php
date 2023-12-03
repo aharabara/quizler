@@ -35,16 +35,14 @@ class AnswerCRUDController extends CRUDController
 
     #[Route(path: '/', name: 'answer_create', methods: ['POST', 'GET'])]
     #[Route(path: '/{answer}', name: 'answer_edit', methods: ['POST', 'GET'])]
-    #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams: ['quiz', 'question'])]
+    #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams: ['quiz'])]
     #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/answer/frames/_form.html.twig')]
     #[RepresentAs(RepresentationType::HTML, template: '/CRUD/answer/form.html.twig')]
     public function answer(Request $request, Question $question, ?int $answer = null): array
     {
-        if (!is_null($answer)) {
-            $answer = $this->answerRepository->findOneBy([
-                'id' => $answer, 'question' => $question->getId()
-            ]);
-        }
+        $answer ??= $this->answerRepository->findOneBy([
+            'id' => $answer, 'question' => $question->getId()
+        ]);
 
         $answer ??= (new Answer())
             ->setAuthor($this->security->getUser())
@@ -52,8 +50,17 @@ class AnswerCRUDController extends CRUDController
             ->setCorrect(true)
             ->setCreatedAt(new \DateTimeImmutable());
 
-        $form = $this->createForm(AnswerType::class, $answer);
-        $this->handleForm($form, $request);
+        $form = $this->createForm(AnswerType::class, $answer, [
+            'action' => $request->getRequestUri()
+        ]);
+
+        if($this->handleForm($form, $request)) {
+            if (!$this->currentRouteIs($request, 'answer_create')) {
+                $this->addFlash('success', "Answer was created.");
+            } else {
+                $this->addFlash('success', "Answer was updated.");
+            }
+        }
 
         return [
             'form' => $form,
@@ -64,7 +71,8 @@ class AnswerCRUDController extends CRUDController
     }
 
     #[Route('/{answer}', name: 'answer_delete', methods: ['DELETE'])]
-    public function deleteAnswer(Request $request, ?Answer $answer): Response
+    #[RepresentAs(RepresentationType::REDIRECT, redirectRoute: 'go_through_quiz', routeParams: ['quiz', 'questions'])]
+    public function deleteAnswer(Request $request, ?Answer $answer): array
     {
         $question = $answer->getQuestion();
         $quiz = $question->getQuiz();
@@ -72,10 +80,12 @@ class AnswerCRUDController extends CRUDController
         $this->entityManager->remove($answer);
         $this->entityManager->flush($answer);
 
-        return $this->redirectToRoute('go_through_quiz', [
+        $this->addFlash('warning', "Answer was deleted.");
+
+        return [
             'quiz' => $quiz,
             'question' => $question,
-        ]);
+        ];
     }
 
     /*@fixme replace with vote up/down for an answer. */

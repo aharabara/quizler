@@ -112,11 +112,15 @@
       <path value="$PROJECT_DIR$/vendor/namshi/jose" />
       <path value="$PROJECT_DIR$/vendor/lcobucci/jwt" />
       <path value="$PROJECT_DIR$/vendor/lcobucci/clock" />
+      <path value="$PROJECT_DIR$/vendor/symfony/mercure" />
+      <path value="$PROJECT_DIR$/vendor/symfony/http-client" />
+      <path value="$PROJECT_DIR$/vendor/symfony/http-client-contracts" />
+      <path value="$PROJECT_DIR$/vendor/symfony/mercure-bundle" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
     <interpreters>
-      <interpreter id="edb0d033-a6c9-464e-b206-66fddb8bc591" name="Ubuntu-22.04" home="\\wsl$\Ubuntu-22.04/usr/bin/php" false="false" debugger_id="php.debugger.XDebug" />
+      <interpreter id="edb0d033-a6c9-464e-b206-66fddb8bc591" name="Ubuntu-22.04" home="\\wsl$\Ubuntu-22.04/usr/bin/php" auto="false" debugger_id="php.debugger.XDebug" />
     </interpreters>
   </component>
   <component name="PhpInterpretersPhpInfoCache">
