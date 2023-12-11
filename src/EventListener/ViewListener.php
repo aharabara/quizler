@@ -39,7 +39,7 @@ class ViewListener
             return;
         }
 
-        $handler = $this->handler->getHandler($event->getRequest(), $event->getControllerResult());
+        $handler = $this->handler->getHandler($event->getRequest(), $event->getControllerResult(), $representations);
 
         if (!$handler) {
             // this controller in current state cannot be handled by any handler
@@ -47,8 +47,6 @@ class ViewListener
         }
 
         $representation = $this->matchRepresentation($handler->getType(), $representations);
-
-
 
         $response = $handler->handle($representation, $event->getRequest(), $event->getControllerResult());
 

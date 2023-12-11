@@ -18,11 +18,12 @@ class RepresentationHandlerResolver
         $this->handlers = $handlers;
     }
 
-    public function getHandler(Request $request, array $data): ?RepresentationHandler
+    public function getHandler(Request $request, array $data, array $representations): ?RepresentationHandler
     {
+        $availableTypes = array_map(fn(RepresentAs $attr) => $attr->type, $representations);
         foreach ($this->handlers as $handler) {
             /** @var RepresentationHandler $handler */
-            if ($handler->supports($request, $data)) {
+            if ($handler->supports($request, $data) && in_array($handler->getType(), $availableTypes)) {
                 return $handler;
             }
         }

@@ -2,7 +2,9 @@
     <div class="w-100">
         <div class="markdown-compact">
             <div class="actions float-end">
-                <a href="{{ path('question_edit', {quiz: item.quiz.id, question: item.id}) }}" data-turbo-action="advance" class="text-muted text-hover-primary">
+                <a href="{{ path('question_edit', {quiz: item.quiz.id, question: item.id}) }}"
+                   data-turbo-frame="form-question"
+                   class="text-muted text-hover-primary">
                     <i class="ri-pencil-line"></i>
                 </a>
                 <a href="{{ path('question_delete', {quiz: item.quiz.id, question: item.id}) }}"

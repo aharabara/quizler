@@ -1,23 +1,33 @@
-<table class="table table-striped table-hover">
-    <thead>
-    <tr>
-        <th>Title</th>
-        <th class="">Stats</th>
-        <th class="action-column">Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for item in list %}
-        {% include '/CRUD/quiz/frame/_list-quiz__item.html.twig' %}
-    {% else %}
-        <tr>
-            <td colspan="3" class="text-center">
-                {% if app.request.get('search') is not empty %}
-                    Result for search by <code>'{{ app.request.get('search') }}'</code>.
-                {% endif %}
-                No items to display.
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+<turbo-frame id="list-quiz">
+    <div class="actions d-flex justify-content-end mb-4">
+        <div class="table-navigation">
+            {% include '/components/pagination.html.twig' with {page: page, perPage: perPage, totalPages: totalPages, route: 'quiz_list'} %}
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th class="">Stats</th>
+                <th class="action-column">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in list %}
+                {% include '/CRUD/quiz/frame/_list-quiz__item.html.twig' %}
+            {% else %}
+                <tr>
+                    <td colspan="3" class="text-center">
+                        {% if app.request.get('search') is not empty %}
+                            Result for search by <code>'{{ app.request.get('search') }}'</code>.
+                        {% endif %}
+                        No items to display.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</turbo-frame>

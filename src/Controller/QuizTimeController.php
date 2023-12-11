@@ -48,20 +48,6 @@ class QuizTimeController extends AbstractController
         return false;
     }
 
-    #[Route("/test")]
-    public function publish(HubInterface $hub): Response
-    {
-        $update = new Update(
-            'http://localhost:3001/test.jsonld',
-            json_encode(['status' => 'OutOfStock'])
-        );
-
-        $hub->publish($update);
-
-        return new Response('published!');
-    }
-
-
     #[Route('/{quiz}/question/{question}', name: 'go_through_quiz', defaults: ['question' => null])]
     public function index(Request $request, Quiz $quiz, ?Question $question = null): Response
     {

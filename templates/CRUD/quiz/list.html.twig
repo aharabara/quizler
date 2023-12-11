@@ -5,11 +5,8 @@
 
 {% block content %}
     <div class="list-quiz">
-        <div class="d-flex justify-content-between mb-4">
-            <div class="table-navigation">
-                {% include '/components/pagination.html.twig' with {page: page, perPage: perPage, totalPages: totalPages, route: 'quiz_list'} %}
-            </div>
-            <div class="actions d-flex">
+        <div class="float-start">
+            <div class="d-flex actions">
                 {% include '/CRUD/quiz/frame/_list-quiz__actions.html.twig' %}
             </div>
         </div>

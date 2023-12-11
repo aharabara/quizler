@@ -11,13 +11,10 @@ use App\Repository\QuizRepository;
 use App\Representation\RepresentAs;
 use App\Representation\RepresentationType;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route("/app/question/{question}/answer")]
 class AnswerCRUDController extends CRUDController
@@ -40,21 +37,28 @@ class AnswerCRUDController extends CRUDController
     #[RepresentAs(RepresentationType::HTML, template: '/CRUD/answer/form.html.twig')]
     public function answer(Request $request, Question $question, ?int $answer = null): array
     {
-        $answer ??= $this->answerRepository->findOneBy([
-            'id' => $answer, 'question' => $question->getId()
-        ]);
+        if (!is_null($answer)) {
+            $answer = $this->answerRepository->findOneBy([
+                'id' => $answer, 'question' => $question->getId()
+            ]);
 
-        $answer ??= (new Answer())
-            ->setAuthor($this->security->getUser())
-            ->setQuestion($question)
-            ->setCorrect(true)
-            ->setCreatedAt(new \DateTimeImmutable());
+            if (!$answer) {
+                throw new NotFoundHttpException();
+            }
+        } else {
+            $answer = (new Answer())
+                ->setAuthor($this->security->getUser())
+                ->setQuestion($question)
+                ->setCorrect(true)
+                ->setCreatedAt(new \DateTimeImmutable());
+        }
+
 
         $form = $this->createForm(AnswerType::class, $answer, [
             'action' => $request->getRequestUri()
         ]);
 
-        if($this->handleForm($form, $request)) {
+        if ($this->handleForm($form, $request)) {
             if (!$this->currentRouteIs($request, 'answer_create')) {
                 $this->addFlash('success', "Answer was created.");
             } else {
@@ -71,7 +75,7 @@ class AnswerCRUDController extends CRUDController
     }
 
     #[Route('/{answer}', name: 'answer_delete', methods: ['DELETE'])]
-    #[RepresentAs(RepresentationType::REDIRECT, redirectRoute: 'go_through_quiz', routeParams: ['quiz', 'questions'])]
+    #[RepresentAs(RepresentationType::REDIRECT, redirectRoute: 'go_through_quiz', routeParams: ['quiz', 'question'])]
     public function deleteAnswer(Request $request, ?Answer $answer): array
     {
         $question = $answer->getQuestion();

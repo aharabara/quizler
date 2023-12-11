@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html.twig' %}
 
-{% block title %}Quizzes{% endblock %}
+{% block title %}<code>{{ currentQuiz.value }}</code>{% endblock %}
 
 {% block content %}
     <div class="row">
@@ -11,7 +11,7 @@
                 {{ render_inline(path('question_create', {quiz : currentQuiz})) }}
             </div>
 
-            <div class="list-questions--filters d-flex justify-content-end">
+            <div class="list-questions--filters d-flex justify-content-end mb-1">
                 {% include 'quizzes/frames/_list-questions__filters.html.twig' %}
             </div>
 

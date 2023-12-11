@@ -38,7 +38,7 @@ class QuestionCRUDController extends CRUDController
     #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams : ['quiz', 'question'])]
     #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/question/frames/_form.html.twig')]
     #[RepresentAs(RepresentationType::HTML, template: '/CRUD/question/form.html.twig')]
-    public function createQuiz(Request $request, Quiz $quiz, ?int $question = null): array
+    public function createQuestion(Request $request, Quiz $quiz, ?int $question = null): array
     {
         if (!is_null($question)){
             $question = $this->questionRepository->findOneBy(['quiz' => $quiz->getId(), 'id' => $question]);

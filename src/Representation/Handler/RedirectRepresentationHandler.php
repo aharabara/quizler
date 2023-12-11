@@ -40,6 +40,7 @@ class RedirectRepresentationHandler implements RepresentationHandler
 
 
         $params = [];
+
         foreach ($attribute->routeParams as $key) {
             if (!isset($data[$key])) {
                 throw new \InvalidArgumentException(

@@ -31,6 +31,6 @@ class TurboRepresentationHandler extends HtmlRepresentationHandler
 
     public function requestSupportsTurboStreams(?Request $request): bool
     {
-        return str_contains($request->headers->get('Accept'), "text/vnd.turbo-stream.html");
+        return $request->attributes->get('_turbo');
     }
 }

@@ -32,12 +32,15 @@ class QuestionType extends AbstractType
                 'constraints' => [
                     new NotNull(),
                     new NotBlank(),
-                    new Callback(function(?string $value, ExecutionContext $context) use ($question) {
+                    new Callback(function (?string $value, ExecutionContext $context) use ($question) {
+                        if ($question->getId() !== null) {
+                            return;
+                        }
                         $existingQuestion = $this->repository->findOneBy([
                             'quiz' => $question->getQuiz()->getId(),
                             'value' => $value,
                         ]);
-                        if ($existingQuestion !== null){
+                        if ($existingQuestion !== null) {
                             $context->addViolation('This question already exists.');
                         }
                     })
@@ -48,12 +51,13 @@ class QuestionType extends AbstractType
                 ]
             ])
             ->add('submit', SubmitType::class, [
-                'label' => $isEditMode ? 'Edit' : 'Create',
+                'label' => $isEditMode ? 'Edit' : 'Ask',
                 'attr' => [
+                    'class' => $isEditMode ? 'btn btn-warning' : 'btn btn-primary',
                     'data-turbo-submits-with' => $isEditMode ? 'Updating...' : 'Saving...'
                 ]
-            ])
-        ;
+            ]);
+
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -16,10 +16,8 @@ abstract class CRUDController extends AbstractController
 
     protected function handleForm(FormInterface $form, Request $request): bool
     {
-
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var Quiz $quiz */
             $this->entityManager->persist($form->getData());
             $this->entityManager->flush();
 
