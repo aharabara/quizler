@@ -7,11 +7,11 @@ use App\Form\QuizType;
 use App\Repository\AnswerRepository;
 use App\Repository\QuestionRepository;
 use App\Repository\QuizRepository;
+use App\Representation\RepresentAs;
+use App\Representation\RepresentationType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,18 +34,18 @@ class QuizCRUDController extends CRUDController
     #[Route("/{quiz}/edit", name: "quiz_edit", methods: ['POST', 'GET'])]
     public function createQuiz(Request $request, Quiz $quiz = null): Response
     {
-
         $quiz ??= (new Quiz())
             ->setVersion(1);
 
         $form = $this->createForm(QuizType::class, $quiz, [
+            'action' => $request->getRequestUri(),
             'attr' => [
                 'data-turbo-action' => 'advance'
             ]
         ]);
 
         if ($this->handleForm($form, $request)) {
-            if (!$request->attributes->get('_route') === 'quiz_create') {
+            if (!$this->currentRouteIs($request, 'quiz_create')) {
                 $this->addFlash('success', "Quiz '{$quiz->getValue()}' was created.");
             } else {
                 $this->addFlash('success', "Quiz '{$quiz->getValue()}' was updated.");
@@ -63,7 +63,9 @@ class QuizCRUDController extends CRUDController
     }
 
     #[Route("/list", name: "quiz_list", methods: ['GET'])]
-    public function listQuizzes(Request $request): Response
+    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/quiz/frame/_list-quiz.html.twig')]
+    #[RepresentAs(RepresentationType::HTML, template: '/CRUD/quiz/list.html.twig')]
+    public function listQuizzes(Request $request): array
     {
         $perPage = max($request->query->getInt('perPage', 1), 10);
         $page = max($request->query->getInt('page', 1), 1);
@@ -84,14 +86,12 @@ class QuizCRUDController extends CRUDController
 
         $paginator = new Paginator($queryBuilder);
 
-        return $this->render(
-            'CRUD/quiz/list.html.twig',
-            [
-                'list' => $paginator->getIterator(),
-                'totalPages' => ceil($paginator->count() / $perPage),
-                'perPage' => $perPage,
-                'page' => $page,
-            ]);
+        return [
+            'list' => $paginator->getIterator(),
+            'totalPages' => ceil($paginator->count() / $perPage),
+            'perPage' => $perPage,
+            'page' => $page,
+        ];
     }
 
     #[Route("/{quiz}/delete", name: "quiz_delete", methods: ['DELETE'])]

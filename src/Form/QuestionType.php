@@ -3,18 +3,23 @@
 namespace App\Form;
 
 use App\Entity\Question;
-use App\Entity\Quiz;
+use App\Repository\QuestionRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Validator\Context\ExecutionContext;
 
 class QuestionType extends AbstractType
 {
+    public function __construct(protected QuestionRepository $repository)
+    {
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         /** @var Question $question */
@@ -27,6 +32,18 @@ class QuestionType extends AbstractType
                 'constraints' => [
                     new NotNull(),
                     new NotBlank(),
+                    new Callback(function (?string $value, ExecutionContext $context) use ($question) {
+                        if ($question->getId() !== null) {
+                            return;
+                        }
+                        $existingQuestion = $this->repository->findOneBy([
+                            'quiz' => $question->getQuiz()->getId(),
+                            'value' => $value,
+                        ]);
+                        if ($existingQuestion !== null) {
+                            $context->addViolation('This question already exists.');
+                        }
+                    })
                 ],
                 'empty_data' => '',
                 'attr' => [
@@ -34,12 +51,13 @@ class QuestionType extends AbstractType
                 ]
             ])
             ->add('submit', SubmitType::class, [
-                'label' => $isEditMode ? 'Edit' : 'Create',
+                'label' => $isEditMode ? 'Edit' : 'Ask',
                 'attr' => [
+                    'class' => $isEditMode ? 'btn btn-warning' : 'btn btn-primary',
                     'data-turbo-submits-with' => $isEditMode ? 'Updating...' : 'Saving...'
                 ]
-            ])
-        ;
+            ]);
+
     }
 
     public function configureOptions(OptionsResolver $resolver): void

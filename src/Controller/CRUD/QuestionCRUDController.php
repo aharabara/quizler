@@ -38,7 +38,7 @@ class QuestionCRUDController extends CRUDController
     #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams : ['quiz', 'question'])]
     #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/question/frames/_form.html.twig')]
     #[RepresentAs(RepresentationType::HTML, template: '/CRUD/question/form.html.twig')]
-    public function createQuiz(Request $request, Quiz $quiz, ?int $question = null): array
+    public function createQuestion(Request $request, Quiz $quiz, ?int $question = null): array
     {
         if (!is_null($question)){
             $question = $this->questionRepository->findOneBy(['quiz' => $quiz->getId(), 'id' => $question]);
@@ -48,10 +48,12 @@ class QuestionCRUDController extends CRUDController
             ->setQuiz($quiz)
             ->setAuthor($this->getUser());
 
-        $form = $this->createForm(QuestionType::class, $question);
+        $form = $this->createForm(QuestionType::class, $question, [
+            'action' => $request->getRequestUri()
+        ]);
 
         if ($this->handleForm($form, $request)) {
-            $this->addFlash('success', "Question'{$quiz->getValue()}' was updated.");
+            $this->addFlash('success', "Question '{$quiz->getValue()}' was updated.");
         }
 
         return [
@@ -62,7 +64,8 @@ class QuestionCRUDController extends CRUDController
     }
 
     #[Route("/{question}/delete", name: "question_delete", methods: ['DELETE'])]
-    public function deleteQuestion(Question $question): Response
+    #[RepresentAs(RepresentationType::REDIRECT, redirectRoute: 'go_through_quiz', routeParams: ['quiz'] )]
+    public function deleteQuestion(Question $question): array
     {
         $quizId = $question->getQuiz()->getId();
         $questionId = $question->getId();
@@ -72,6 +75,8 @@ class QuestionCRUDController extends CRUDController
 
         $this->addFlash('warning', "Question '{$question->getValue()}' with ID:{$questionId} was deleted.");
 
-        return $this->redirectToRoute('go_through_quiz', ['quiz' => $quizId, 'question' => $questionId]);
+        return [
+            'quiz' => $quizId
+        ];
     }
 }

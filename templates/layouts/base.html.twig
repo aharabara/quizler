@@ -11,7 +11,7 @@
             {{ encore_entry_script_tags('app') }}
         {% endblock %}
     </head>
-    <body>
+    <body class="position-relative">
         <turbo-frame id="page">
             <div class="container">
                 <div class="row">
@@ -25,8 +25,8 @@
                 <div class="row">
                     <div class="col-md-12 mt-5">
                         <turbo-frame id="page-content">
-                            {% include 'layouts/frames/_flashes.html.twig' %}
                             {% block content %}{% endblock %}
+                            {% include 'layouts/frames/_flashes.html.twig' %}
                         </turbo-frame>
                     </div>
                 </div>

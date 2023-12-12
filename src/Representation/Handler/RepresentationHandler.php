@@ -13,6 +13,8 @@ interface RepresentationHandler
 {
     public function getType(): RepresentationType;
 
+    public function supports(Request $request, array $data): bool;
+
     public function handle(RepresentAs $attribute, Request $request, array $data): Response;
 
 }

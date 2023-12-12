@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html.twig' %}
 
-{% block title %}Quizzes{% endblock %}
+{% block title %}<code>{{ currentQuiz.value }}</code>{% endblock %}
 
 {% block content %}
     <div class="row">
@@ -11,7 +11,7 @@
                 {{ render_inline(path('question_create', {quiz : currentQuiz})) }}
             </div>
 
-            <div class="list-questions--filters d-flex justify-content-end">
+            <div class="list-questions--filters d-flex justify-content-end mb-1">
                 {% include 'quizzes/frames/_list-questions__filters.html.twig' %}
             </div>
 
@@ -23,18 +23,19 @@
         <div class="col-sm-12 border-top border-2 border-secondary d-sm-block d-lg-none order-sm-1 mb-5 mt-5"></div>
 
         <div class="col-lg-6 col-sm-12 order-sm-0 order-lg-1">
-            <div class="form-question">
-                {% if not currentQuestion.id %}
+            {% if not currentQuestion.id %}
+                <div class="form-question">
                     <h5>Ask more!</h5>
-                    <p class="text-center text-muted">There is no questions selected</p>
-                {% else %}
+                    <p class="text-center text-muted mt-3">Select a question first.</p>
+                </div>
+            {% else %}
+                <div class="form-question">
                     {{ render_inline(path('answer_create', {question: currentQuestion.id})) }}
-                {% endif %}
-            </div>
-
-            <div class="list-answers mt-4">
-                {% include 'quizzes/frames/_list-answers.html.twig' with {question : currentQuestion} %}
-            </div>
+                </div>
+                <div class="list-answers mt-4">
+                    {% include 'quizzes/frames/_list-answers.html.twig' with {question : currentQuestion} %}
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
