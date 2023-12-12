@@ -1,0 +1,21 @@
+<tr>
+    <td>{{ item.value }}</td>
+    <td>{{ item.answered }} / {{ item.total }}</td>
+    <td class="action-column">
+        <a href="{{ path('go_through_quiz', {quiz : item.id}) }}" class="btn btn-success"
+           data-turbo-frame="page-content" data-turbo-action="advance">
+            <i class="ri-question-answer-fill"></i>
+        </a>
+        <a href="{{ path('quiz_edit', {quiz : item.id}) }}" class="btn btn-warning"
+           data-turbo-frame="page-content" data-turbo-action="advance">
+            <i class="ri-pencil-fill"></i>
+        </a>
+        <a href="{{ path('quiz_delete', {quiz : item.id}) }}" class="btn btn-danger"
+           data-turbo-frame="page-content" data-turbo-action="advance"
+           data-turbo-method="DELETE"
+           data-turbo-confirm="Are you sure you want to delete this quiz?"
+        >
+            <i class="ri-delete-bin-2-fill"></i>
+        </a>
+    </td>
+</tr>

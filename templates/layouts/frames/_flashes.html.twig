@@ -1,10 +1,12 @@
-{% for flash in app.flashes('danger') %}
-    <div class="alert alert-danger d-flex align-items-center" role="alert">
-        <i class="ri-error-warning-line"></i> &nbsp;<div> {{ flash }}</div>
-    </div>
-{% endfor %}
-{% for flash in app.flashes('success') %}
-    <div class="alert alert-success d-flex align-items-center" role="alert">
-        <i class="ri-checkbox-circle-fill"></i>&nbsp;<div> {{ flash }}</div>
-    </div>
-{% endfor %}
+<div class="toast-container position-absolute p-3 top-0 start-50 translate-middle-x" aria-live="polite" aria-atomic="true">
+    {% for flash in app.flashes('danger') %}
+        {% include 'layouts/frames/_flashe.html.twig' with {type : 'danger', icon: 'ri-error-warning-line', flash : flash} %}
+    {% endfor %}
+    {% for flash in app.flashes('warning') %}
+        {% include 'layouts/frames/_flashe.html.twig' with {type : 'warning', icon: 'ri-error-warning-line', flash : flash} %}
+    {% endfor %}
+    {% for flash in app.flashes('success') %}
+        {% include 'layouts/frames/_flashe.html.twig' with {type : 'success', icon: 'ri-error-warning-line', flash : flash} %}
+    {% endfor %}
+</div>
+

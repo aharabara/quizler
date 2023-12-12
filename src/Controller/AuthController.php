@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class IndexController extends AbstractController
+class AuthController extends AbstractController
 {
 
     #[Route('/', name: 'app_sign_in')]
@@ -66,7 +66,7 @@ class IndexController extends AbstractController
             $form->setData(['username' => $authenticationUtils->getLastUsername()]);
         }
 
-        return $this->render('auth/login/frames/sign-in.html.twig', [
+        return $this->render('auth/frames/sign-in.html.twig', [
             'form' => $form
         ]);
     }

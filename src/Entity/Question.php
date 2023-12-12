@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\PrePersist;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\UX\Turbo\Attribute\Broadcast;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
 #[ORM\EntityListeners([QuestionListener::class])]
@@ -82,9 +83,9 @@ class Question
         return $this->id;
     }
 
-    public function getValue(): ?string
+    public function getValue(): string
     {
-        return $this->value;
+        return "$this->value";
     }
 
     public function setValue(string $value): static
@@ -184,5 +185,10 @@ class Question
         $this->author = $author;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return "$this->id";
     }
 }

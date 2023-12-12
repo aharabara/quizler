@@ -1,0 +1,23 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block meta_title %}Quizzler? - Questions{% endblock %}
+{% block title %}
+    {% if (question.id) %}
+        Edit answer
+    {% else %}
+        Create answer
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="d-sm-none d-lg-block col-lg-2"></div>
+        <div class="col-lg-8">
+            {% include 'CRUD/answer/frames/_form.html.twig' %}
+            <div class="list-answers mt-5">
+                {# @todo list user vote here. #}
+                // Ranking here
+            </div>
+        </div>
+    </div>
+{% endblock %}
