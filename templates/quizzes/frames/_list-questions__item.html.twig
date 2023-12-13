@@ -1,4 +1,6 @@
-<li class="question-list list-group-item list-group-item-action {{ active ? 'list-group-item-primary' : (item.answers.count() > 0 ? 'list-group-item-success' : '') }}">
+<li
+    data-search-target="item"
+    class="question-list list-group-item list-group-item-action {{ active ? 'list-group-item-primary' : (item.answers.count() > 0 ? 'list-group-item-success' : '') }}">
     <div class="w-100">
         <div class="markdown-compact">
             <div class="actions float-end">
