@@ -95,7 +95,8 @@ class QuizCRUDController extends CRUDController
     }
 
     #[Route("/{quiz}/delete", name: "quiz_delete", methods: ['DELETE'])]
-    public function deleteQuiz(Quiz $quiz): Response
+    #[RepresentAs(RepresentationType::REDIRECT, redirectRoute: 'quiz_list', routeParams: ['quiz'])]
+    public function deleteQuiz(Quiz $quiz): array
     {
         $id = $quiz->getId();
 
@@ -104,6 +105,8 @@ class QuizCRUDController extends CRUDController
 
         $this->addFlash('success', "Quiz '{$quiz->getValue()}' with ID:{$id} was deleted.");
 
-        return $this->redirectToRoute('quiz_list', status: Response::HTTP_SEE_OTHER);
+        return [
+            'quiz' => $id
+        ];
     }
 }
