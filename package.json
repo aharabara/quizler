@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "- `symfony/finder`\r - `symfony/console`\r - `symfony/serializer`\r - `symfony/yaml`",
   "main": "webpack.config.js",
-  "scripts": {
-    "dev-server": "encore dev-server",
-    "dev": "encore dev",
-    "watch": "encore dev --watch",
-    "build": "encore production --progress"
+    "scripts": {
+        "dev-server": "encore dev-server",
+        "dev": "encore dev",
+        "watch": "encore dev --watch",
+        "build": "encore production --progress"
   },
   "repository": {
     "type": "git",
@@ -21,9 +21,17 @@
   },
   "homepage": "https://github.com/aharabara/quizler#readme",
   "devDependencies": {
-    "@hotwired/turbo": "^7.0.1",
-    "@symfony/ux-turbo": "file:vendor/symfony/ux-turbo/assets",
     "@symfony/webpack-encore": "^4.3.0",
+    "@babel/core": "^7.17.0",
+    "@babel/preset-env": "^7.16.0",
+    "@hotwired/stimulus": "^3.0.0",
+    "@hotwired/turbo": "^7.0.1",
+    "@symfony/stimulus-bridge": "^3.2.0",
+    "@symfony/ux-turbo": "file:vendor/symfony/ux-turbo/assets",
+    "core-js": "^3.23.0",
+    "regenerator-runtime": "^0.13.9",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0",
     "webpack-notifier": "^1.15.0"
   },
   "dependencies": {
@@ -40,5 +48,5 @@
     "remarkable": "^2.0.1",
     "remixicon": "^3.2.0",
     "typescript": "^5.2.2"
-  }
+    }
 }
