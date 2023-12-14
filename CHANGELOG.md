@@ -8,6 +8,7 @@
 - QR-13: Added possibility to add questions.
 - QR-22: Added possibility to add answers.
 - QR-8: Turbo frames fragmented rendering.
+- QR-5: Move entire project to docker.
 
 **Changed**
 - QR-17: Replace alerts with toasts
