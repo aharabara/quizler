@@ -22,7 +22,7 @@ class RequestListener
 
         $request->attributes->set(
             '_turbo',
-            str_contains($request->headers->get('Accept'), "text/vnd.turbo-stream.html")
+            $request->headers->has('Turbo-Frame')
         );
 
         if ($request->headers->has('Turbo-Frame')) {

@@ -1,4 +1,6 @@
-<div class="toast-container position-absolute p-3 top-0 start-50 translate-middle-x" aria-live="polite" aria-atomic="true">
+<div class="toast-container position-absolute p-3 top-0 start-50 translate-middle-x" aria-live="polite" aria-atomic="true"
+     data-turbo-temporary="true"
+>
     {% for flash in app.flashes('danger') %}
         {% include 'layouts/frames/_flashe.html.twig' with {type : 'danger', icon: 'ri-error-warning-line', flash : flash} %}
     {% endfor %}

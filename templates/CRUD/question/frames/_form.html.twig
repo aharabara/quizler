@@ -6,7 +6,7 @@
             {{ form_errors(form.value) }}
         </div>
         {{ form_row(form.submit, {row_attr : {class: 'ms-2'}}) }}
-        {% if (question.id is not empty and app.request.attributes.get('_turbo-frame')) %}
+        {% if (question.id is not empty and app.request.attributes.get('_turbo')) %}
             <a href="{{ path('question_create', {quiz: question.quiz.id}) }}"
                class="ms-2 btn btn-outline-secondary">
                 Cancel
