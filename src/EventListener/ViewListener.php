@@ -46,22 +46,8 @@ class ViewListener
             return;
         }
 
-        $representation = $this->matchRepresentation($handler->getType(), $representations);
-
-        $response = $handler->handle($representation, $event->getRequest(), $event->getControllerResult());
-
-        $event->setResponse($response);
-    }
-
-    private function matchRepresentation(RepresentationType $type, array $representations): RepresentAs
-    {
-        foreach ($representations as $representation) {
-            /** @var RepresentAs $representation */
-            if ($representation->type === $type) {
-                return $representation;
-            }
-        }
-
-        throw new \RuntimeException('Unsupported representation');
+        $event->setResponse(
+            $handler->handle($event->getRequest(), $event->getControllerResult(), $representations)
+        );
     }
 }

@@ -20,12 +20,10 @@ class RequestListener
     {
         $request = $requestEvent->getRequest();
 
-        $request->attributes->set(
-            '_turbo',
-            str_contains($request->headers->get('Accept'), "text/vnd.turbo-stream.html")
-        );
 
+        $request->attributes->set('_turbo', false);
         if ($request->headers->has('Turbo-Frame')) {
+            $request->attributes->set('_turbo', true);
             $request->attributes->set('_turbo-frame', $request->headers->get('Turbo-Frame'));
         }
 

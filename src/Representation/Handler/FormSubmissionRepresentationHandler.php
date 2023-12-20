@@ -15,7 +15,7 @@ class FormSubmissionRepresentationHandler extends RedirectRepresentationHandler
         return RepresentationType::FORM_SUBMITTED;
     }
 
-    public function supports(Request $request, array $data): bool
+    public function supports(Request $request, array $data, array $representations): bool
     {
         $form = $this->thereIsASubmittedForm($data);
 

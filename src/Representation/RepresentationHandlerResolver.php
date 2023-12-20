@@ -23,7 +23,7 @@ class RepresentationHandlerResolver
         $availableTypes = array_map(fn(RepresentAs $attr) => $attr->type, $representations);
         foreach ($this->handlers as $handler) {
             /** @var RepresentationHandler $handler */
-            if ($handler->supports($request, $data) && in_array($handler->getType(), $availableTypes)) {
+            if ($handler->supports($request, $data, $representations) && in_array($handler->getType(), $availableTypes)) {
                 return $handler;
             }
         }
