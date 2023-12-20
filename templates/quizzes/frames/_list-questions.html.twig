@@ -1,8 +1,13 @@
-<ul class="list-group" style="overflow: scroll; height: calc(100vh - 15rem) ">
-    {% for item in questions %}
-        {%  include 'quizzes/frames/_list-questions__item.html.twig' with {
-            active: currentQuestion.id == item.id,
-            item: item
-        } %}
-    {% endfor %}
-</ul>
+<turbo-frame id="list-question">
+    <div class="list-questions--filters d-flex justify-content-end mb-1">
+        {% include 'quizzes/frames/_list-questions__filters.html.twig' %}
+    </div>
+    <ul class="list-group" style="overflow: scroll; height: calc(100vh - 15rem) ">
+        {% for item in questions %}
+            {%  include 'quizzes/frames/_list-questions__item.html.twig' with {
+                active: currentQuestion.id == item.id,
+                item: item
+            } %}
+        {% endfor %}
+    </ul>
+</turbo-frame>

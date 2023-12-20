@@ -1,8 +1,8 @@
-<form data-turbo-frame="list-quiz">
+<form data-turbo-method="POST" data-turbo-frame="list-quiz">
     <label class="input-group">
         <input type="search" class="form-control" name="search" value="{{ app.request.get('search') }}"
                placeholder="Type quiz name">
-        <button class="btn btn-outline-secondary" data-turbo-action="advance" type="submit">
+        <button class="btn btn-outline-secondary" data-turbo-frame="list-quiz" data-turbo-action="advance" type="submit">
             <i class="ri-search-2-line"></i>
         </button>
     </label>

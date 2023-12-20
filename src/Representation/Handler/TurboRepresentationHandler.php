@@ -2,6 +2,7 @@
 
 namespace App\Representation\Handler;
 
+use RuntimeException;
 use App\Representation\RenderController;
 use App\Representation\RepresentAs;
 use App\Representation\RepresentationType;
@@ -27,11 +28,12 @@ class TurboRepresentationHandler extends HtmlRepresentationHandler
 
     public function supports(Request $request, array $data, array $representations): bool
     {
-        if (!$this->supportsTurbo($request) && $this->requestStack->getMainRequest() === $request) return false;
+        if ($this->isMainRequest($request)){
+            return $this->supportsTurbo($request) && $this->hasMatchingRepresention($representations, $request);
+        }
 
-        $frameName = $request->attributes->get('_turbo-frame');
-
-        return $this->getMatchingRepresentation($representations, $frameName) !== null;
+        // because we want to see if it fails in the nested requests
+        return $this->supportsTurbo($request);
     }
 
     public function supportsTurbo(?Request $request): bool
@@ -56,12 +58,8 @@ class TurboRepresentationHandler extends HtmlRepresentationHandler
         return null;
     }
 
-    public function getMatchingRepresentation(array $representations, ?string $frameName): ?RepresentAs
+    public function getMatchingRepresentation(array $representations, string $frameName): ?RepresentAs
     {
-        if ($frameName === null){
-            return $this->getDefaultTurboRepresentation($representations);
-        }
-
         foreach ($representations as $representation) {
             /** @var RepresentAs $representation */
             if ($representation->type !== RepresentationType::TURBO) continue;
@@ -71,11 +69,37 @@ class TurboRepresentationHandler extends HtmlRepresentationHandler
             }
         }
 
-        return $this->getDefaultTurboRepresentation($representations);
+        return null;
+    }
+
+    /**
+     * @param Request $request
+     * @return bool
+     */
+    public function isMainRequest(Request $request): bool
+    {
+        return $this->requestStack->getMainRequest() === $request;
+    }
+
+    /**
+     * @param array $representations
+     * @param Request $request
+     * @return bool
+     */
+    public function hasMatchingRepresention(array $representations, Request $request): bool
+    {
+        return $this->getMatchingRepresentation($representations, $request->attributes->get('_turbo-frame')) !== null;
     }
 
     protected function matchRepresentation(array $representations, Request $request): RepresentAs
     {
-        return $this->getMatchingRepresentation($representations, $request->attributes->get('_turbo-frame'));
+        $frameName = $request->attributes->get('_turbo-frame');
+        $representAs = $this->getMatchingRepresentation($representations, $frameName);
+
+        if ($representAs === null) {
+            throw new RuntimeException("There is no matching turbo representation for '{$request->attributes->get('_route')}' endpoint for '$frameName' frame.");
+        }
+
+        return $representAs;
     }
 }

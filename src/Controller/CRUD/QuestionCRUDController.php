@@ -2,6 +2,7 @@
 
 namespace App\Controller\CRUD;
 
+use App\Entity\Answer;
 use App\Entity\Question;
 use App\Entity\Quiz;
 use App\Form\QuestionType;
@@ -11,6 +12,7 @@ use App\Repository\QuizRepository;
 use App\Representation\RepresentAs;
 use App\Representation\RepresentationType;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\Expr\Join;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,7 +35,6 @@ class QuestionCRUDController extends CRUDController
     #[Route("/{question}/edit", name: "question_edit", methods: ['POST', 'GET'])]
     #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams : ['quiz', 'question'])]
     #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/question/frames/_form.html.twig', turboFrame: 'form-question')]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/question/frames/_form.html.twig')]
     #[RepresentAs(RepresentationType::HTML, template: '/CRUD/question/form.html.twig')]
     public function createQuestion(Request $request, Quiz $quiz, ?int $question = null): array
     {
@@ -74,6 +75,32 @@ class QuestionCRUDController extends CRUDController
 
         return [
             'quiz' => $quizId
+        ];
+    }
+
+    #[Route("/list", name: "question_list", methods: ['GET'])]
+    #[RepresentAs(RepresentationType::TURBO, template: '/quizzes/frames/_list-questions.html.twig', turboFrame: 'list-question')]
+    public function listQuestion(Request $request, Quiz $quiz): array
+    {
+        $queryBuilder = $this->questionRepository
+            ->createQueryBuilder('q')
+            ->leftJoin(Answer::class, 'a', Join::WITH, 'q.id = a.question')
+            ->where('q.quiz = :quizId')
+            ->setParameter('quizId', $quiz->getId())
+            ->orderBy('q.id', 'DESC');
+
+        if (!$request->query->getBoolean('withAnswers')) {
+            $queryBuilder->andWhere('a.value IS NULL OR a.author <> :userID')
+                ->setParameter('userID', $this->getUser()->getId());
+        }
+
+        $currentQuestion = $this->questionRepository->findOneBy(['id' => $request->query->getInt('currentQuestion')]) ?? new Question();
+
+        return [
+            'currentQuestion' => $currentQuestion,
+            'questions' => $queryBuilder
+                ->getQuery()
+                ->getResult(),
         ];
     }
 }

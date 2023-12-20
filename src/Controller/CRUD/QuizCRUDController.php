@@ -64,6 +64,7 @@ class QuizCRUDController extends CRUDController
 
     #[Route("/list", name: "quiz_list", methods: ['GET'])]
     #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/quiz/frame/_list-quiz.html.twig' ,turboFrame: 'list-quiz')]
+    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/quiz/list.html.twig' ,turboFrame: 'page')]
     #[RepresentAs(RepresentationType::HTML, template: '/CRUD/quiz/list.html.twig')]
     public function listQuizzes(Request $request): array
     {

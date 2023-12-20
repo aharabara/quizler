@@ -33,7 +33,7 @@ class AnswerCRUDController extends CRUDController
     #[Route(path: '/', name: 'answer_create', methods: ['POST', 'GET'])]
     #[Route(path: '/{answer}', name: 'answer_edit', methods: ['POST', 'GET'])]
     #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams: ['quiz'])]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/answer/frames/_form.html.twig')]
+    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/answer/frames/_form.html.twig', turboFrame: 'form-answer')]
     #[RepresentAs(RepresentationType::HTML, template: '/CRUD/answer/form.html.twig')]
     public function answer(Request $request, Question $question, ?int $answer = null): array
     {
