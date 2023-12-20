@@ -20,6 +20,8 @@ class RepresentAs
 
         /** Route parameters that are cast to string to form redirect route. REQUIRED for FORM_SUBMITTED type*/
         public readonly array $routeParams = [],
+
+        public readonly bool $cached = false,
     )
     {
     }

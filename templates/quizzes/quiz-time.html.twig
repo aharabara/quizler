@@ -12,7 +12,7 @@
             </div>
 
             <div class="list-questions">
-                {{ render_turbo(path('question_list', app.request.query.all | merge({quiz : currentQuiz, currentQuestion: currentQuestion.id})), {frame:  'list-question'}) }}
+                {{ render_ssi_turbo(path('question_list', app.request.query.all | merge({quiz : currentQuiz, currentQuestion: currentQuestion.id})), {frame:  'list-question'}) }}
             </div>
         </div>
 

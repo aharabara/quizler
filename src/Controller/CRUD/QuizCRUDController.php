@@ -14,6 +14,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\Cache;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route("/app/quiz")]
@@ -63,9 +64,10 @@ class QuizCRUDController extends CRUDController
     }
 
     #[Route("/list", name: "quiz_list", methods: ['GET'])]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/quiz/frame/_list-quiz.html.twig' ,turboFrame: 'list-quiz')]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/quiz/list.html.twig' ,turboFrame: 'page')]
+    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/quiz/frame/_list-quiz.html.twig' ,turboFrame: 'list-quiz', cached: true)]
+    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/quiz/list.html.twig', turboFrame: 'page')]
     #[RepresentAs(RepresentationType::HTML, template: '/CRUD/quiz/list.html.twig')]
+    #[Cache(maxage: 10000, public: true, mustRevalidate: false)]
     public function listQuizzes(Request $request): array
     {
         $perPage = max($request->query->getInt('perPage', 1), 10);
