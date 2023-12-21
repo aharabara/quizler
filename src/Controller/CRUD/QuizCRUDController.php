@@ -52,7 +52,7 @@ class QuizCRUDController extends CRUDController
                 $this->addFlash('success', "Quiz '{$quiz->getValue()}' was updated.");
             }
 
-            return $this->redirectToRoute('go_through_quiz', ['quiz' => $quiz->getId()]);
+            return $this->redirectToRoute('quiz_list');
         }
 
         return $this->render(
