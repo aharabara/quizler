@@ -1,6 +1,8 @@
 <?php
 namespace App\Fragment;
 
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,6 +15,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 #[AutoconfigureTag('kernel.fragment_renderer', ['alias' => 'turbo'])]
+#[AsAlias('fragment_renderer.turbo')]
 class TurboFragmentRenderer extends InlineFragmentRenderer
 {
     public function __construct(protected HttpKernelInterface $kernel, protected ?EventDispatcherInterface $dispatcher = null)

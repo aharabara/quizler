@@ -15,6 +15,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\Cache;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route("/app/quiz/{quiz}/question")]
@@ -31,17 +33,13 @@ class QuestionCRUDController extends CRUDController
         parent::__construct($this->entityManager);
     }
 
-    #[Route("/create", name: "question_create", methods: ['POST', 'GET'])]
-    #[Route("/{question}/edit", name: "question_edit", methods: ['POST', 'GET'])]
-    #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams : ['quiz', 'question'])]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/question/frames/_form.html.twig', turboFrame: 'form-question')]
+    #[Route("/create", name: "question_create", methods: ['POST', 'GET'], defaults: ['question' => null])]
+    #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams: ['quiz', 'question'])]
+    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/question/frames/_form.html.twig', turboFrame: 'form-question', cached: true)]
     #[RepresentAs(RepresentationType::HTML, template: '/CRUD/question/form.html.twig')]
-    public function createQuestion(Request $request, Quiz $quiz, ?int $question = null): array
+    #[Cache(maxage: 10000, public: true, mustRevalidate: false)]
+    public function createQuestion(Request $request, Quiz $quiz, ?Question $question = null): array
     {
-        if (!is_null($question)){
-            $question = $this->questionRepository->findOneBy(['quiz' => $quiz->getId(), 'id' => $question]);
-        }
-
         $question ??= (new Question())
             ->setQuiz($quiz)
             ->setAuthor($this->getUser());
@@ -61,8 +59,23 @@ class QuestionCRUDController extends CRUDController
         ];
     }
 
+    #[Route("/{question}/edit", name: "question_edit", methods: ['POST', 'GET'])]
+    #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams: ['quiz', 'question'])]
+    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/question/frames/_form.html.twig', turboFrame: 'form-question')]
+    #[RepresentAs(RepresentationType::HTML, template: '/CRUD/question/form.html.twig')]
+    public function editQuestion(Request $request, Quiz $quiz, ?int $question = null): array
+    {
+        $question = $this->questionRepository->findOneBy(['quiz' => $quiz->getId(), 'id' => $question]);
+        if (!$question) {
+            throw new NotFoundHttpException();
+        }
+
+        return $this->createQuestion($request, $quiz, $question);
+    }
+
+
     #[Route("/{question}/delete", name: "question_delete", methods: ['DELETE'])]
-    #[RepresentAs(RepresentationType::REDIRECT, redirectRoute: 'go_through_quiz', routeParams: ['quiz'] )]
+    #[RepresentAs(RepresentationType::REDIRECT, redirectRoute: 'go_through_quiz', routeParams: ['quiz'])]
     public function deleteQuestion(Question $question): array
     {
         $quizId = $question->getQuiz()->getId();
@@ -79,7 +92,8 @@ class QuestionCRUDController extends CRUDController
     }
 
     #[Route("/list", name: "question_list", methods: ['GET'])]
-    #[RepresentAs(RepresentationType::TURBO, template: '/quizzes/frames/_list-questions.html.twig', turboFrame: 'list-question')]
+    #[RepresentAs(RepresentationType::TURBO, template: '/quizzes/frames/_list-questions.html.twig', turboFrame: 'list-question', cached: true)]
+    #[Cache(vary: ['Turbo-Frame'], smaxage: 10000, public: true)]
     public function listQuestion(Request $request, Quiz $quiz): array
     {
         $queryBuilder = $this->questionRepository

@@ -8,6 +8,7 @@ use App\Representation\RepresentationType;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\EventListener\AbstractSessionListener;
 
 #[AsTaggedItem(100)]
 class HtmlRepresentationHandler implements RepresentationHandler
@@ -32,7 +33,13 @@ class HtmlRepresentationHandler implements RepresentationHandler
             );
         }
 
-        return $this->renderController->render($attribute->template, $data);
+        $response = $this->renderController->render($attribute->template, $data);
+
+        if ($attribute->cached) {
+            $response->headers->set(AbstractSessionListener::NO_AUTO_CACHE_CONTROL_HEADER, 'true');
+        }
+
+        return $response;
     }
 
     protected function matchRepresentation(array $representations, Request $request): RepresentAs
