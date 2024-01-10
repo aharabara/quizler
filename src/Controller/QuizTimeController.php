@@ -47,7 +47,7 @@ class QuizTimeController extends AbstractController
     }
 
     #[Route('/{quiz}/question/{question}', name: 'go_through_quiz', defaults: ['question' => null])]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/answer/frame/_form.html.twig', turboFrame: 'form-answer')]
+//    #[RepresentAs(RepresentationType::TURBO, template: 'quizzes/frames/_form-answer.html.twig', turboFrame: 'form-answer')]
     #[RepresentAs(RepresentationType::HTML, template: 'quizzes/quiz-time.html.twig')]
     public function index(Quiz $quiz, ?Question $question = null): array
     {

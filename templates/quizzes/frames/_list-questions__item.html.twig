@@ -17,8 +17,8 @@
                 </a>
             </div>
             <a id="question-{{ item.id }}"
-               href="{{ path('go_through_quiz', app.request.query | merge({quiz: item.quiz.id, question: item.id})) ~ '#question-' ~ item.id }}"
-               data-turbo-action="advance"
+               href="{{ path('answer_create', app.request.query | merge({quiz: item.quiz.id, question: item.id})) ~ '#question-' ~ item.id }}"
+{#               data-turbo-action="advance"#}
                data-turbo-frame="form-answer">
                 {{ item.value | markdown_to_html }}
             </a>

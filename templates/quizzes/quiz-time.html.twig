@@ -7,13 +7,15 @@
         <div class="col-lg-6 col-sm-12 order-sm-2 order-lg-0" data-controller="search">
             <h5>Quiz questions</h5>
 
-            <div class="form-questions mb-3">
-                {{ render_turbo(path('question_create', {quiz : currentQuiz}), {frame:  'form-question'}) }}
-            </div>
+            <turbo-frame id="quiz-time--questions">
+                <div class="form-questions mb-3">
+                    {{ render_turbo(path('question_create', {quiz : currentQuiz, targetFrame: 'quiz-time--questions'}), {frame:  'form-question'}) }}
+                </div>
 
-            <div class="list-questions">
-                {{ render_ssi_turbo(path('question_list', app.request.query.all | merge({quiz : currentQuiz, currentQuestion: currentQuestion.id})), {frame:  'list-question'}) }}
-            </div>
+                <div class="list-questions">
+                    <turbo-frame id="list-question" src="{{ path('question_list', app.request.query.all | merge({quiz : currentQuiz, currentQuestion: currentQuestion.id})) }}"></turbo-frame>
+                </div>
+            </turbo-frame>
         </div>
 
         <div class="col-sm-12 border-top border-2 border-secondary d-sm-block d-lg-none order-sm-1 mb-5 mt-5"></div>
@@ -26,7 +28,7 @@
                 </div>
             {% else %}
                 <div class="questions">
-                    {{ render_turbo(path('answer_create', {question: currentQuestion.id}), {frame: 'form-answer'}) }}
+                    <turbo-frame id="form-answer" src="{{ path('answer_create', {question: currentQuestion.id}) }}"></turbo-frame>
                 </div>
             {% endif %}
         </div>

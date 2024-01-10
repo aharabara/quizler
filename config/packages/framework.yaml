@@ -1,6 +1,6 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
-    http_cache: true
+    http_cache: false # requires more work and is not a priority right now
     ssi:
         enabled: true
     secret: '%env(APP_SECRET)%'

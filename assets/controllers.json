@@ -12,7 +12,5 @@
         }
     },
     "entrypoints": {
-        "application": "./controllers/application_controller.js",
-        "toast": "./controllers/toast_controller.js"
     }
 }

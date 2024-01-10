@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import {Toast} from "bootstrap";
+import Toast from "bootstrap/js/src/toast";
 
 /**
  * @property {HTMLElement} element
