@@ -24,7 +24,9 @@
             {% if not currentQuestion.id %}
                 <div class="form-question">
                     <h5>Ask more!</h5>
-                    <p class="text-center text-muted mt-3">Select a question first.</p>
+                    <turbo-frame id="form-answer">
+                        <p class="text-center text-muted mt-3">Select a question first.</p>
+                    </turbo-frame>
                 </div>
             {% else %}
                 <div class="questions">
