@@ -1,0 +1,13 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block meta_title %}Quizzler? - Home{% endblock %}
+{% block title %}Have fun!{% endblock %}
+
+{% block content %}
+    <div class="d-flex align-items-stretch">
+        <a href="{{ path('quiz_list') }}" hx-target="body" hx-push-url="true" hx-get="{{path('quiz_list')}}" class="btn btn-success flex-fill m-2  pt-5 pb-5">
+            <i class="ri-list-ordered"></i>
+            Quizzes
+        </a>
+    </div>
+{% endblock %}

@@ -5,21 +5,24 @@
         <div class="markdown-compact">
             <div class="actions float-end">
                 <a href="{{ path('question_edit', {quiz: item.quiz.id, question: item.id}) }}"
-                   data-turbo-frame="form-question"
+                   hx-target="#form-question"
                    class="text-muted text-hover-primary">
                     <i class="ri-pencil-line"></i>
                 </a>
                 <a href="{{ path('question_delete', {quiz: item.quiz.id, question: item.id}) }}"
-                   data-turbo-confirm="Are you sure you want to delete question '{{ item.id }}'?"
-                   data-turbo-method="DELETE"
+                   hx-confirm="Are you sure you want to delete question '{{ item.id }}'?"
+                   hx-delete="{{ path('question_delete', {quiz: item.quiz.id, question: item.id})}}"
+                   hx-target="closest [data-search-target]"
+                   hx-swap="delete swap:0.4s"
                    class="text-muted text-hover-danger">
                     <i class="ri-delete-bin-2-line"></i>
                 </a>
             </div>
             <a id="question-{{ item.id }}"
-               href="{{ path('answer_create', app.request.query | merge({quiz: item.quiz.id, question: item.id})) ~ '#question-' ~ item.id }}"
+               href="{{ path('new_grind', app.request.query | merge({quiz: item.quiz.id, question: item.id})) }}"
 {#               data-turbo-action="advance"#}
-               data-turbo-frame="form-answer">
+                hx-get="{{ path('new_grind', app.request.query | merge({quiz: item.quiz.id, question: item.id})) }}"
+               hx-target="#form-answer" hx-select="#form-answer" hx-push-url="true" hx-swap="swap:0.4s">
                 {{ item.value | markdown_to_html }}
             </a>
         </div>

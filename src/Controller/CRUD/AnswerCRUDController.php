@@ -13,6 +13,7 @@ use App\Representation\RepresentationType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -32,10 +33,7 @@ class AnswerCRUDController extends CRUDController
 
     #[Route(path: '/', name: 'answer_create', methods: ['POST', 'GET'])]
     #[Route(path: '/{answer}', name: 'answer_edit', methods: ['POST', 'GET'])]
-    #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'answer_create', routeParams: ['quiz', 'question'])]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/answer/frames/_form.html.twig', turboFrame: 'form-answer')]
-    #[RepresentAs(RepresentationType::HTML, template: '/CRUD/answer/form.html.twig')]
-    public function answer(Request $request, Question $question, ?int $answer = null): array
+    public function answer(Request $request, Question $question, ?int $answer = null): Response
     {
         if (!is_null($answer)) {
             $answer = $this->answerRepository->findOneBy([
@@ -64,14 +62,19 @@ class AnswerCRUDController extends CRUDController
             } else {
                 $this->addFlash('success', "Answer was updated.");
             }
+            return $this->redirect($this->generateUrl('new_grind', [
+                'quiz' => $question->getQuiz()->getId(),
+                'question' => $question->getId(),
+            ]));
         }
 
-        return [
+        // return $this->render('/CRUD/answer/form.html.twig', [
+        return $this->render('/CRUD/answer/form.html.twig', [
             'form' => $form,
             'quiz' => $question->getQuiz(),
             'question' => $question,
             'answer' => $answer,
-        ];
+        ]);
     }
 
     #[Route('/{answer}', name: 'answer_delete', methods: ['DELETE'])]

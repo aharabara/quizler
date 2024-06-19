@@ -14,7 +14,9 @@ use App\Representation\RepresentationType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\Cache;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,17 +30,16 @@ class QuestionCRUDController extends CRUDController
         protected AnswerRepository       $answerRepository,
         protected EntityManagerInterface $entityManager,
         protected Security               $security,
-    )
-    {
+    ) {
         parent::__construct($this->entityManager);
     }
 
     #[Route("/create", name: "question_create", methods: ['POST', 'GET'], defaults: ['question' => null])]
-    #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams: ['quiz', 'question'])]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/question/frames/_form.html.twig', turboFrame: 'form-question', cached: true)]
-    #[RepresentAs(RepresentationType::HTML, template: '/CRUD/question/form.html.twig')]
+    // #[RepresentAs(RepresentationType::FORM_SUBMITTED, redirectRoute: 'go_through_quiz', routeParams: ['quiz', 'question'])]
+    // #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/question/frames/_form.html.twig', turboFrame: 'form-question', cached: true)]
+    // #[RepresentAs(RepresentationType::HTML, template: '/CRUD/question/form.html.twig')]
     #[Cache(maxage: 10000, public: true, mustRevalidate: false)]
-    public function createQuestion(Request $request, Quiz $quiz, ?Question $question = null): array
+    public function createQuestion(Request $request, Quiz $quiz, ?Question $question = null): Response
     {
         $question ??= (new Question())
             ->setQuiz($quiz)
@@ -50,13 +51,18 @@ class QuestionCRUDController extends CRUDController
 
         if ($this->handleForm($form, $request)) {
             $this->addFlash('success', "Question '{$quiz->getValue()}' was updated.");
+
+            return $this->redirect($this->generateUrl('new_grind', [
+                'quiz' => $quiz,
+                'question' => $question,
+            ]), Response::HTTP_CREATED);
         }
 
-        return [
+        return $this->render('/CRUD/question/frames/_form.html.twig', [
             'form' => $form,
             'quiz' => $quiz,
             'question' => $question
-        ];
+        ]);
     }
 
     #[Route("/{question}/edit", name: "question_edit", methods: ['POST', 'GET'])]
@@ -76,7 +82,7 @@ class QuestionCRUDController extends CRUDController
 
     #[Route("/{question}/delete", name: "question_delete", methods: ['DELETE'])]
     #[RepresentAs(RepresentationType::REDIRECT, redirectRoute: 'go_through_quiz', routeParams: ['quiz'])]
-    public function deleteQuestion(Question $question): array
+    public function deleteQuestion(Question $question): RedirectResponse
     {
         $quizId = $question->getQuiz()->getId();
         $questionId = $question->getId();
@@ -86,15 +92,13 @@ class QuestionCRUDController extends CRUDController
 
         $this->addFlash('warning', "Question '{$question->getValue()}' with ID:{$questionId} was deleted.");
 
-        return [
+        return $this->redirect($this->generateUrl('new_grind', [
             'quiz' => $quizId
-        ];
+        ]));
     }
 
     #[Route("/list", name: "question_list", methods: ['GET'])]
-    #[RepresentAs(RepresentationType::TURBO, template: '/quizzes/frames/_list-questions.html.twig', turboFrame: 'list-question', cached: true)]
-    #[Cache(vary: ['Turbo-Frame'], smaxage: 10000, public: true)]
-    public function listQuestion(Request $request, Quiz $quiz): array
+    public function listQuestion(Request $request, Quiz $quiz): Response
     {
         $queryBuilder = $this->questionRepository
             ->createQueryBuilder('q')
@@ -110,11 +114,11 @@ class QuestionCRUDController extends CRUDController
 
         $currentQuestion = $this->questionRepository->findOneBy(['id' => $request->query->getInt('currentQuestion')]) ?? new Question();
 
-        return [
+        return $this->render('/quizzes/frames/_list-questions.html.twig', [
             'currentQuestion' => $currentQuestion,
             'questions' => $queryBuilder
                 ->getQuery()
                 ->getResult(),
-        ];
+        ]);
     }
 }

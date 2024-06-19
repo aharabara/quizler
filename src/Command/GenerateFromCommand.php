@@ -4,7 +4,9 @@ namespace App\Command;
 
 use App\Entity\Question;
 use App\Entity\Quiz;
+use App\Entity\User;
 use App\Repository\QuizRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\Reflection\ReflectionClass;
@@ -17,7 +19,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
 
-
 #[AsCommand(
     name: 'quiz:generate',
     description: 'Add a short description for your command',
@@ -25,16 +26,18 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
 class GenerateFromCommand extends Command
 {
     // the name of the command (the part after "bin/console")
-    const OPTION_INTO_FILE_STORAGE = "into-file-storage";
-    const OPTION_OVERWRITE = "overwrite";
+    public const OPTION_INTO_FILE_STORAGE = "into-file-storage";
+    public const OPTION_OVERWRITE = "overwrite";
     protected static $defaultName = 'generate-from';
+
+    private InputInterface $input;
 
     public function __construct(
         protected QuizRepository         $repository,
         protected EntityManagerInterface $em,
-        string                           $name = null
-    )
-    {
+        protected UserRepository $userRepository,
+        string                           $name = null,
+    ) {
         parent::__construct($name);
     }
 
@@ -114,7 +117,6 @@ class GenerateFromCommand extends Command
         foreach ($classes as $class => $file) {
             $file = str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $file);
             if (!str_contains($file, $folder)) {
-                dd($file, $folder);
                 continue;
             }
             $io->writeln("- $class");
@@ -123,6 +125,7 @@ class GenerateFromCommand extends Command
             $shortName = $classInfo->getName();
             $quiz->addQuestion(
                 (new \App\Entity\Question())
+                ->setAuthor($this->getUser())
                     ->setValue(
                         $this->getQuestionContent($classInfo, $shortName)
                     )
@@ -131,6 +134,7 @@ class GenerateFromCommand extends Command
             foreach ($classInfo->getImmediateConstants() as $constant => $values) {
                 $quiz->addQuestion(
                     (new \App\Entity\Question())
+                        ->setAuthor($this->getUser())
                         ->setValue("What for is `{$shortName}::{$constant}` constant used for?")
                 );
             }
@@ -174,7 +178,9 @@ class GenerateFromCommand extends Command
             $classes = array_unique(array_keys($classes));
             foreach ($classes as $class) {
                 $fqcn = "{$prefix}::{$class}";
-                if (str_contains(strtolower($fqcn), "test")) continue;
+                if (str_contains(strtolower($fqcn), "test")) {
+                    continue;
+                }
                 $io->writeln("- $fqcn");
                 $quiz->addQuestion(
                     (new \App\Entity\Question())->setValue("What problem `$fqcn` class/type solves? How it solves this problem?")
@@ -197,8 +203,9 @@ class GenerateFromCommand extends Command
 
     protected function configure()
     {
-        $this->addArgument("folderOrAlias", InputArgument::REQUIRED);
         $this->addOption('config', 'c', InputOption::VALUE_NEGATABLE, 'Generate bunfde configuration quiz', false);
+        $this->addArgument("folderOrAlias", InputArgument::REQUIRED);
+        $this->addArgument("username", InputArgument::REQUIRED);
         $this->addOption(self::OPTION_OVERWRITE, 'r', InputOption::VALUE_NEGATABLE, '', false);
         $this->setDescription("...");
     }
@@ -224,6 +231,12 @@ class GenerateFromCommand extends Command
     {
         $classInfo = (new BetterReflection());
         $alias = $input->getArgument('folderOrAlias');
+        $this->input = $input;
+        $user = $this->getUser();
+        if (!$user) {
+            $output->writeln('Cannot find user by username :' . $input->getArgument('username'));
+            return self::FAILURE;
+        }
 
         $isConfigQuiz = $input->getOption('config');
         if ($isConfigQuiz) {
@@ -268,4 +281,13 @@ class GenerateFromCommand extends Command
         return implode('-', array_slice(explode(DIRECTORY_SEPARATOR, str_replace('-', '_', $folder)), -2, 2));
     }
 
+    private function getUser(): ?User
+    {
+        static $user;
+        if(!$user) {
+            $user = $this->userRepository->findOneBy(['username' => $this->input->getArgument('username')]);
+        }
+
+        return $user;
+    }
 }

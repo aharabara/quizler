@@ -20,19 +20,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
 #[ORM\EntityListeners([AnswerListener::class])]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource(
-    operations: [
-        new Post(denormalizationContext: ['groups' => [self::GROUP_CREATE]]),
-        new Get(normalizationContext: ['groups' => [self::GROUP_LIST, self::GROUP_READ]]),
-        new GetCollection(
-            paginationItemsPerPage: 200,
-            order: ['id' => 'DESC'],
-            normalizationContext: ['groups' => [self::GROUP_LIST]]
-        ),
-    ],
-    order: ['id' => 'ASC']
-)]
-#[ApiFilter(SearchFilter::class, properties: ['question.quiz' => 'exact',])]
 class Answer
 {
     const GROUP_READ = 'answer:read';

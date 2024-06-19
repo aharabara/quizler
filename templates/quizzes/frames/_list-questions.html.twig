@@ -1,4 +1,4 @@
-<turbo-frame id="list-question">
+<div id="list-question">
     <div class="list-questions--filters d-flex justify-content-end mb-1">
         {% include 'quizzes/frames/_list-questions__filters.html.twig' %}
     </div>
@@ -10,4 +10,26 @@
             } %}
         {% endfor %}
     </ul>
-</turbo-frame>
+</div>
+
+<style>
+.htmx-swapping {
+    animation: shaking 0.4s infinite;
+}
+.htmx-swapping input,
+.htmx-swapping p,
+.htmx-swapping textarea,
+.htmx-swapping button,
+.htmx-swapping
+{
+    background : rgba(0,0,0, 0.1)
+}
+
+@keyframes shaking {
+ 0% { background : rgba(0,0,0, 0.05) }
+ /* 25% { transform: translateX(5px) } */
+ 50% { background : rgba(0,0,0, 0.07) }
+ /* 75% { transform: translateX(5px) } */
+ 100% { background : rgba(0,0,0, 0.1) }
+}
+</style>

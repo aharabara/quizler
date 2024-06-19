@@ -21,17 +21,6 @@ use Symfony\UX\Turbo\Attribute\Broadcast;
 #[ORM\EntityListeners([QuestionListener::class])]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\UniqueConstraint(fields: ['quiz', 'value'])]
-#[ApiResource(
-    operations: [
-        new GetCollection(normalizationContext: ['groups' => [self::GROUP_LIST]]),
-        new Get(normalizationContext: ['groups' => [self::GROUP_LIST, self::GROUP_READ]]),
-        new Post(
-            normalizationContext: ['groups' => [self::GROUP_LIST, self::GROUP_READ]],
-            denormalizationContext: ['groups' => [self::QUESTION_CREATE]]
-        ),
-    ],
-    order: ['id' => 'DESC'],
-)]
 class Question
 {
     const GROUP_LIST = 'question:list';

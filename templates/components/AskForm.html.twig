@@ -1,0 +1,19 @@
+<div id="form-question">
+    <b>Note: ths form doesnt redirect correctly</b>
+    {% set form = this.form(app.request) %}
+    {{ form_start(form, {attr : {"hx-boost" : true}}) }}
+    <div class="d-flex justify-content-between">
+        <div class="w-100">
+            {{ form_widget(form.value, { attr : {'data-action' : 'input->search#search'}}) }}
+            {{ form_errors(form.value) }}
+        </div>
+        {{ form_row(form.submit, {row_attr : {class: 'ms-2'}}) }}
+        {% if (question.id is not empty and app.request.attributes.get('_turbo')) %}
+            <a href="{{ path('question_create', {quiz: question.quiz.id}) }}"
+               class="ms-2 btn btn-outline-secondary">
+                Cancel
+            </a>
+        {% endif %}
+    </div>
+    {{ form_end(form) }}
+</div>

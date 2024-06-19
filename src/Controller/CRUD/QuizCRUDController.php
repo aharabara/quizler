@@ -12,6 +12,7 @@ use App\Representation\RepresentationType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\Cache;
@@ -26,8 +27,7 @@ class QuizCRUDController extends CRUDController
         protected AnswerRepository       $answerRepository,
         protected EntityManagerInterface $entityManager,
         protected Security               $security,
-    )
-    {
+    ) {
         parent::__construct($this->entityManager);
     }
 
@@ -60,14 +60,12 @@ class QuizCRUDController extends CRUDController
             [
                 'form' => $form,
                 'quiz' => $quiz
-            ]);
+            ]
+        );
     }
 
     #[Route("/list", name: "quiz_list", methods: ['GET'])]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/quiz/frame/_list-quiz.html.twig' ,turboFrame: 'list-quiz')]
-    #[RepresentAs(RepresentationType::TURBO, template: '/CRUD/quiz/list.html.twig', turboFrame: 'page')]
-    #[RepresentAs(RepresentationType::HTML, template: '/CRUD/quiz/list.html.twig')]
-    public function listQuizzes(Request $request): array
+    public function listQuizzes(Request $request): Response
     {
         $perPage = max($request->query->getInt('perPage', 1), 10);
         $page = max($request->query->getInt('page', 1), 1);
@@ -82,23 +80,22 @@ class QuizCRUDController extends CRUDController
 
         if (!empty($search)) {
             $queryBuilder
-                ->where('quiz.value LIKE :search')
-                ->setParameter('search', "%{$search}%");
+                ->where('LOWER(quiz.value) LIKE :search')
+                ->setParameter('search', strtolower("%{$search}%"));
         }
 
         $paginator = new Paginator($queryBuilder);
 
-        return [
+        return $this->render('/CRUD/quiz/list.html.twig', [
             'list' => $paginator->getIterator(),
             'totalPages' => ceil($paginator->count() / $perPage),
             'perPage' => $perPage,
             'page' => $page,
-        ];
+        ]);
     }
 
     #[Route("/{quiz}/delete", name: "quiz_delete", methods: ['DELETE'])]
-    #[RepresentAs(RepresentationType::REDIRECT, redirectRoute: 'quiz_list', routeParams: ['quiz'])]
-    public function deleteQuiz(Quiz $quiz): array
+    public function deleteQuiz(Quiz $quiz): RedirectResponse
     {
         $id = $quiz->getId();
 
@@ -107,8 +104,6 @@ class QuizCRUDController extends CRUDController
 
         $this->addFlash('success', "Quiz '{$quiz->getValue()}' with ID:{$id} was deleted.");
 
-        return [
-            'quiz' => $id
-        ];
+        return $this->redirect('quiz_list');
     }
 }

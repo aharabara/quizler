@@ -19,26 +19,24 @@
         <meta name="theme-color" content="#ffffff">
     </head>
     <body class="position-relative">
-        <turbo-frame id="page">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12 mt-3 mb-3 ">
-                        <h1 class="d-inline">{% block title %}{% endblock %}</h1>
-                        <div class="d-inline" style="float: right">
-                            {% include 'components/action-bar.html.twig' %}
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12 mt-5">
-                        <turbo-frame id="page-content">
-                            {% block content %}{% endblock %}
-                            {% include 'layouts/frames/_flashes.html.twig' %}
-                        </turbo-frame>
+    <!-- <div hx-get="{{path('notifications')}}" hx-trigger="every 5s"></div> -->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 mt-3 mb-3 ">
+                    <h1 class="d-inline">{% block title %}{% endblock %}</h1>
+                    <div class="d-inline" style="float: right">
+                        {% include 'components/action-bar.html.twig' %}
                     </div>
                 </div>
             </div>
-        </turbo-frame>
+            <div class="row">
+                <div class="col-md-12 mt-5">
+                    <turbo-frame id="page-content">
+                        {% block content %}{% endblock %}
+                    </turbo-frame>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
 

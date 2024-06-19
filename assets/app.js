@@ -1,4 +1,5 @@
-
+import 'htmx.org';
+window.htmx = require('htmx.org');
 import Popper from "popper.js";
 import './bootstrap.js';
 

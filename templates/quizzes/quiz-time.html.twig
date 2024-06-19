@@ -9,11 +9,12 @@
 
             <turbo-frame id="quiz-time--questions">
                 <div class="form-questions mb-3">
-                    {{ render_turbo(path('question_create', {quiz : currentQuiz, targetFrame: 'quiz-time--questions'}), {frame:  'form-question'}) }}
+                    {{ render(path('question_create', {quiz : currentQuiz, targetFrame: 'quiz-time--questions'}), {frame:  'form-question'}) }}
+                    <twig:AskForm question="{{questionToEdit}}"></twig:AskForm>
                 </div>
 
                 <div class="list-questions">
-                    <turbo-frame id="list-question" src="{{ path('question_list', app.request.query.all | merge({quiz : currentQuiz, currentQuestion: currentQuestion.id})) }}"></turbo-frame>
+                    {{ render(path('question_list', app.request.query.all | merge({quiz : currentQuiz, currentQuestion: currentQuestion.id}))) }}
                 </div>
             </turbo-frame>
         </div>
@@ -23,14 +24,14 @@
         <div class="col-lg-6 col-sm-12 order-sm-0 order-lg-1">
             {% if not currentQuestion.id %}
                 <div class="form-question">
-                    <h5>Ask more!</h5>
                     <turbo-frame id="form-answer">
+                        <h5>Ask more!</h5>
                         <p class="text-center text-muted mt-3">Select a question first.</p>
                     </turbo-frame>
                 </div>
             {% else %}
-                <div class="questions">
-                    <turbo-frame id="form-answer" src="{{ path('answer_create', {question: currentQuestion.id}) }}"></turbo-frame>
+                <div class="questions" id="form-answer">
+                    {{ render(path('answer_create', {question: currentQuestion.id})) }}
                 </div>
             {% endif %}
         </div>

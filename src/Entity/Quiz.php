@@ -16,22 +16,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource(
-    operations: [
-        new GetCollection(
-            order: ['value' => 'ASC'],
-            normalizationContext: ['groups' => [self::GROUP_LIST]]
-        ),
-        new Get(normalizationContext: ['groups' => [
-            self::GROUP_LIST,
-            self::GROUP_READ,
-            Question::GROUP_LIST,
-            Question::GROUP_READ
-        ]
-        ]),
-        new Delete()
-    ]
-)]
 class Quiz
 {
 

@@ -1,13 +1,18 @@
-<form data-turbo-method="POST" data-turbo-frame="list-quiz">
+<form method="GET">
     <label class="input-group">
         <input type="search" class="form-control" name="search" value="{{ app.request.get('search') }}"
-               placeholder="Type quiz name">
-        <button class="btn btn-outline-secondary" data-turbo-frame="list-quiz" data-turbo-action="advance" type="submit">
+                hx-get="{{path('quiz_list')}}"
+                hx-trigger="keyup changed delay:200ms"
+                hx-target="#list-quiz"
+                hx-select="#list-quiz"
+                placeholder="Search..."
+               >
+        <button class="btn btn-outline-secondary" type="submit">
             <i class="ri-search-2-line"></i>
         </button>
     </label>
 </form>
 <div class="border border-start border-1 ms-3 me-3"></div>
-<a class="btn btn-success" href="{{ path('quiz_create') }}" data-turbo-action="advance">
-    <i class="ri-add-fill"></i>
+<a class="btn btn-success" href="{{ path('quiz_create') }}">
+    <i class="ri-add-fill"></i> Create quiz
 </a>
