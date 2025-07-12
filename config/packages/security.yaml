@@ -29,8 +29,8 @@ security:
             provider: app_user_provider
             form_login:
                 # "app_login" is the name of the route created previously
-                login_path: app_sign_in
-                check_path: app_login
+                login_path: auth.login
+                check_path: auth.login
                 post_only: true
                 default_target_path: app_home
                 username_parameter : "form[username]"

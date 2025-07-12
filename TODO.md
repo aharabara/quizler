@@ -1,3 +1,9 @@
+### Current
+- [ ] rewrite auth form to htmx + picocss
+
+### Ready for work
+
+### Backlog
 - [x] add possibility to analyze symfony bundle configurations (yaml keys)
 - [x] add possibility to add questions
 - [x] add possibility to analyze packages

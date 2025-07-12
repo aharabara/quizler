@@ -8,6 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -15,17 +16,6 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class AuthController extends AbstractController
 {
-
-    #[Route('/', name: 'app_sign_in')]
-    public function index(Security $security): Response
-    {
-        /* fixme probably not required and can be replaced with security.yaml config */
-        if ($security->getUser() !== null) {
-            return $this->redirectToRoute('app_home');
-        }
-        return $this->render('auth/login.html.twig');
-    }
-
     #[Route('/logout', name: 'app_logout')]
     public function logout(Security $security): Response
     {
@@ -33,12 +23,11 @@ class AuthController extends AbstractController
             $security->logout(false);
         }
 
-        return $this->redirectToRoute('app_sign_in');
+        return $this->redirectToRoute('auth.login');
     }
 
     #[Route('/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils
-    ): Response
+    public function login(Request $request, AuthenticationUtils $authenticationUtils): Response
     {
         $formBuilder = $this->createFormBuilder(options: [
             'action' => $this->generateUrl('app_login'),
@@ -66,7 +55,7 @@ class AuthController extends AbstractController
             $form->setData(['username' => $authenticationUtils->getLastUsername()]);
         }
 
-        return $this->render('auth/frames/sign-in.html.twig', [
+        return $this->render('auth/login.html.twig', [
             'form' => $form
         ]);
     }
